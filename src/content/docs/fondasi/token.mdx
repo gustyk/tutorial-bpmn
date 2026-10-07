@@ -1,0 +1,41 @@
+---
+title: Bagaimana Token Bergerak
+description: Pahami token creation, branching, waiting, join, dan completion.
+---
+
+import TokenSim from '../../../components/TokenSim.astro';
+
+Token adalah model mental untuk mengikuti kemajuan alur. Anggap token sebagai penanda yang bergerak melalui flow node. Token bukan objek fisik dan detail eksekusi engine dapat menambah perilaku teknis.
+
+<TokenSim title="Ikuti token pada empat tahap" steps={['Start: token mulai bergerak', 'Task A: aktivitas berjalan', 'AND split: alur bercabang menjadi dua', 'AND join: tunggu semua cabang aktif', 'End: proses selesai']} />
+
+## AND split dan join
+
+<div class="diagram-frame" role="img" aria-label="Proses dimulai, menjalankan pemeriksaan dan pencatatan secara paralel, lalu menunggu keduanya sebelum selesai.">
+<pre>Start → Task A → AND split ┬→ Task B ─┐
+                           └→ Task C ─┴→ AND join → End</pre>
+</div>
+
+**Gambar 1.1 — Token bercabang dan disinkronkan pada Parallel Gateway.** Diagram teks ini hanya ilustrasi perjalanan token; gunakan viewer BPMN untuk notasi formal.
+
+1. Start membuat alur proses aktif.
+2. Task A dijalankan.
+3. AND split meneruskan kontrol ke kedua jalur; secara konseptual ada token pada masing-masing cabang.
+4. Task B dan Task C dapat selesai pada waktu berbeda.
+5. AND join menunggu token dari semua jalur yang diaktifkan pada split pasangan itu.
+6. Setelah keduanya tiba, satu alur berlanjut ke End.
+
+> **[PEDAGOGICAL SIMPLIFICATION]** Token membantu kita menalar alur kontrol. Ia bukan kartu yang secara literal dikirim oleh engine; aturan eksekusi BPMN memiliki detail formal.
+
+## Empat perilaku yang wajib dibedakan
+
+- **Branching:** satu token membuat beberapa jalur aktif (AND) atau memilih satu/lebih jalur (XOR/OR sesuai kondisi).
+- **Waiting:** catch event menahan kemajuan sampai pemicu datang.
+- **Synchronization:** gateway join menunggu sesuai jenis gateway dan cabang yang aktif.
+- **Interruption:** boundary event interrupting menghentikan activity yang dipasangi; non-interrupting membuka jalur tambahan sementara activity terus berjalan.
+
+## Diagnostik
+
+Jika satu cabang selesai, apakah proses boleh lanjut atau harus menunggu cabang lain? Jika kedua cabang masuk ke XOR merge tanpa AND join, masing-masing token dapat meneruskan alur dan menjalankan task hilir lebih dari sekali.
+
+**Ingat:** simulasikan setiap token sampai end atau exception; jangan menyimpulkan perilaku hanya dari bentuk gambar.

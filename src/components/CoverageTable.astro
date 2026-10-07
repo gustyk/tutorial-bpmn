@@ -1,0 +1,21 @@
+---
+import inventory from '../../content-src/00-research/inventory.json';
+const rows = inventory.elements;
+const counts = rows.reduce<Record<string, number>>((acc, row) => {
+  acc[row.status] = (acc[row.status] ?? 0) + 1;
+  return acc;
+}, {});
+---
+<p><strong>{rows.length} entri inventaris.</strong> Status: {Object.entries(counts).map(([status, count]) => `${status} ${count}`).join(' · ')}. Hanya VERIFIED yang dihitung sebagai terverifikasi.</p>
+<div class="coverage-wrap" tabindex="0" aria-label="Tabel inventaris BPMN, dapat digulir secara horizontal">
+<table>
+  <thead><tr><th>ID</th><th>Kategori</th><th>Notasi</th><th>Varian</th><th>Sumber Camunda</th><th>Bab</th><th>Status</th></tr></thead>
+  <tbody>{rows.map((row) => <tr><td>{row.id}</td><td>{row.category}</td><td>{row.notation}</td><td>{row.variants}</td><td>{row.camunda}</td><td>{row.chapter}</td><td class="coverage-status">{row.status}</td></tr>)}</tbody>
+</table>
+</div>
+<style>
+.coverage-wrap { overflow-x: auto; max-height: 68vh; border: 1px solid var(--sl-color-gray-5); }
+table { min-width: 950px; font-size: .82rem; }
+th { position: sticky; top: 0; background: var(--sl-color-bg-nav); }
+td, th { vertical-align: top; }
+</style>

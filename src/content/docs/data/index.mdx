@@ -1,0 +1,35 @@
+---
+title: Data dan Artifacts
+description: Bedakan data yang dipakai proses dari aliran kontrol dan catatan diagram.
+---
+
+## Data Object
+
+Data Object menunjukkan informasi yang digunakan/dihasilkan dalam scope proses. Data Object dapat memiliki state dan penanda collection. Ia bukan activity: dokumen tidak “mengerjakan” pekerjaan.
+
+## Data Store
+
+Data Store mewakili penyimpanan persisten yang keberadaannya melampaui satu instance proses; Data Object lebih terkait konteks suatu proses/aktivitas. Jangan menyimpulkan sistem database tertentu hanya dari ikon.
+
+## Input, Output, dan Data Association
+
+Data Input/Output menunjukkan informasi masuk/keluar pada level process/activity. Data Association menghubungkan sumber/tujuan data dengan aktivitas atau elemen data. Ini bukan Sequence Flow dan tidak menggerakkan token.
+
+## Artifacts
+
+- **Text Annotation:** catatan untuk pembaca, lazimnya terkait elemen melalui Association.
+- **Group:** pengelompokan visual/konseptual tanpa mengubah kontrol alur.
+
+> **[CAMUNDA]** Camunda 8.9 menyatakan DataObject dan DataStore didukung untuk pemodelan saja. Jangan menjanjikan persistence runtime dari notasi tersebut; implementasi data perlu ditentukan terpisah. [Coverage](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/)
+
+## Perbandingan
+
+| Elemen | Menunjukkan | Mengubah token? |
+|---|---|---:|
+| Data Object | Informasi dalam konteks proses | Tidak |
+| Data Store | Penyimpanan persisten secara konseptual | Tidak |
+| Data Association | Hubungan input/output informasi | Tidak |
+| Sequence Flow | Urutan kontrol | Ya |
+| Annotation / Group | Penjelasan atau pengelompokan visual | Tidak |
+
+Rujukan normatif: [OMG BPMN 2.0.2](https://www.omg.org/spec/BPMN/2.0.2/PDF). Klaim detail tentang Data Input, Data Output, collection, dan runtime binding berstatus DRAFTED sampai dokumentasi Data flow diperiksa.

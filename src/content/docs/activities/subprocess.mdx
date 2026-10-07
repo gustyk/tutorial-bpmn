@@ -1,0 +1,46 @@
+---
+title: Subprocess, Call Activity, dan Event Subprocess
+description: Gunakan scope untuk mengelola detail, reuse, dan kejadian di luar alur utama.
+---
+
+## Embedded subprocess
+
+Subprocess biasa memiliki scope dan detail alur internal. Bentuk expanded memperlihatkan detail; collapsed menyembunyikannya. Parent flow masuk dan keluar dari activity subprocess, tidak menerobos batasnya. Saat subprocess selesai, alur parent berlanjut.
+
+## Call Activity
+
+Call Activity memanggil process/task global yang dapat digunakan ulang. Jangan menyamakan dengan embedded subprocess: yang satu memiliki scope lokal, yang lain mereferensikan definisi yang dapat dipakai lintas konteks. Data input/output dan keterikatan proses perlu ditentukan.
+
+## Event subprocess
+
+Event subprocess berada di dalam scope dan mulai ketika event pemicunya terjadi selama scope aktif. Mode interrupting menghentikan alur scope sesuai jenis trigger; non-interrupting menjalankan respons tambahan tanpa menghentikan alur utama.
+
+## Transaction
+
+Transaction adalah subprocess khusus yang memodelkan transaksi BPMN dengan event/flow cancel terkait. Jangan memakai kata “transaksi” pada label activity biasa lalu menganggap semantik transaction/cancel otomatis berlaku.
+
+## Ad-hoc subprocess
+
+Ad-hoc menandai aktivitas internal yang tidak sepenuhnya diurutkan oleh Sequence Flow; urutan, pengulangan, atau aktivitas yang dilewati ditentukan sesuai model ad-hoc. Gunakan hanya bila kebebasan itu memang bagian realitas bisnis.
+
+## Pilih struktur
+
+| Kebutuhan | Kandidat |
+|---|---|
+| Menyembunyikan detail lokal / menetapkan scope | Embedded Subprocess |
+| Menggunakan kembali definisi global | Call Activity |
+| Menanggapi event selama scope aktif | Event Subprocess |
+| Menggambarkan transaksi dengan cancel semantics | Transaction Subprocess |
+| Aktivitas internal bersifat fleksibel/ad-hoc | Ad-hoc Subprocess |
+
+> **[CAMUNDA]** Periksa [Camunda BPMN coverage](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/) untuk status versi. Notasi BPMN yang sah belum tentu executable di engine tertentu.
+
+## Anti-pattern
+
+Subprocess sebagai kotak dekoratif tanpa scope, batas tanggung jawab, event attachment, atau kebutuhan mengelola kompleksitas tidak menambah makna. Hapus atau jelaskan alasan encapsulation.
+
+## Argumen pemodelan
+
+“Kami memilih embedded subprocess untuk validasi pesanan karena langkah-langkahnya membentuk satu scope lokal dan exception-nya ditangani di dalam proses pemesanan. Call Activity ditolak karena proses ini tidak dipakai ulang sebagai definisi global.”
+
+**Ingat:** pilih subprocess menurut batas semantik yang nyata, bukan semata-mata untuk merapikan gambar.

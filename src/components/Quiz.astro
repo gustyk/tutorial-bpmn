@@ -1,0 +1,26 @@
+---
+interface Props { question: string; options?: string[]; answer?: number; explanation?: string }
+const { question, options = [], answer = 0, explanation = '' } = Astro.props as Props;
+---
+<form class="quiz" data-quiz data-answer={answer} data-explanation={explanation}>
+  <fieldset><legend>{question}</legend>{options.map((option, index) => <label><input type="radio" name="answer" value={index} required /> {option}</label>)}</fieldset>
+  <button type="submit">Periksa jawaban</button>
+  <p class="quiz-feedback" aria-live="polite"></p>
+</form>
+<script>
+  document.querySelectorAll<HTMLFormElement>('[data-quiz]').forEach((form) => {
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const selected = form.querySelector<HTMLInputElement>('input:checked');
+      const feedback = form.querySelector<HTMLParagraphElement>('.quiz-feedback')!;
+      feedback.textContent = selected?.value === form.dataset.answer ? `Tepat. ${form.dataset.explanation}` : `Belum tepat. ${form.dataset.explanation}`;
+    });
+  });
+</script>
+<style>
+.quiz { padding: 1rem; border: 1px solid var(--sl-color-gray-5); border-radius: 4px; }
+.quiz fieldset { display: grid; gap: .6rem; border: 0; padding: 0; }
+.quiz label { display: flex; gap: .5rem; align-items: flex-start; }
+.quiz button { margin-top: .8rem; padding: .5rem .8rem; }
+.quiz-feedback { min-height: 1.5em; }
+</style>

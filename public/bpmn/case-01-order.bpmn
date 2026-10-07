@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_Order_01" targetNamespace="https://uisi.ac.id/bpmn-tutorial">
+  <bpmn:process id="Process_Order_01" name="Pemesanan Sederhana" isExecutable="false">
+    <bpmn:startEvent id="Start_Order" name="Pesanan Diterima">
+      <bpmn:outgoing>Flow_Start_Verify</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Task_Verify" name="Verifikasi Pesanan">
+      <bpmn:incoming>Flow_Start_Verify</bpmn:incoming>
+      <bpmn:outgoing>Flow_Verify_Prepare</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Prepare" name="Siapkan Pesanan">
+      <bpmn:incoming>Flow_Verify_Prepare</bpmn:incoming>
+      <bpmn:outgoing>Flow_Prepare_End</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="End_Order" name="Pesanan Siap">
+      <bpmn:incoming>Flow_Prepare_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_Verify" sourceRef="Start_Order" targetRef="Task_Verify" />
+    <bpmn:sequenceFlow id="Flow_Verify_Prepare" sourceRef="Task_Verify" targetRef="Task_Prepare" />
+    <bpmn:sequenceFlow id="Flow_Prepare_End" sourceRef="Task_Prepare" targetRef="End_Order" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_Order_01">
+    <bpmndi:BPMNPlane id="Plane_Order_01" bpmnElement="Process_Order_01">
+      <bpmndi:BPMNShape id="Shape_Start_Order" bpmnElement="Start_Order"><dc:Bounds x="120" y="140" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Verify" bpmnElement="Task_Verify"><dc:Bounds x="220" y="130" width="140" height="56" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Prepare" bpmnElement="Task_Prepare"><dc:Bounds x="430" y="130" width="140" height="56" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_Order" bpmnElement="End_Order"><dc:Bounds x="650" y="140" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_Flow_Start_Verify" bpmnElement="Flow_Start_Verify"><di:waypoint x="156" y="158" /><di:waypoint x="220" y="158" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Verify_Prepare" bpmnElement="Flow_Verify_Prepare"><di:waypoint x="360" y="158" /><di:waypoint x="430" y="158" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Prepare_End" bpmnElement="Flow_Prepare_End"><di:waypoint x="570" y="158" /><di:waypoint x="650" y="158" /></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

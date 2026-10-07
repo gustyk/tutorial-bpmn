@@ -1,0 +1,34 @@
+---
+title: Pola BPMN Lanjutan
+description: Gabungkan event, gateway, scope, dan compensation untuk memodelkan exception nyata.
+---
+
+## Menunggu event atau timeout
+
+Gunakan event-based race ketika proses menunggu salah satu kejadian eksternal, misalnya pembayaran diterima atau batas waktu habis. Alternatif XOR cocok bila hasil sudah tersedia sebagai data pada saat keputusan dibuat. Bedakan menunggu pesan dari pekerjaan receive task.
+
+## Timeout pada pekerjaan
+
+Timer boundary interrupting mengalihkan proses dan menghentikan activity yang masih berjalan; non-interrupting menjalankan jalur pengingat sementara activity tetap aktif. Pilih berdasarkan aturan SLA dan konsekuensi bisnis.
+
+## Exception dan escalation
+
+Error mengomunikasikan exception/failure dalam scope BPMN; escalation mengangkat kondisi untuk ditangani scope yang lebih tinggi tanpa secara otomatis menyatakan kegagalan teknis. Terminate menghentikan alur aktif di scope proses, bukan sekadar satu cabang. Validasi scope sebelum memilih.
+
+## Compensation
+
+Compensation menjalankan handler untuk membalikkan efek bisnis yang sudah selesai, seperti refund charge atau melepas reservasi. Bukan rollback ajaib dan bukan task “undo” yang otomatis berjalan. Definisikan kapan compensation dipicu dan activity mana yang punya handler.
+
+## Parallel fulfillment
+
+Parallel Gateway memecah/menggabungkan alur; multi-instance mereplikasi activity untuk anggota koleksi. Gunakan AND untuk pekerjaan cabang berbeda yang semuanya diperlukan; multi-instance bila pekerjaan yang sama diterapkan pada banyak item.
+
+## Pola lain
+
+- **Retry:** loop atau kebijakan retry implementasi, sesuai semantik pengulangan yang disepakati.
+- **Request-response:** kirim request, tunggu respons yang berkorelasi, tetapkan timeout/failure.
+- **Fire-and-forget:** pengiriman tidak menunggu jawaban; jangan gambar response catch tanpa requirement.
+- **Reusable process:** Call Activity bila definisi global dipanggil ulang.
+- **Link event:** pasangan intermediate untuk menghindari sequence flow yang panjang; bukan komunikasi antarpeserta.
+
+**[CAMUNDA]** Dukungan execution berbeda menurut versi dan konfigurasi. Verifikasi pada [Camunda BPMN coverage](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/); jangan mengasumsikan semua pola standar langsung executable.

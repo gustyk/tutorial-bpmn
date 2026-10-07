@@ -1,0 +1,52 @@
+---
+title: Anti-pattern dan Model Review
+description: Deteksi kesalahan sintaksis, semantik, dan kualitas pemodelan.
+---
+
+## Katalog anti-pattern
+
+| Gejala | Mengapa salah/risiko | Perbaikan |
+|---|---|---|
+| Message Flow dalam pool yang sama | Mengaburkan batas participant dan bukan kontrol sequence | Gunakan Sequence Flow atau pisahkan participant jika benar-benar berkomunikasi |
+| Sequence Flow melintasi pool | Menghubungkan kontrol dua proses independen | Gunakan Message Flow untuk komunikasi |
+| Gateway dipakai sebagai aktivitas | Gateway mengatur alur, bukan melakukan pekerjaan | Tambahkan task untuk kerja/keputusan yang benar-benar dilakukan |
+| Gateway tanpa alasan | Menambah simbol tanpa perubahan perilaku | Hapus gateway atau dokumentasikan cabang/sinkronisasi yang diperlukan |
+| XOR saat semua jalur harus berjalan | Cabang saling eksklusif, pekerjaan hilang | AND split/join |
+| AND saat hanya satu jalur dibutuhkan | Semua cabang menjadi aktif dan dapat menyebabkan kerja ganda | XOR/OR atau model keputusan yang sesuai |
+| OR join dipahami seperti AND join | Menunggu dapat tidak cocok dengan cabang yang dipilih | Lacak token yang diaktifkan dan uji seluruh kombinasi |
+| Event-based diperlakukan seperti XOR | Event race bukan evaluasi data | Gunakan XOR untuk data yang sudah tersedia |
+| Lane sebagai urutan waktu | Lane mengklasifikasi tanggung jawab | Gunakan alur kontrol dan event waktu |
+| Actor/lane tidak konsisten | Ownership membingungkan | Pilih role, unit, atau sistem dan pakai konsisten |
+| Data Object sebagai task | Data bukan pekerjaan | Gambar task dan hubungkan data bila relevan |
+| Boundary tanpa memahami interruption | Activity bisa berhenti atau tetap berjalan | Tetapkan kebutuhan interrupting/non-interrupting |
+| Error untuk semua hasil negatif | Hasil bisnis normal disalahartikan sebagai exception | Pakai keputusan XOR untuk hasil normal |
+| Terminate hanya untuk satu cabang | Menghentikan alur lebih luas dari maksud | Gunakan end/cancel flow yang tepat |
+| Subprocess dekoratif | Scope/abstraksi tidak memberi makna | Hapus atau jelaskan encapsulation dan boundary |
+| Terlalu banyak event/gateway | Diagram berat dibaca | Pertahankan hanya elemen yang memodelkan behavior nyata |
+| Spaghetti/crossing flow | Relasi sulit ditelusuri | Atur layout, gunakan subprocess/Link bila sesuai |
+| Level detail campur | Pembaca tidak tahu apakah melihat overview atau prosedur rinci | Konsistenkan granularitas dan pecah diagram |
+| Task berupa kata benda | Aktivitas tidak jelas | Gunakan kata kerja + objek |
+| Event bernama aktivitas | Kejadian dan pekerjaan tercampur | Namai event sebagai keadaan/kejadian |
+| Flowchart berlabel BPMN | Participant, event, atau token semantics hilang | Modelkan batas, komunikasi, dan perilaku BPMN yang memang dibutuhkan |
+
+Beberapa baris adalah praktik buruk, bukan pelanggaran standar formal. Validitas sintaksis dan kualitas model harus dinilai terpisah.
+
+## Checklist review
+
+1. Apakah participant dan scope jelas?
+2. Apakah start condition dan end condition jelas?
+3. Apakah gateway memiliki semantik sesuai requirement?
+4. Apakah Message Flow melintasi batas participant?
+5. Apakah Sequence Flow tetap dalam satu process?
+6. Apakah event trigger cocok dengan posisinya?
+7. Apakah boundary event melekat pada activity yang tepat?
+8. Apakah synchronization menunggu token yang benar?
+9. Apakah ada deadlock atau token yang tak pernah selesai?
+10. Apakah end state tidak ambigu?
+11. Apakah detail konsisten?
+12. Apakah nama activity memakai verb-object?
+13. Apakah data dan artifacts tidak disamakan dengan kontrol alur?
+14. Apakah klaim Camunda menyebut versi dan status pemodelan/eksekusi?
+15. Bisakah diagram disederhanakan tanpa kehilangan semantik?
+
+**Ingat:** model valid belum tentu mudah dipahami atau benar terhadap bisnis.

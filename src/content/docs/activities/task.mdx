@@ -1,0 +1,52 @@
+---
+title: Task dan Jenis Task
+description: Bedakan aktivitas berdasarkan siapa atau apa yang mengerjakannya.
+---
+
+Task adalah aktivitas atomik pada level diagram: model menunjukkan pekerjaan, tetapi tidak membuka urutan langkah internalnya. Nama yang jelas umumnya memakai kata kerja + objek, misalnya “Verifikasi Pembayaran”.
+
+<div class="diagram-frame"><svg viewBox="0 0 580 115" role="img" aria-label="None task BPMN di antara start event dan end event"><circle cx="55" cy="55" r="20" fill="white" stroke="#111" stroke-width="2"/><line x1="75" y1="55" x2="140" y2="55" stroke="#111" stroke-width="2"/><polygon points="140,55 130,50 130,60"/><rect x="140" y="30" width="180" height="50" rx="10" fill="white" stroke="#111" stroke-width="2"/><text x="177" y="59" font-size="14">Verifikasi Pembayaran</text><line x1="320" y1="55" x2="430" y2="55" stroke="#111" stroke-width="2"/><polygon points="430,55 420,50 420,60"/><circle cx="455" cy="55" r="20" fill="white" stroke="#111" stroke-width="3"/><text x="20" y="102" font-size="12">Start</text><text x="430" y="102" font-size="12">End</text></svg></div>
+
+**Gambar 3.1 — None Task sebagai aktivitas abstrak.**
+
+## Memilih task type
+
+| Notasi | Makna ringkas | Contoh |
+|---|---|---|
+| None / Undefined | Pekerjaan tanpa task type khusus | Tinjau Permohonan |
+| User Task | Manusia menyelesaikan pekerjaan dengan bantuan workflow/task UI | Validasi Klaim |
+| Manual Task | Manusia melakukan pekerjaan tanpa engine mengorkestrasi detailnya | Periksa Dokumen Fisik |
+| Service Task | Pekerjaan oleh layanan/worker | Hitung Ongkir |
+| Script Task | Eksekusi script yang dikonfigurasi | Normalisasi Kode |
+| Business Rule Task | Evaluasi aturan/keputusan bisnis | Tentukan Kategori Risiko |
+| Send Task | Mengirim pesan sebagai pekerjaan | Kirim Konfirmasi |
+| Receive Task | Menunggu/menerima pesan sebagai pekerjaan | Tunggu Respons Bank |
+
+Nama task type BPMN tidak otomatis menentukan bagaimana implementasi dibuat. Contoh: User Task tidak berarti aktor harus berada dalam lane bernama “User”.
+
+## Markers
+
+- **Loop:** satu aktivitas diulang selama kondisi loop berlaku; iterasi satu per satu.
+- **Multi-instance sequential:** banyak instance dikerjakan berurutan.
+- **Multi-instance parallel:** banyak instance dibuat sebagai kumpulan; tidak menjamin mesin CPU mengeksekusinya serentak.
+- **Compensation marker:** task didefinisikan sebagai handler kompensasi, bukan task biasa yang muncul lewat Sequence Flow.
+
+Marker tertentu dapat digabung sesuai aturan model. Lihat [Camunda BPMN Reference](https://camunda.com/bpmn/reference/) dan [coverage Camunda 8.9](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/); status executable tergantung versi.
+
+## Salah paham yang sering terjadi
+
+- **“User Task dan Manual Task sama.”** User Task disajikan untuk dikerjakan manusia melalui mekanisme workflow; Manual Task menggambarkan kerja manual yang tidak dikendalikan engine sebagai task UI.
+- **“Service Task berarti harus memakai satu API tertentu.”** Notasi menunjukkan jenis pekerjaan, bukan protokol implementasinya.
+- **“Parallel multi-instance berarti parallel secara fisik.”** Semantik mengizinkan instance independen; kapasitas runtime tetap menentukan concurrency aktual.
+
+## Decision rule
+
+Pekerjaan oleh manusia melalui aplikasi task → pertimbangkan User Task. Kerja manual di luar orkestrasi UI → Manual Task. Panggilan worker/service → Service Task. Script → Script Task. Keputusan aturan → Business Rule Task. Menunggu pesan → pilih Receive Task atau Message Catch Event berdasarkan apakah menunggu itu dimodelkan sebagai pekerjaan atau event.
+
+## Argumen
+
+“Kami menggunakan User Task karena pemeriksaan membutuhkan keputusan petugas dalam aplikasi dan hasilnya menyelesaikan work item. Manual Task ditolak karena model ini perlu merepresentasikan assignment dan penyelesaian melalui workflow.”
+
+> **[CAMUNDA]** Elemen yang tampak di Modeler tidak otomatis didukung untuk eksekusi. Periksa matriks per versi sebelum mengklaim implementabilitas.
+
+**Ingat:** task menjawab “pekerjaan apa yang dilakukan?” dan type memperjelas sifat pelaksananya.

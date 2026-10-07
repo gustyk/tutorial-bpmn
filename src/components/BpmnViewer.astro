@@ -1,0 +1,40 @@
+---
+const { src, title = 'Diagram BPMN' } = Astro.props;
+const assetSrc = src.startsWith('/') ? `${import.meta.env.BASE_URL}${src.slice(1)}` : src;
+---
+<section class="viewer" data-bpmn-viewer data-src={assetSrc} aria-label={title}>
+  <div class="viewer-toolbar"><strong>{title}</strong><button type="button" data-fit>Sesuaikan</button><a href={assetSrc} download>Unduh .bpmn</a></div>
+  <div class="canvas" role="img" aria-label={`${title}; diagram dapat dinavigasi dengan kontrol mouse`}></div>
+  <p class="viewer-status" aria-live="polite">Memuat diagram…</p>
+</section>
+<script>
+  import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer';
+  import 'bpmn-js/dist/assets/diagram-js.css';
+  import 'bpmn-js/dist/assets/bpmn-js.css';
+  import 'bpmn-js/dist/assets/bpmn-font/css/bpmn.css';
+
+  document.querySelectorAll<HTMLElement>('[data-bpmn-viewer]').forEach(async (root) => {
+    const canvas = root.querySelector<HTMLElement>('.canvas')!;
+    const status = root.querySelector<HTMLParagraphElement>('.viewer-status')!;
+    const viewer = new NavigatedViewer({ container: canvas });
+    try {
+      const response = await fetch(root.dataset.src!);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      await viewer.importXML(await response.text());
+      (viewer.get('canvas') as { zoom: (value: 'fit-viewport') => void }).zoom('fit-viewport');
+      status.textContent = 'Diagram siap. Gunakan scroll untuk zoom dan drag untuk menggeser.';
+      root.querySelector<HTMLButtonElement>('[data-fit]')!.addEventListener('click', () => {
+        (viewer.get('canvas') as { zoom: (value: 'fit-viewport') => void }).zoom('fit-viewport');
+      });
+    } catch (error) {
+      status.textContent = `Diagram tidak dapat dimuat: ${error instanceof Error ? error.message : 'kesalahan tidak diketahui'}`;
+    }
+  });
+</script>
+<style>
+.viewer { border: 1px solid var(--sl-color-gray-5); border-radius: 4px; background: #fff; color: #202724; }
+.viewer-toolbar { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .75rem 1rem; border-bottom: 1px solid #ddd; flex-wrap: wrap; }
+.viewer-toolbar button { padding: .4rem .7rem; }
+.canvas { min-height: 330px; width: 100%; }
+.viewer-status { padding: 0 1rem; font-size: .9rem; }
+</style>

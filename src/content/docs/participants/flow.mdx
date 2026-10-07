@@ -1,0 +1,42 @@
+---
+title: Sequence Flow, Message Flow, dan Association
+description: Pilih koneksi BPMN berdasarkan makna, bukan rupa panah.
+---
+
+## Sequence Flow
+
+Garis penuh berpanah menunjukkan urutan eksekusi di dalam satu process. Sequence Flow menghubungkan flow node. Ia tidak digunakan untuk berpindah ke pool participant lain.
+
+## Message Flow
+
+Garis putus-putus berujung lingkaran menunjukkan pertukaran pesan antara participant berbeda. Pesan dapat dihubungkan ke activity/event atau batas black-box pool sesuai konteks; ia bukan jalur kontrol token.
+
+## Association
+
+Garis titik-titik menghubungkan artifact atau informasi pendukung dengan elemen proses. Association tidak mengurutkan token. Data Association adalah relasi input/output data, bukan Sequence Flow.
+
+<div class="diagram-frame"><svg viewBox="0 0 700 180" role="img" aria-label="Perbandingan visual tiga connecting object BPMN"><rect x="20" y="18" width="660" height="42" fill="white" stroke="#aaa"/><text x="35" y="43" font-size="14">Sequence Flow</text><rect x="205" y="25" width="95" height="28" rx="7" fill="white" stroke="#111"/><rect x="465" y="25" width="95" height="28" rx="7" fill="white" stroke="#111"/><line x1="300" y1="39" x2="465" y2="39" stroke="#111" stroke-width="2"/><polygon points="465,39 455,34 455,44"/><rect x="20" y="68" width="660" height="42" fill="white" stroke="#aaa"/><text x="35" y="93" font-size="14">Message Flow</text><rect x="205" y="75" width="95" height="28" fill="white" stroke="#111"/><rect x="465" y="75" width="95" height="28" fill="white" stroke="#111"/><line x1="300" y1="89" x2="465" y2="89" stroke="#111" stroke-width="2" stroke-dasharray="7 5"/><circle cx="300" cy="89" r="3" fill="white" stroke="#111"/><polygon points="465,89 455,84 455,94"/><rect x="20" y="118" width="660" height="42" fill="white" stroke="#aaa"/><text x="35" y="143" font-size="14">Association</text><rect x="205" y="125" width="95" height="28" rx="7" fill="white" stroke="#111"/><path d="M300 139 H465" stroke="#111" stroke-dasharray="2 5" stroke-width="2"/><rect x="465" y="125" width="120" height="28" fill="white" stroke="#111"/><text x="474" y="143" font-size="11">Catatan / data</text></svg></div>
+
+**Gambar 2.2 — Tiga koneksi dengan makna berbeda.** Gambar menjelaskan bentuk; aturan koneksi harus tetap diperiksa berdasarkan BPMN 2.0.2.
+
+## Perbandingan
+
+| Jenis | Pertanyaan yang dijawab | Apakah menggerakkan token? | Batas umum |
+|---|---|---:|---|
+| Sequence Flow | Apa langkah berikutnya? | Ya | Dalam satu process |
+| Message Flow | Pesan dikirim/diterima oleh participant mana? | Tidak | Antarpool participant |
+| Association | Catatan/data/artifact ini terkait dengan elemen mana? | Tidak | Menghubungkan artifact atau data |
+
+> **[STANDARD — perlu pemeriksaan rinci]** Sequence Flow dan Message Flow tidak dapat saling menggantikan. Rujukan normatif: [OMG BPMN 2.0.2](https://www.omg.org/spec/BPMN/2.0.2/PDF). Detail penggunaan dipertahankan berstatus DRAFTED sampai klausul spesifikasi diperiksa.
+
+## Conditional dan Default Sequence Flow
+
+Conditional flow membawa kondisi yang harus dievaluasi. Default flow menandai jalur fallback saat jalur bersyarat lain tidak terpenuhi; ia bukan sinonim untuk XOR. Gateway dan konfigurasi default perlu ditinjau bersama supaya alur pilihan jelas.
+
+## Argumen pemodelan
+
+“Message Flow dipilih untuk hubungan customer–merchant karena masing-masing participant menjalankan prosesnya sendiri dan mengirim informasi lintas pool. Sequence Flow ditolak karena tidak boleh dijadikan kontrol token lintas participant.”
+
+## Latihan
+
+Tandai setiap hubungan: (a) kelanjutan pekerjaan dalam proses merchant, (b) customer mengirim order ke merchant, (c) catatan audit terkait task verifikasi. Pilih Sequence Flow, Message Flow, atau Association dan jelaskan konsekuensinya.

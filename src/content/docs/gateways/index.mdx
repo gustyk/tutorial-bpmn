@@ -1,0 +1,48 @@
+---
+title: Memilih Gateway
+description: Gateway mengendalikan divergensi dan konvergensi Sequence Flow.
+---
+
+import Quiz from '../../../components/Quiz.astro';
+
+Gateway bukan task yang melakukan pekerjaan. Ia mengendalikan divergensi (membuka jalur) atau konvergensi (menggabungkan jalur) sesuai tipe gateway.
+
+<Quiz question="Pembayaran belum diketahui dan proses menunggu callback sukses atau batas waktu. Apa jenis kontrol yang paling tepat?" options={['XOR berdasarkan variabel status saat ini', 'Event-Based Gateway yang menunggu salah satu event', 'AND Gateway yang menjalankan keduanya']} answer={1} explanation="Status belum tersedia ketika proses mulai menunggu; jalur ditentukan oleh event pertama yang terjadi." />
+
+<div class="diagram-frame"><svg viewBox="0 0 690 130" role="img" aria-label="XOR memilih satu jalur berdasarkan keputusan data; AND mengaktifkan dua jalur"><polygon points="150,50 175,75 150,100 125,75" fill="white" stroke="#111" stroke-width="2"/><text x="144" y="80" font-size="16">X</text><text x="110" y="120" font-size="12">XOR: pilih satu</text><polygon points="420,50 445,75 420,100 395,75" fill="white" stroke="#111" stroke-width="2"/><text x="414" y="80" font-size="16">+</text><text x="377" y="120" font-size="12">AND: aktifkan semua</text><line x1="175" y1="75" x2="240" y2="75" stroke="#111"/><line x1="445" y1="75" x2="510" y2="75" stroke="#111"/></svg></div>
+
+**Gambar 4.1 — XOR dan AND memperlihatkan perilaku divergensi yang berbeda.**
+
+## Decision tree
+
+1. Apakah proses membagi atau menggabungkan alur kontrol? Jika tidak, mungkin tidak perlu gateway.
+2. Keputusan diketahui dari data saat ini?
+   - Tepat satu jalur → **Exclusive (XOR)**.
+   - Satu atau lebih jalur dapat terpenuhi → **Inclusive (OR)**.
+   - Semua jalur wajib aktif → **Parallel (AND)**.
+3. Proses harus menunggu event mana yang terjadi lebih dulu?
+   - Ya → **Event-Based Gateway**; cabang mengikuti event pertama yang terjadi, bukan evaluasi kondisi data.
+4. Perlu kondisi sinkronisasi kompleks yang tidak dapat dinyatakan dengan gateway umum?
+   - Tinjau **Complex Gateway**, tetapi hindari jika struktur sederhana dapat menjelaskan maksud dengan lebih terang.
+
+## Ringkasan perbandingan
+
+| Gateway | Split | Join | Kesalahan pemula |
+|---|---|---|---|
+| XOR | Pilih satu outgoing flow yang kondisinya terpenuhi (atau default) | Lanjutkan token yang tiba; bukan barrier sinkronisasi | Menganggap XOR join menunggu semua jalur |
+| AND | Aktifkan seluruh jalur | Tunggu token pada semua jalur yang relevan | Menghilangkan join lalu menjalankan pekerjaan hilir berkali-kali |
+| OR | Aktifkan semua jalur dengan kondisi benar | Sinkronisasi mengikuti jalur yang diaktifkan | Memakai OR tanpa memahami token aktif dan join |
+| Event-Based | Menunggu salah satu event kandidat | Bukan gateway join untuk sinkronisasi umum | Memakainya sebagai conditional data decision |
+| Complex | Kontrol kombinasi kondisi khusus | Aturan aktivasi yang ditentukan model | Mengganti pola biasa tanpa kebutuhan jelas |
+
+**AND split vs AND join:** bentuk gateway sama, fungsi ditentukan oleh koneksi masuk/keluar.  
+**XOR vs conditional flow:** kondisi jalur dapat menjadi bagian split; gateway membuat titik keputusan terlihat.  
+**Event-Based vs XOR:** yang pertama menunggu kejadian, yang kedua mengevaluasi kondisi/data.
+
+> **[STANDARD]** Semantik detail dan batasan kombinasi perlu dibaca pada [OMG BPMN 2.0.2](https://www.omg.org/spec/BPMN/2.0.2/PDF). **[BEST PRACTICE]** Namai gateway sebagai pertanyaan; labeli outgoing flow dengan jawaban.
+
+## Latihan argumentasi
+
+Pembayaran sudah disimpan pada variabel ketika token sampai ke titik keputusan: valid atau tidak? Pilih XOR atau event-based dan jelaskan. Lalu ubah requirement: proses menunggu callback sukses atau timer 24 jam. Apa yang berubah?
+
+**Ingat:** tentukan apakah alur bercabang karena data, semua cabang berjalan, atau event yang datang lebih dulu.

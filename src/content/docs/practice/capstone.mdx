@@ -1,0 +1,42 @@
+---
+title: Capstone — Pemenuhan Pesanan E-Commerce
+description: Modelkan kolaborasi lima participant dengan pembayaran, fulfillment, exception, dan refund.
+---
+
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
+## Kasus
+
+Customer membuat pesanan. Merchant menerima order, berinteraksi dengan Payment Provider, Warehouse, dan Shipping Provider. Merchant menunggu pembayaran dengan batas waktu, memeriksa stok, memproses beberapa item, mengirim order, memberi notifikasi, dan menangani kegagalan atau pembatalan.
+
+## Requirement dan analisis
+
+- **Participants:** Customer, Merchant, Payment Provider, Warehouse, Shipping Provider.
+- **Data:** order, item collection, payment status, inventory, parcel, refund.
+- **Timing:** deadline pembayaran.
+- **Parallel:** item dapat diproses terpisah bila aturan operasional mengizinkan.
+- **Exceptions:** payment error, stockout, shipping failure, cancellation.
+- **Outcomes:** delivered, cancelled/refunded, atau escalated review.
+
+## Kandidat dan keputusan
+
+- Message Flow untuk antarpeserta independen; sequence flow hanya dalam process masing-masing.
+- Event-based gateway untuk menunggu payment success atau timeout.
+- XOR untuk hasil pemeriksaan data (valid/invalid, stock available/unavailable).
+- AND atau multi-instance hanya jika syarat concurrency bisnis terpenuhi.
+- Error untuk exception; escalation untuk penanganan lebih tinggi; compensation untuk efek berhasil yang perlu dikoreksi.
+- Data Store menunjukkan konsep persistence, bukan menjamin backend Camunda 8.9.
+
+## Model alternatif yang ditolak
+
+Satu pool dengan lima lane ditolak karena menyamarkan batas komunikasi pihak eksternal. XOR pada payment wait ditolak karena payment belum menjadi data ketika merchant mulai menunggu. Terminate ditolak untuk membatalkan satu item saja karena dampaknya terhadap scope bisa terlalu luas.
+
+## Walkthrough token
+
+Token Merchant memulai order, mengirim request payment, lalu menunggu salah satu event kandidat. Jika payment success menang, token lanjut memvalidasi stok. Jika timer menang, jalur timeout membatalkan order. Warehouse hanya menjadi participant lain yang merespons melalui Message Flow; ia tidak menerima Sequence Flow langsung dari token Merchant.
+
+## Validity gate
+
+Diagram akhir harus diperiksa secara sintaksis, semantik, dan pragmatis. Pastikan tidak ada alur antar-pool, sinkronisasi menunggu hanya cabang aktif, compensation mempunyai activity yang dikompensasi, dan setiap hasil memiliki akhir yang jelas. File BPMN hanya dinyatakan valid setelah parser dan renderer berhasil.
+
+<BpmnViewer src="/bpmn/case-11-capstone.bpmn" title="Capstone — kolaborasi lima participant" />

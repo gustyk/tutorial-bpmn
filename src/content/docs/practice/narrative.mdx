@@ -1,0 +1,40 @@
+---
+title: Dari Narasi ke BPMN
+description: Ubah kebutuhan bisnis menjadi model tanpa langsung memilih ikon.
+---
+
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
+## Kasus: pesanan toko daring
+
+Customer membuat pesanan. Merchant memeriksa ketersediaan dan mengirim instruksi pembayaran. Pembayaran harus diterima dalam 24 jam; setelah pembayaran valid, barang disiapkan dan dikirim. Jika pembayaran terlambat, order dibatalkan. Jika stok habis, merchant memberi tahu customer dan mengembalikan dana bila pembayaran sudah terjadi.
+
+## Analisis
+
+- **Participant:** Customer, Merchant, Payment Provider, Warehouse, Shipping Provider.
+- **Trigger:** order diterima.
+- **Data:** item, alamat, nilai pembayaran, status stok, nomor pengiriman.
+- **Decision:** order valid dan stok tersedia?
+- **Wait:** pembayaran diterima atau deadline habis.
+- **Exception:** pembayaran gagal; stok habis; layanan kirim gagal.
+- **Outcome:** terkirim atau dibatalkan/refund.
+
+## Pemilihan notasi
+
+1. Pisahkan participant independen menjadi pool; komunikasi lintas pool memakai Message Flow.
+2. Gunakan XOR untuk keputusan dari data yang tersedia.
+3. Gunakan event-based race untuk pembayaran diterima vs timeout.
+4. Gunakan subprocess untuk encapsulate fulfillment jika rincian item ingin ditampilkan pada tingkat lebih dalam.
+5. Gunakan compensation hanya untuk membalik efek yang sudah berhasil (misalnya charge/refund), bukan untuk setiap hasil negatif.
+
+## Argumen
+
+“Event-based gateway dipilih setelah instruksi pembayaran dikirim karena merchant belum mengetahui hasil pembayaran dan menunggu dua kejadian yang saling berlomba. XOR ditolak di titik ini karena belum ada data yang dapat dievaluasi ketika token tiba. Setelah event pembayaran diterima, XOR dapat dipakai untuk memeriksa status validasi.”
+
+## Validity review
+
+- **Syntactic:** event/gateway dan koneksi harus diizinkan BPMN.
+- **Semantic:** timeout benar-benar membatalkan atau hanya mengingatkan?
+- **Pragmatic:** peran tiap pool jelas dan message flow tidak dipakai sebagai sequence.
+
+<BpmnViewer src="/bpmn/case-01-order.bpmn" title="Versi 1 — Pesanan sederhana" />

@@ -1,0 +1,48 @@
+---
+title: Memilih Event
+description: Tentukan posisi event, arah interaksi, pemicu, dan dampak terhadap alur.
+---
+
+Event menyatakan sesuatu yang terjadi, bukan pekerjaan. Mulai dengan dua keputusan terpisah: **posisi** event (start, tengah, akhir, boundary, event subprocess) dan **trigger** (message, timer, error, dan seterusnya).
+
+## Pilih posisi
+
+- Proses mulai karena pemicu → Start Event.
+- Alur menunggu pemicu di tengah → Intermediate Catch Event.
+- Proses menghasilkan pemicu → Intermediate Throw Event atau End Event sesuai posisi.
+- Pemicu harus diperhatikan selama activity aktif → Boundary Event.
+- Pemicu mengawali penanganan dalam scope yang masih aktif → Event Subprocess Start Event.
+- Akhiri alur dengan hasil/efek tertentu → End Event.
+
+## Pilih trigger
+
+- Informasi untuk penerima tertentu → Message.
+- Batas waktu/tanggal/siklus → Timer.
+- Kondisi data berubah/terpenuhi → Conditional.
+- Pengumuman broadcast, tidak dialamatkan spesifik → Signal.
+- Kegagalan teknis/exception dalam scope → Error.
+- Eskalasi kondisi bisnis ke scope lebih tinggi tanpa menyatakan kegagalan → Escalation.
+- Batalkan transaction BPMN → Cancel.
+- Hentikan semua activity aktif dalam scope proses → Terminate End.
+- Aktivasi/reaksi ke handler yang telah diselesaikan → Compensation.
+- Pasangan penghubung alur dalam diagram panjang → Link (intermediate only).
+- Salah satu dari beberapa trigger alternatif → Multiple.
+- Semua trigger paralel harus terjadi → Parallel Multiple Catching Event.
+
+## Interrupting vs non-interrupting
+
+Boundary event interrupting menghentikan activity yang dilekatinya dan mengalihkan kontrol ke exception path. Non-interrupting membuat jalur tambahan; activity utama terus berjalan. Event subprocess menggunakan perbedaan serupa pada scope induknya. Jangan memakai garis putus-putus sebagai hiasan: ia mengubah jumlah token/alur aktif.
+
+## Message Event vs task
+
+Message Catch Event memodelkan penantian event. Receive Task memodelkan pekerjaan/aktivitas menunggu pesan. Send Task memodelkan pekerjaan mengirim pesan; Message Throw Event menyatakan pemancaran event. Pilih dari maksud proses dan kebutuhan eksekusi, bukan dari kemiripan nama.
+
+## Batas dan catatan
+
+Matrix awal masih DRAFTED; lihat [Event Compatibility Matrix](/events/matrix). Error, compensation, cancel, multiple, dan parallel multiple memiliki batas posisi khusus yang wajib dicek terhadap sumber normatif. Rujukan: [Camunda Reference](https://camunda.com/bpmn/reference/) dan [OMG BPMN 2.0.2](https://www.omg.org/spec/BPMN/2.0.2/PDF).
+
+### Quiz argumentasi
+
+Customer boleh membayar dalam 24 jam. Merchant menunggu pembayaran; bila diterima, lanjut; bila timer habis, batalkan order. Jelaskan mengapa XOR saja tidak mewakili proses menunggu dua event, lalu tentukan perlakuan token pada event pertama.
+
+**Ingat:** event ditentukan oleh posisi, trigger, dan efek terhadap scope secara bersama.

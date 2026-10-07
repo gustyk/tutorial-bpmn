@@ -1,0 +1,39 @@
+---
+interface Props { title?: string; steps?: string[] }
+const { title = 'Simulasi token', steps = ['Start: proses dimulai', 'Task: pekerjaan dilakukan', 'Gateway: alur memilih atau bercabang', 'End: alur selesai'] } = Astro.props as Props;
+const encodedSteps = JSON.stringify(steps);
+---
+<section class="token-sim" data-token-sim data-steps={encodedSteps} aria-label={title}>
+  <h3>{title}</h3>
+  <p class="sim-track" aria-hidden="true">{steps.map((_, index) => <span class="sim-node" data-node={index}>{index + 1}</span>)}</p>
+  <p class="sim-status" aria-live="polite">{steps[0]}</p>
+  <div class="sim-controls"><button type="button" data-action="prev" aria-label="Langkah sebelumnya">←</button><button type="button" data-action="next">Langkah berikutnya</button><button type="button" data-action="reset">Ulangi</button></div>
+</section>
+<script>
+  document.querySelectorAll<HTMLElement>('[data-token-sim]').forEach((root) => {
+    const steps = JSON.parse(root.getAttribute('data-steps') ?? '[]');
+    const status = root.querySelector<HTMLParagraphElement>('.sim-status')!;
+    let current = 0;
+    const paint = () => {
+      status.textContent = steps[current];
+      root.querySelectorAll('.sim-node').forEach((node, index) => node.classList.toggle('active', index === current));
+    };
+    root.addEventListener('click', (event) => {
+      const target = event.target;
+      const action = target instanceof Element ? target.closest<HTMLButtonElement>('button')?.dataset.action : undefined;
+      if (action === 'next') current = Math.min(steps.length - 1, current + 1);
+      if (action === 'prev') current = Math.max(0, current - 1);
+      if (action === 'reset') current = 0;
+      paint();
+    });
+    paint();
+  });
+</script>
+<style>
+.token-sim { margin: 1.5rem 0; padding: 1rem; border: 1px solid var(--sl-color-gray-5); border-radius: 4px; background: var(--sl-color-bg-sidebar); }
+.sim-track { display: flex; gap: .5rem; align-items: center; }
+.sim-node { display: grid; place-items: center; width: 2rem; height: 2rem; border: 2px solid var(--sl-color-gray-4); border-radius: 50%; color: var(--sl-color-text); }
+.sim-node.active { background: #18735f; color: white; border-color: #18735f; }
+.sim-controls { display: flex; gap: .5rem; flex-wrap: wrap; }
+.sim-controls button { padding: .45rem .7rem; border: 1px solid var(--sl-color-gray-4); border-radius: 4px; background: var(--sl-color-bg); color: var(--sl-color-text); cursor: pointer; }
+</style>

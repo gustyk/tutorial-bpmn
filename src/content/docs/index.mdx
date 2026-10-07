@@ -1,0 +1,40 @@
+---
+title: BPMN dari Makna
+description: Tutorial BPMN 2.0 berbahasa Indonesia untuk pemula.
+template: splash
+hero:
+  tagline: Pahami perilaku proses, bukan sekadar menghafal ikon.
+  actions:
+    - text: Mulai dari fondasi
+      link: /fondasi/apa-itu-bpmn
+      icon: right-arrow
+    - text: Lihat peta belajar
+      link: /jalur-belajar
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard, Steps } from '@astrojs/starlight/components';
+
+BPMN membantu kita menggambarkan siapa melakukan apa, kapan proses menunggu, bagaimana cabang alur bekerja, dan apa yang terjadi ketika kondisi berubah. Tutorial ini mengajarkan notasi melalui makna bisnis dan perjalanan token.
+
+> **BPMN ≠ Camunda.** BPMN adalah standar OMG. Camunda adalah platform dan tool yang mendukung sebagian konstruksi BPMN untuk pemodelan atau eksekusi. Dukungan harus diperiksa per versi dan per elemen.
+
+## Pilih titik mulai
+
+<CardGrid stagger>
+  <LinkCard title="Saya baru mengenal BPMN" href="/fondasi/apa-itu-bpmn" description="Kenali tujuan standar dan cara berpikir proses." />
+  <LinkCard title="Saya bingung membaca panah" href="/fondasi/token" description="Ikuti token saat bercabang, menunggu, dan bergabung." />
+  <LinkCard title="Saya sedang membuat model" href="/participants/flow" description="Pilih participant dan jenis koneksi yang tepat." />
+  <LinkCard title="Saya ingin menguji model" href="/practice/review" description="Periksa sintaks, semantik, dan keterbacaan." />
+</CardGrid>
+
+## Jalur belajar
+
+1. Kuasai Start, Task, Sequence Flow, End, Pool, dan Lane.
+2. Tambahkan keputusan, pesan, waktu, dan exception sesuai kebutuhan bisnis.
+3. Pelajari sinkronisasi, subprocess, data, dan pola lanjutan.
+4. Bangun model dari narasi dan pertahankan alasan notasi yang dipilih.
+
+### Tentang materi
+
+Disusun oleh **Tikno**, Universitas Internasional Semen Indonesia. Konten tutorial dilisensikan dengan **CC BY-NC-SA 4.0**; rujukan standar dan dokumentasi pihak lain tetap mengikuti lisensinya masing-masing. Lihat [Tentang dan lisensi](/about).

@@ -1,0 +1,40 @@
+---
+title: Apa Itu BPMN?
+description: Kenali tujuan BPMN dan bedakan standar dari platform.
+---
+
+BPMN adalah singkatan dari *Business Process Model and Notation*. Bayangkan sebuah organisasi menjelaskan proses pengajuan cuti: siapa mengajukan, siapa memeriksa, kondisi apa yang menentukan persetujuan, dan bagaimana pemohon mendapat kabar. BPMN menyediakan kosakata visual bersama agar proses dapat dibaca oleh pemangku kepentingan dan cukup presisi untuk dianalisis atau diterjemahkan ke implementasi.
+
+> **[STANDARD]** OMG menjelaskan BPMN sebagai notasi yang ditujukan kepada stakeholder proses, sekaligus cukup presisi agar diagram dapat diterjemahkan menjadi komponen software. BPMN tidak bergantung pada satu platform tertentu. [OMG BPMN 2.0.2](https://www.omg.org/spec/BPMN/2.0.2/)
+
+## BPMN bukan flowchart biasa
+
+Flowchart lazim menunjukkan urutan langkah. BPMN juga menunjukkan batas participant, komunikasi pesan, event yang memicu/menunggu, sinkronisasi jalur paralel, dan scope exception. Karena itu memilih simbol hanya dari kemiripan visual berisiko mengubah maksud proses.
+
+## BPMN bukan Camunda
+
+| BPMN | Camunda |
+|---|---|
+| Standar notasi dan semantik dari OMG | Platform dan tool untuk memodelkan/menjalankan proses |
+| Menentukan makna elemen secara umum | Mendukung subset fitur dan perilaku sesuai produk/versi |
+| Tidak mengunci organisasi pada engine | Model yang bisa digambar belum tentu executable di engine tertentu |
+
+> **[CAMUNDA]** Camunda 8.9 membedakan elemen yang dapat dimodelkan dari elemen yang didukung untuk eksekusi. Dokumentasi menyebut DataObject dan DataStore hanya untuk pemodelan. Selalu periksa [coverage versi 8.9](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/).
+
+## Tiga tingkat review
+
+1. **Syntactic validity:** bentuk dan koneksi diperbolehkan BPMN.
+2. **Semantic validity:** token dan event menghasilkan perilaku sesuai kebutuhan bisnis.
+3. **Pragmatic quality:** manusia dapat memahami diagram dengan mudah.
+
+Diagram dapat lolos sintaksis, tetapi tetap salah secara semantik atau sulit dibaca.
+
+## Contoh mini
+
+Pengajuan cuti diterima → verifikasi kelayakan → jika memenuhi aturan, setujui; jika tidak, tolak → beri tahu pemohon. Keputusan berbasis data dapat ditampilkan dengan XOR. Jika keputusan bergantung pada pesan yang belum datang, model perlu menunggu event, bukan sekadar memilih cabang dari data saat ini.
+
+## Latihan
+
+Sebuah proses dapat digambar di Camunda Modeler. Apakah itu membuktikan model dapat dieksekusi di Camunda 8? Jelaskan perbedaan tool support, BPMN conformance, dan runtime support.
+
+**Ingat:** BPMN adalah standar untuk menjelaskan semantik proses; platform hanya salah satu cara memodelkan atau menjalankannya.
