@@ -1,39 +1,284 @@
 ---
-interface Props { title?: string; steps?: string[] }
-const { title = 'Simulasi token', steps = ['Start: proses dimulai', 'Task: pekerjaan dilakukan', 'Gateway: alur memilih atau bercabang', 'End: alur selesai'] } = Astro.props as Props;
+interface Props {
+  title: string;
+  steps: string[];
+}
+
+const { title, steps } = Astro.props;
 const encodedSteps = JSON.stringify(steps);
 ---
 <section class="token-sim" data-token-sim data-steps={encodedSteps} aria-label={title}>
   <h3>{title}</h3>
-  <p class="sim-track" aria-hidden="true">{steps.map((_, index) => <span class="sim-node" data-node={index}>{index + 1}</span>)}</p>
-  <p class="sim-status" aria-live="polite">{steps[0]}</p>
-  <div class="sim-controls"><button type="button" data-action="prev" aria-label="Langkah sebelumnya">←</button><button type="button" data-action="next">Langkah berikutnya</button><button type="button" data-action="reset">Ulangi</button></div>
+  <figure class="sim-figure">
+    <div class="sim-flowchart-scroll">
+      <svg class="sim-flowchart" viewBox="0 0 920 300" role="img" aria-label="Flowchart dengan satu token di Start, dua cabang paralel melalui Task B dan Task C, lalu bergabung di AND join sebelum End">
+        <defs>
+          <marker id="token-flow-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#58615d" />
+          </marker>
+        </defs>
+        <g class="sim-flows">
+          <path d="M 96 145 H 150" />
+          <path d="M 300 145 H 350" />
+          <path d="M 410 145 H 445 V 65 H 500" />
+          <path d="M 410 145 H 445 V 235 H 500" />
+          <path d="M 640 65 H 680 V 145 H 710" />
+          <path d="M 640 235 H 680 V 145 H 710" />
+          <path d="M 770 145 H 824" />
+        </g>
+        <g class="sim-nodes">
+          <circle class="sim-node" cx="70" cy="145" r="26" />
+          <text class="sim-label" x="70" y="197">Start</text>
+
+          <rect class="sim-node" x="150" y="120" width="150" height="50" rx="8" />
+          <text class="sim-label" x="225" y="102">Task A</text>
+
+          <polygon class="sim-gateway" points="380,115 410,145 380,175 350,145" />
+          <text class="sim-gateway-mark" x="380" y="145">+</text>
+          <text class="sim-label" x="380" y="207">AND split</text>
+
+          <rect class="sim-node" x="500" y="40" width="140" height="50" rx="8" />
+          <text class="sim-label" x="570" y="24">Task B</text>
+
+          <rect class="sim-node" x="500" y="210" width="140" height="50" rx="8" />
+          <text class="sim-label" x="570" y="281">Task C</text>
+
+          <polygon class="sim-gateway" points="740,115 770,145 740,175 710,145" />
+          <text class="sim-gateway-mark" x="740" y="145">+</text>
+          <text class="sim-label" x="740" y="207">AND join</text>
+
+          <circle class="sim-node" cx="850" cy="145" r="26" />
+          <circle class="sim-end-inner" cx="850" cy="145" r="21" />
+          <text class="sim-label" x="850" y="197">End</text>
+        </g>
+        <g class="sim-token" data-token="0" transform="translate(70 145)" aria-hidden="true">
+          <circle r="12" />
+          <text y="1">1</text>
+        </g>
+        <g class="sim-token" data-token="1" transform="translate(0 0)" visibility="hidden" aria-hidden="true">
+          <circle r="12" />
+          <text y="1">2</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption>Alur paralel membuat dua token aktif; AND join meneruskan satu token setelah kedua cabang tiba.</figcaption>
+  </figure>
+  <p class="sim-status" data-status aria-live="polite"></p>
+  <div class="sim-controls">
+    <button type="button" data-action="previous" aria-label="Langkah sebelumnya">← Sebelumnya</button>
+    <button type="button" data-action="play" aria-pressed="false">Putar animasi</button>
+    <button type="button" data-action="next">Langkah berikutnya →</button>
+    <button type="button" data-action="reset" disabled>Ulangi</button>
+  </div>
 </section>
 <script>
+  type TokenPosition = { x: number; y: number };
+  const tokenStages: (TokenPosition | null)[][] = [
+    [{ x: 70, y: 145 }, null],
+    [{ x: 225, y: 145 }, null],
+    [{ x: 445, y: 65 }, { x: 445, y: 235 }],
+    [{ x: 570, y: 65 }, { x: 570, y: 235 }],
+    [{ x: 740, y: 145 }, { x: 570, y: 235 }],
+    [{ x: 850, y: 145 }, null],
+  ];
+
   document.querySelectorAll<HTMLElement>('[data-token-sim]').forEach((root) => {
-    const steps = JSON.parse(root.getAttribute('data-steps') ?? '[]');
-    const status = root.querySelector<HTMLParagraphElement>('.sim-status')!;
+    const steps = JSON.parse(root.dataset.steps ?? '[]') as string[];
+    const status = root.querySelector<HTMLParagraphElement>('[data-status]');
+    const tokens = [...root.querySelectorAll<SVGGElement>('[data-token]')];
+    const previous = root.querySelector<HTMLButtonElement>('[data-action="previous"]');
+    const play = root.querySelector<HTMLButtonElement>('[data-action="play"]');
+    const next = root.querySelector<HTMLButtonElement>('[data-action="next"]');
+    const reset = root.querySelector<HTMLButtonElement>('[data-action="reset"]');
+
+    if (!status || tokens.length !== 2 || !previous || !play || !next || !reset || steps.length !== tokenStages.length) {
+      console.error('Token simulation markup or stage definitions are incomplete.');
+      return;
+    }
+
     let current = 0;
-    const paint = () => {
-      status.textContent = steps[current];
-      root.querySelectorAll('.sim-node').forEach((node, index) => node.classList.toggle('active', index === current));
+    let timer: number | undefined;
+    let isPlaying = false;
+
+    const pause = () => {
+      if (timer !== undefined) {
+        window.clearInterval(timer);
+        timer = undefined;
+      }
+      isPlaying = false;
     };
+
+    const paint = () => {
+      status.textContent = `Tahap ${current + 1} dari ${steps.length}: ${steps[current]}`;
+      tokenStages[current].forEach((position, index) => {
+        const token = tokens[index];
+        if (!position) {
+          token.setAttribute('visibility', 'hidden');
+          return;
+        }
+        token.setAttribute('visibility', 'visible');
+        token.setAttribute('transform', `translate(${position.x} ${position.y})`);
+      });
+      previous.disabled = current === 0;
+      next.disabled = current === steps.length - 1;
+      reset.disabled = current === 0 && !isPlaying;
+      play.textContent = isPlaying ? 'Jeda' : current === steps.length - 1 ? 'Putar ulang' : 'Putar animasi';
+      play.setAttribute('aria-pressed', String(isPlaying));
+    };
+
     root.addEventListener('click', (event) => {
       const target = event.target;
       const action = target instanceof Element ? target.closest<HTMLButtonElement>('button')?.dataset.action : undefined;
+      if (action === 'play') {
+        if (isPlaying) {
+          pause();
+          paint();
+          return;
+        }
+        if (current === steps.length - 1) current = 0;
+        isPlaying = true;
+        paint();
+        timer = window.setInterval(() => {
+          if (current === steps.length - 1) {
+            pause();
+            paint();
+            return;
+          }
+          current += 1;
+          if (current === steps.length - 1) pause();
+          paint();
+        }, 1600);
+        return;
+      }
+      if (action === 'previous' || action === 'next' || action === 'reset') pause();
+      if (action === 'previous') current = Math.max(0, current - 1);
       if (action === 'next') current = Math.min(steps.length - 1, current + 1);
-      if (action === 'prev') current = Math.max(0, current - 1);
       if (action === 'reset') current = 0;
       paint();
     });
+
     paint();
   });
 </script>
 <style>
-.token-sim { margin: 1.5rem 0; padding: 1rem; border: 1px solid var(--sl-color-gray-5); border-radius: 4px; background: var(--sl-color-bg-sidebar); }
-.sim-track { display: flex; gap: .5rem; align-items: center; }
-.sim-node { display: grid; place-items: center; width: 2rem; height: 2rem; border: 2px solid var(--sl-color-gray-4); border-radius: 50%; color: var(--sl-color-text); }
-.sim-node.active { background: #18735f; color: white; border-color: #18735f; }
-.sim-controls { display: flex; gap: .5rem; flex-wrap: wrap; }
-.sim-controls button { padding: .45rem .7rem; border: 1px solid var(--sl-color-gray-4); border-radius: 4px; background: var(--sl-color-bg); color: var(--sl-color-text); cursor: pointer; }
+  .token-sim {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 6px;
+    background: var(--sl-color-bg-sidebar);
+  }
+
+  .sim-figure {
+    margin: 0;
+  }
+
+  .sim-flowchart-scroll {
+    overflow-x: auto;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 6px;
+    background: #fff;
+  }
+
+  .sim-flowchart {
+    display: block;
+    width: 100%;
+    min-width: 620px;
+    height: auto;
+  }
+
+  .sim-flows path {
+    fill: none;
+    stroke: #58615d;
+    stroke-width: 2;
+    marker-end: url(#token-flow-arrow);
+  }
+
+  .sim-node {
+    fill: #fff;
+    stroke: #28312d;
+    stroke-width: 2;
+  }
+
+  .sim-end-inner {
+    fill: none;
+    stroke: #28312d;
+    stroke-width: 2;
+  }
+
+  .sim-gateway {
+    fill: #e7f1ec;
+    stroke: #28312d;
+    stroke-width: 2;
+  }
+
+  .sim-label,
+  .sim-gateway-mark {
+    fill: #202724;
+    font: 16px "Aptos", "Segoe UI", sans-serif;
+    text-anchor: middle;
+    dominant-baseline: middle;
+  }
+
+  .sim-gateway-mark {
+    font-size: 22px;
+    font-weight: 700;
+  }
+
+  .sim-token {
+    pointer-events: none;
+    transform-box: view-box;
+    transform-origin: 0 0;
+    transition: transform 700ms cubic-bezier(.2, .75, .25, 1);
+  }
+
+  .sim-token circle {
+    fill: var(--sl-color-accent);
+    stroke: #fff;
+    stroke-width: 3;
+  }
+
+  .sim-token text {
+    fill: #fff;
+    font: 700 12px "Aptos", "Segoe UI", sans-serif;
+    text-anchor: middle;
+    dominant-baseline: middle;
+  }
+
+  .sim-figure figcaption {
+    margin-block: .5rem;
+    font-size: .9rem;
+  }
+
+  .sim-status {
+    min-height: 3em;
+    margin-block: .75rem;
+    font-weight: 600;
+  }
+
+  .sim-controls {
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap;
+  }
+
+  .sim-controls button {
+    padding: .45rem .7rem;
+    border: 1px solid var(--sl-color-gray-4);
+    border-radius: 4px;
+    background: var(--sl-color-bg);
+    color: var(--sl-color-text);
+    cursor: pointer;
+  }
+
+  .sim-controls button:disabled {
+    cursor: not-allowed;
+    opacity: .55;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sim-token {
+      transition: none;
+    }
+  }
 </style>

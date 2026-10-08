@@ -3,71 +3,71 @@ title: Katalog Varian Event
 description: Seluruh bentuk event yang muncul sebagai sel pada matriks overview Camunda.
 ---
 
-Setiap baris di bawah adalah satu kombinasi **trigger × posisi** yang tercantum pada tabel event Camunda BPMN Reference. Pengelompokan ini menghasilkan 61 entri tabel, dihitung sebagai cakupan visual reference; bukan klaim bahwa hanya ada 61 kombinasi BPMN 2.0.2. Seluruh nama/posisi masih **DRAFTED** sampai diperiksa silang dengan specification dan coverage versi.
+Setiap baris di bawah merangkum satu kombinasi **trigger × posisi** yang tercantum pada tabel event Camunda BPMN Reference. Pengelompokan ini menghasilkan 61 entri tabel sebagai cakupan visual reference; angka tersebut bukan klaim bahwa hanya ada 61 kombinasi BPMN 2.0.2. Lihat [panduan Event](/events/) untuk galeri visual event definition dan variasi posisinya. Untuk aturan normatif, rujuk spesifikasi BPMN 2.0.2.
 
-| No. | Trigger | Posisi/varian pada reference | Makna ringkas untuk dibaca | Status |
-|---:|---|---|---|---|
-| 1 | None | Start normal | Mulai tanpa trigger bertipe khusus | DRAFTED |
-| 2 | Message | Start normal | Proses dimulai saat pesan diterima | DRAFTED |
-| 3 | Message | Event-subprocess start interrupting | Pesan memicu handler yang menginterupsi scope | DRAFTED |
-| 4 | Message | Event-subprocess start non-interrupting | Pesan memicu handler tambahan tanpa menghentikan scope | DRAFTED |
-| 5 | Message | Intermediate catch | Alur menunggu pesan | DRAFTED |
-| 6 | Message | Boundary interrupting | Pesan saat activity aktif menghentikan activity | DRAFTED |
-| 7 | Message | Boundary non-interrupting | Pesan memulai jalur tambahan, activity berlanjut | DRAFTED |
-| 8 | Message | Intermediate throw | Alur menghasilkan pesan/event | DRAFTED |
-| 9 | Message | End | Akhir alur dengan pesan | DRAFTED |
-| 10 | Timer | Start normal | Timer memulai process instance | DRAFTED |
-| 11 | Timer | Event-subprocess start interrupting | Timer memicu handler yang menginterupsi scope | DRAFTED |
-| 12 | Timer | Event-subprocess start non-interrupting | Timer memicu jalur tambahan dalam scope aktif | DRAFTED |
-| 13 | Timer | Intermediate catch | Alur menunggu tanggal/durasi/siklus | DRAFTED |
-| 14 | Timer | Boundary interrupting | Deadline membatalkan activity dan mengalihkan alur | DRAFTED |
-| 15 | Timer | Boundary non-interrupting | Timer memicu jalur tambahan saat activity tetap berjalan | DRAFTED |
-| 16 | Conditional | Start normal | Kondisi memulai process saat terpenuhi | DRAFTED |
-| 17 | Conditional | Event-subprocess start interrupting | Kondisi memicu handler yang menginterupsi scope | DRAFTED |
-| 18 | Conditional | Event-subprocess start non-interrupting | Kondisi memicu jalur tambahan dalam scope aktif | DRAFTED |
-| 19 | Conditional | Intermediate catch | Alur menunggu kondisi terwujud | DRAFTED |
-| 20 | Conditional | Boundary interrupting | Kondisi menghentikan activity dan mengalihkan alur | DRAFTED |
-| 21 | Conditional | Boundary non-interrupting | Kondisi memicu jalur tambahan saat activity berlanjut | DRAFTED |
-| 22 | Link | Intermediate catch | Titik masuk pasangan Link | DRAFTED |
-| 23 | Link | Intermediate throw | Titik keluar pasangan Link | DRAFTED |
-| 24 | Signal | Start normal | Signal memulai process | DRAFTED |
-| 25 | Signal | Event-subprocess start interrupting | Signal memicu handler yang menginterupsi scope | DRAFTED |
-| 26 | Signal | Event-subprocess start non-interrupting | Signal memicu handler tambahan | DRAFTED |
-| 27 | Signal | Intermediate catch | Alur menangkap signal | DRAFTED |
-| 28 | Signal | Boundary interrupting | Signal menghentikan activity | DRAFTED |
-| 29 | Signal | Boundary non-interrupting | Signal memicu jalur tambahan tanpa menghentikan activity | DRAFTED |
-| 30 | Signal | Intermediate throw | Alur melempar signal untuk penerima yang relevan | DRAFTED |
-| 31 | Signal | End | Akhir alur dengan signal | DRAFTED |
-| 32 | Error | Event-subprocess start interrupting | Error memicu handler interrupting di scope | DRAFTED |
-| 33 | Error | Boundary interrupting | Error dari activity ditangkap pada boundary | DRAFTED |
-| 34 | Error | End | Alur berakhir dengan melempar error | DRAFTED |
-| 35 | Escalation | Event-subprocess start interrupting | Escalation memicu handler yang menghentikan alur scope | DRAFTED |
-| 36 | Escalation | Event-subprocess start non-interrupting | Escalation memicu handler tambahan | DRAFTED |
-| 37 | Escalation | Boundary interrupting | Escalation menghentikan activity dan dialihkan | DRAFTED |
-| 38 | Escalation | Boundary non-interrupting | Escalation ditangani tanpa menghentikan activity | DRAFTED |
-| 39 | Escalation | Intermediate throw | Alur melaporkan kondisi escalation | DRAFTED |
-| 40 | Escalation | End | Alur berakhir dengan escalation | DRAFTED |
-| 41 | Terminate | End | Menghentikan aktivitas aktif pada scope proses | DRAFTED |
-| 42 | Compensation | Event-subprocess start (triggered after completion) | Compensation memulai handler setelah process selesai; tidak menginterupsi alur aktif | DRAFTED |
-| 43 | Compensation | Boundary interrupting | Menandai activity yang memiliki handler compensation | DRAFTED |
-| 44 | Compensation | Intermediate throw | Memicu compensation handler yang terdaftar | DRAFTED |
-| 45 | Compensation | End | Mengakhiri alur compensation | DRAFTED |
-| 46 | Cancel | Boundary interrupting | Menangani cancel pada transaction | DRAFTED |
-| 47 | Cancel | End | Mengirim cancel dari transaction scope | DRAFTED |
-| 48 | Multiple | Start normal | Salah satu trigger alternatif memulai process | DRAFTED |
-| 49 | Multiple | Event-subprocess start interrupting | Salah satu trigger memicu handler interrupting | DRAFTED |
-| 50 | Multiple | Event-subprocess start non-interrupting | Salah satu trigger memicu handler tambahan | DRAFTED |
-| 51 | Multiple | Intermediate catch | Menunggu salah satu trigger yang tercantum | DRAFTED |
-| 52 | Multiple | Boundary interrupting | Salah satu trigger menghentikan activity | DRAFTED |
-| 53 | Multiple | Boundary non-interrupting | Salah satu trigger memulai jalur tambahan | DRAFTED |
-| 54 | Multiple | Intermediate throw | Melempar beberapa trigger sesuai definisi event | DRAFTED |
-| 55 | Multiple | End | Akhir alur dengan multiple event definition | DRAFTED |
-| 56 | Parallel Multiple | Start normal | Memerlukan trigger-start paralel sesuai multiple definition | DRAFTED |
-| 57 | Parallel Multiple | Event-subprocess start interrupting | Semua trigger yang ditentukan memulai handler interrupting | DRAFTED |
-| 58 | Parallel Multiple | Event-subprocess start non-interrupting | Semua trigger ditunggu untuk memulai handler tambahan | DRAFTED |
-| 59 | Parallel Multiple | Intermediate catch | Menunggu semua trigger yang didefinisikan | DRAFTED |
-| 60 | Parallel Multiple | Boundary interrupting | Boundary menangkap set trigger paralel sesuai definisi | DRAFTED |
-| 61 | Parallel Multiple | Boundary non-interrupting | Menangkap set trigger tanpa menghentikan activity | DRAFTED |
+| No. | Trigger | Posisi/varian pada reference | Makna ringkas untuk dibaca |
+|---:|---|---|---|
+| 1 | None | Start normal | Mulai tanpa trigger bertipe khusus |
+| 2 | Message | Start normal | Proses dimulai saat pesan diterima |
+| 3 | Message | Event-subprocess start interrupting | Pesan memicu handler yang menginterupsi scope |
+| 4 | Message | Event-subprocess start non-interrupting | Pesan memicu handler tambahan tanpa menghentikan scope |
+| 5 | Message | Intermediate catch | Alur menunggu pesan |
+| 6 | Message | Boundary interrupting | Pesan saat activity aktif menghentikan activity |
+| 7 | Message | Boundary non-interrupting | Pesan memulai jalur tambahan, activity berlanjut |
+| 8 | Message | Intermediate throw | Alur menghasilkan pesan/event |
+| 9 | Message | End | Akhir alur dengan pesan |
+| 10 | Timer | Start normal | Timer memulai process instance |
+| 11 | Timer | Event-subprocess start interrupting | Timer memicu handler yang menginterupsi scope |
+| 12 | Timer | Event-subprocess start non-interrupting | Timer memicu jalur tambahan dalam scope aktif |
+| 13 | Timer | Intermediate catch | Alur menunggu tanggal/durasi/siklus |
+| 14 | Timer | Boundary interrupting | Deadline membatalkan activity dan mengalihkan alur |
+| 15 | Timer | Boundary non-interrupting | Timer memicu jalur tambahan saat activity tetap berjalan |
+| 16 | Conditional | Start normal | Kondisi memulai process saat terpenuhi |
+| 17 | Conditional | Event-subprocess start interrupting | Kondisi memicu handler yang menginterupsi scope |
+| 18 | Conditional | Event-subprocess start non-interrupting | Kondisi memicu jalur tambahan dalam scope aktif |
+| 19 | Conditional | Intermediate catch | Alur menunggu kondisi terwujud |
+| 20 | Conditional | Boundary interrupting | Kondisi menghentikan activity dan mengalihkan alur |
+| 21 | Conditional | Boundary non-interrupting | Kondisi memicu jalur tambahan saat activity berlanjut |
+| 22 | Link | Intermediate catch | Titik masuk pasangan Link |
+| 23 | Link | Intermediate throw | Titik keluar pasangan Link |
+| 24 | Signal | Start normal | Signal memulai process |
+| 25 | Signal | Event-subprocess start interrupting | Signal memicu handler yang menginterupsi scope |
+| 26 | Signal | Event-subprocess start non-interrupting | Signal memicu handler tambahan |
+| 27 | Signal | Intermediate catch | Alur menangkap signal |
+| 28 | Signal | Boundary interrupting | Signal menghentikan activity |
+| 29 | Signal | Boundary non-interrupting | Signal memicu jalur tambahan tanpa menghentikan activity |
+| 30 | Signal | Intermediate throw | Alur melempar signal untuk penerima yang relevan |
+| 31 | Signal | End | Akhir alur dengan signal |
+| 32 | Error | Event-subprocess start interrupting | Error memicu handler interrupting di scope |
+| 33 | Error | Boundary interrupting | Error dari activity ditangkap pada boundary |
+| 34 | Error | End | Alur berakhir dengan melempar error |
+| 35 | Escalation | Event-subprocess start interrupting | Escalation memicu handler yang menghentikan alur scope |
+| 36 | Escalation | Event-subprocess start non-interrupting | Escalation memicu handler tambahan |
+| 37 | Escalation | Boundary interrupting | Escalation menghentikan activity dan dialihkan |
+| 38 | Escalation | Boundary non-interrupting | Escalation ditangani tanpa menghentikan activity |
+| 39 | Escalation | Intermediate throw | Alur melaporkan kondisi escalation |
+| 40 | Escalation | End | Alur berakhir dengan escalation |
+| 41 | Terminate | End | Menghentikan aktivitas aktif pada scope proses |
+| 42 | Compensation | Event-subprocess start (triggered after completion) | Compensation memulai handler setelah process selesai; tidak menginterupsi alur aktif |
+| 43 | Compensation | Boundary interrupting | Menandai activity yang memiliki handler compensation |
+| 44 | Compensation | Intermediate throw | Memicu compensation handler yang terdaftar |
+| 45 | Compensation | End | Mengakhiri alur compensation |
+| 46 | Cancel | Boundary interrupting | Menangani cancel pada transaction |
+| 47 | Cancel | End | Mengirim cancel dari transaction scope |
+| 48 | Multiple | Start normal | Salah satu trigger alternatif memulai process |
+| 49 | Multiple | Event-subprocess start interrupting | Salah satu trigger memicu handler interrupting |
+| 50 | Multiple | Event-subprocess start non-interrupting | Salah satu trigger memicu handler tambahan |
+| 51 | Multiple | Intermediate catch | Menunggu salah satu trigger yang tercantum |
+| 52 | Multiple | Boundary interrupting | Salah satu trigger menghentikan activity |
+| 53 | Multiple | Boundary non-interrupting | Salah satu trigger memulai jalur tambahan |
+| 54 | Multiple | Intermediate throw | Melempar beberapa trigger sesuai definisi event |
+| 55 | Multiple | End | Akhir alur dengan multiple event definition |
+| 56 | Parallel Multiple | Start normal | Memerlukan trigger-start paralel sesuai multiple definition |
+| 57 | Parallel Multiple | Event-subprocess start interrupting | Semua trigger yang ditentukan memulai handler interrupting |
+| 58 | Parallel Multiple | Event-subprocess start non-interrupting | Semua trigger ditunggu untuk memulai handler tambahan |
+| 59 | Parallel Multiple | Intermediate catch | Menunggu semua trigger yang didefinisikan |
+| 60 | Parallel Multiple | Boundary interrupting | Boundary menangkap set trigger paralel sesuai definisi |
+| 61 | Parallel Multiple | Boundary non-interrupting | Menangkap set trigger tanpa menghentikan activity |
 
 ## Waspada pada istilah
 

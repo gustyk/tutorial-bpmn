@@ -3,6 +3,9 @@ title: Apa Itu BPMN?
 description: Kenali tujuan BPMN dan bedakan standar dari platform.
 ---
 
+import MermaidDiagram from '../../../components/MermaidDiagram.astro';
+import BpmnNotationGallery from '../../../components/BpmnNotationGallery.astro';
+
 BPMN adalah singkatan dari *Business Process Model and Notation*. Bayangkan sebuah organisasi menjelaskan proses pengajuan cuti: siapa mengajukan, siapa memeriksa, kondisi apa yang menentukan persetujuan, dan bagaimana pemohon mendapat kabar. BPMN menyediakan kosakata visual bersama agar proses dapat dibaca oleh pemangku kepentingan dan cukup presisi untuk dianalisis atau diterjemahkan ke implementasi.
 
 > **[STANDARD]** OMG menjelaskan BPMN sebagai notasi yang ditujukan kepada stakeholder proses, sekaligus cukup presisi agar diagram dapat diterjemahkan menjadi komponen software. BPMN tidak bergantung pada satu platform tertentu. [OMG BPMN 2.0.2](https://www.omg.org/spec/BPMN/2.0.2/)
@@ -10,6 +13,18 @@ BPMN adalah singkatan dari *Business Process Model and Notation*. Bayangkan sebu
 ## BPMN bukan flowchart biasa
 
 Flowchart lazim menunjukkan urutan langkah. BPMN juga menunjukkan batas participant, komunikasi pesan, event yang memicu/menunggu, sinkronisasi jalur paralel, dan scope exception. Karena itu memilih simbol hanya dari kemiripan visual berisiko mengubah maksud proses.
+
+<BpmnNotationGallery
+  title="Kosakata visual dasar BPMN"
+  items={[
+    { kind: 'event', trigger: 'none', position: 'start', label: 'Start Event', description: 'Lingkaran tipis menandai awal proses.' },
+    { kind: 'task', variant: 'user', label: 'User Task', description: 'Aktivitas pekerjaan manusia dalam workflow.' },
+    { kind: 'gateway', variant: 'exclusive', label: 'Exclusive Gateway (XOR)', description: 'Diamond dengan X menandai keputusan satu jalur.' },
+    { kind: 'flow', variant: 'sequence', label: 'Sequence Flow', description: 'Panah penuh menunjukkan urutan kontrol token.' },
+    { kind: 'event', trigger: 'none', position: 'end', label: 'End Event', description: 'Lingkaran tebal menandai berakhirnya alur.' },
+    { kind: 'participant', variant: 'lanes', label: 'Pool dan Lane', description: 'Batas participant dan pembagian tanggung jawab.' },
+  ]}
+/>
 
 ## BPMN bukan Camunda
 
@@ -31,7 +46,22 @@ Diagram dapat lolos sintaksis, tetapi tetap salah secara semantik atau sulit dib
 
 ## Contoh mini
 
-Pengajuan cuti diterima → verifikasi kelayakan → jika memenuhi aturan, setujui; jika tidak, tolak → beri tahu pemohon. Keputusan berbasis data dapat ditampilkan dengan XOR. Jika keputusan bergantung pada pesan yang belum datang, model perlu menunggu event, bukan sekadar memilih cabang dari data saat ini.
+<MermaidDiagram
+  title="Alur ringkas pengajuan cuti"
+  chart={`flowchart TD
+    start(["Pengajuan cuti diterima"]) --> verify["Verifikasi kelayakan"]
+    verify --> available{"Data keputusan sudah tersedia?"}
+    available -->|Belum, tunggu pesan| message(["Pesan diterima"])
+    message --> eligible{"Memenuhi syarat?"}
+    available -->|Ya| eligible
+    eligible -->|Ya| approve["Setujui pengajuan"]
+    eligible -->|Tidak| reject["Tolak pengajuan"]
+    approve --> notify["Beri tahu pemohon"]
+    reject --> notify
+    notify --> finish(["Selesai"])`}
+/>
+
+Cabang **“Memenuhi syarat?”** adalah keputusan berdasarkan data (XOR). Jika data belum tersedia, proses menunggu pesan terlebih dahulu—bukan langsung memilih cabang. Flowchart ini merangkum logika contoh; ia bukan pengganti diagram BPMN atau notasi event BPMN.
 
 ## Latihan
 

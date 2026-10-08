@@ -21,10 +21,16 @@ const assetSrc = src.startsWith('/') ? `${import.meta.env.BASE_URL}${src.slice(1
       const response = await fetch(root.dataset.src!);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       await viewer.importXML(await response.text());
-      (viewer.get('canvas') as { zoom: (value: 'fit-viewport') => void }).zoom('fit-viewport');
+      const bpmnCanvas = viewer.get('canvas') as { zoom: (value: 'fit-viewport') => void };
+      const fitDiagram = () => bpmnCanvas.zoom('fit-viewport');
+      fitDiagram();
+      const resizeObserver = new ResizeObserver(() => requestAnimationFrame(fitDiagram));
+      resizeObserver.observe(canvas);
+      (root as HTMLElement & { bpmnResizeObserver?: ResizeObserver }).bpmnResizeObserver = resizeObserver;
+      window.addEventListener('resize', () => requestAnimationFrame(fitDiagram));
       status.textContent = 'Diagram siap. Gunakan scroll untuk zoom dan drag untuk menggeser.';
       root.querySelector<HTMLButtonElement>('[data-fit]')!.addEventListener('click', () => {
-        (viewer.get('canvas') as { zoom: (value: 'fit-viewport') => void }).zoom('fit-viewport');
+        fitDiagram();
       });
     } catch (error) {
       status.textContent = `Diagram tidak dapat dimuat: ${error instanceof Error ? error.message : 'kesalahan tidak diketahui'}`;
@@ -35,6 +41,9 @@ const assetSrc = src.startsWith('/') ? `${import.meta.env.BASE_URL}${src.slice(1
 .viewer { border: 1px solid var(--sl-color-gray-5); border-radius: 4px; background: #fff; color: #202724; }
 .viewer-toolbar { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .75rem 1rem; border-bottom: 1px solid #ddd; flex-wrap: wrap; }
 .viewer-toolbar button { padding: .4rem .7rem; }
-.canvas { min-height: 330px; width: 100%; }
+.viewer-toolbar a { color: #17634f; }
+.viewer-toolbar a:hover { color: #123d32; }
+.canvas { width: 100%; height: clamp(22rem, 55vh, 38rem); }
+.canvas :global(.djs-container > svg) { height: 100%; }
 .viewer-status { padding: 0 1rem; font-size: .9rem; }
 </style>

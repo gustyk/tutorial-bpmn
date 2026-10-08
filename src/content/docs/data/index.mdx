@@ -3,6 +3,8 @@ title: Data dan Artifacts
 description: Bedakan data yang dipakai proses dari aliran kontrol dan catatan diagram.
 ---
 
+import BpmnNotationGallery from '../../../components/BpmnNotationGallery.astro';
+
 ## Data Object
 
 Data Object menunjukkan informasi yang digunakan/dihasilkan dalam scope proses. Data Object dapat memiliki state dan penanda collection. Ia bukan activity: dokumen tidak “mengerjakan” pekerjaan.
@@ -14,6 +16,20 @@ Data Store mewakili penyimpanan persisten yang keberadaannya melampaui satu inst
 ## Input, Output, dan Data Association
 
 Data Input/Output menunjukkan informasi masuk/keluar pada level process/activity. Data Association menghubungkan sumber/tujuan data dengan aktivitas atau elemen data. Ini bukan Sequence Flow dan tidak menggerakkan token.
+
+<BpmnNotationGallery
+  title="Visual notasi data dan artifacts"
+  items={[
+    { kind: 'data', variant: 'object', label: 'Data Object', description: 'Dokumen menunjukkan informasi yang dipakai atau dihasilkan proses.' },
+    { kind: 'data', variant: 'collection', label: 'Data Object Collection', description: 'Garis tambahan menandai kumpulan item data.' },
+    { kind: 'data', variant: 'store', label: 'Data Store', description: 'Silinder menandai penyimpanan yang melampaui satu instance proses.' },
+    { kind: 'data', variant: 'input', label: 'Data Input', description: 'Panah masuk menunjukkan informasi yang tersedia bagi proses.' },
+    { kind: 'data', variant: 'output', label: 'Data Output', description: 'Panah keluar menunjukkan informasi yang dihasilkan proses.' },
+    { kind: 'data', variant: 'annotation', label: 'Text Annotation', description: 'Kurung penghubung dan garis teks memberi catatan pada diagram.' },
+    { kind: 'data', variant: 'group', label: 'Group', description: 'Kotak putus-putus mengelompokkan elemen tanpa mengubah alur.' },
+    { kind: 'flow', variant: 'data-association', label: 'Data Association', description: 'Garis putus-putus berpanah menghubungkan activity dengan data.' },
+  ]}
+/>
 
 ## Artifacts
 
@@ -32,4 +48,4 @@ Data Input/Output menunjukkan informasi masuk/keluar pada level process/activity
 | Sequence Flow | Urutan kontrol | Ya |
 | Annotation / Group | Penjelasan atau pengelompokan visual | Tidak |
 
-Rujukan normatif: [OMG BPMN 2.0.2](https://www.omg.org/spec/BPMN/2.0.2/PDF). Klaim detail tentang Data Input, Data Output, collection, dan runtime binding berstatus DRAFTED sampai dokumentasi Data flow diperiksa.
+Rujukan normatif: [OMG BPMN 2.0.2](https://www.omg.org/spec/BPMN/2.0.2/PDF). Untuk detail aliran data dan dukungan platform, lihat dokumentasi [Camunda 8.9 Data flow](https://docs.camunda.io/docs/components/modeler/bpmn/data-flow/) dan [BPMN coverage](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/). Notasi BPMN sendiri tidak menjamin bahwa suatu elemen didukung untuk eksekusi pada setiap platform.

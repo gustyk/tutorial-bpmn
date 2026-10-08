@@ -4,8 +4,21 @@ description: Gateway mengendalikan divergensi dan konvergensi Sequence Flow.
 ---
 
 import Quiz from '../../../components/Quiz.astro';
+import MermaidDiagram from '../../../components/MermaidDiagram.astro';
+import BpmnNotationGallery from '../../../components/BpmnNotationGallery.astro';
 
 Gateway bukan task yang melakukan pekerjaan. Ia mengendalikan divergensi (membuka jalur) atau konvergensi (menggabungkan jalur) sesuai tipe gateway.
+
+<BpmnNotationGallery
+  title="Visual varian gateway BPMN"
+  items={[
+    { kind: 'gateway', variant: 'exclusive', label: 'Exclusive (XOR)', description: 'X menandai pilihan satu jalur atau merge tanpa sinkronisasi.' },
+    { kind: 'gateway', variant: 'parallel', label: 'Parallel (AND)', description: 'Plus menandai pengaktifan semua jalur atau sinkronisasi cabang.' },
+    { kind: 'gateway', variant: 'inclusive', label: 'Inclusive (OR)', description: 'Lingkaran menandai satu atau lebih jalur sesuai kondisi.' },
+    { kind: 'gateway', variant: 'event-based', label: 'Event-Based', description: 'Pentagon menandai pilihan berdasarkan event yang lebih dahulu terjadi.' },
+    { kind: 'gateway', variant: 'complex', label: 'Complex', description: 'Asterisk menandai aturan split atau join yang kompleks.' },
+  ]}
+/>
 
 <Quiz question="Pembayaran belum diketahui dan proses menunggu callback sukses atau batas waktu. Apa jenis kontrol yang paling tepat?" options={['XOR berdasarkan variabel status saat ini', 'Event-Based Gateway yang menunggu salah satu event', 'AND Gateway yang menjalankan keduanya']} answer={1} explanation="Status belum tersedia ketika proses mulai menunggu; jalur ditentukan oleh event pertama yang terjadi." />
 
@@ -15,15 +28,21 @@ Gateway bukan task yang melakukan pekerjaan. Ia mengendalikan divergensi (membuk
 
 ## Decision tree
 
-1. Apakah proses membagi atau menggabungkan alur kontrol? Jika tidak, mungkin tidak perlu gateway.
-2. Keputusan diketahui dari data saat ini?
-   - Tepat satu jalur → **Exclusive (XOR)**.
-   - Satu atau lebih jalur dapat terpenuhi → **Inclusive (OR)**.
-   - Semua jalur wajib aktif → **Parallel (AND)**.
-3. Proses harus menunggu event mana yang terjadi lebih dulu?
-   - Ya → **Event-Based Gateway**; cabang mengikuti event pertama yang terjadi, bukan evaluasi kondisi data.
-4. Perlu kondisi sinkronisasi kompleks yang tidak dapat dinyatakan dengan gateway umum?
-   - Tinjau **Complex Gateway**, tetapi hindari jika struktur sederhana dapat menjelaskan maksud dengan lebih terang.
+<MermaidDiagram
+  title="Panduan memilih gateway berdasarkan perilaku alur"
+  chart={`flowchart TD
+    control{"Apakah alur perlu dibagi atau digabung?"}
+    control -->|Tidak| noGateway["Gateway mungkin tidak diperlukan"]
+    control -->|Ya| waiting{"Apakah proses menunggu event?"}
+    waiting -->|Ya, event pertama menang| eventBased["Event-Based Gateway"]
+    waiting -->|Tidak| data{"Apakah keputusan diketahui dari data saat ini?"}
+    data -->|Satu jalur| xor["Exclusive Gateway (XOR)"]
+    data -->|Satu atau lebih jalur| or["Inclusive Gateway (OR)"]
+    data -->|Semua jalur| and["Parallel Gateway (AND)"]
+    data -->|Aturan sinkronisasi khusus| complex["Pertimbangkan Complex Gateway"]`}/>
+/>
+
+Panduan ini menyederhanakan pemilihan berdasarkan kebutuhan. Periksa juga apakah gateway dipakai untuk **split** atau **join**; khususnya, XOR join bukan barrier yang menunggu semua cabang.
 
 ## Ringkasan perbandingan
 

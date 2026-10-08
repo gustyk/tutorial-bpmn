@@ -3,6 +3,8 @@ title: Subprocess, Call Activity, dan Event Subprocess
 description: Gunakan scope untuk mengelola detail, reuse, dan kejadian di luar alur utama.
 ---
 
+import BpmnNotationGallery from '../../../components/BpmnNotationGallery.astro';
+
 ## Embedded subprocess
 
 Subprocess biasa memiliki scope dan detail alur internal. Bentuk expanded memperlihatkan detail; collapsed menyembunyikannya. Parent flow masuk dan keluar dari activity subprocess, tidak menerobos batasnya. Saat subprocess selesai, alur parent berlanjut.
@@ -22,6 +24,21 @@ Transaction adalah subprocess khusus yang memodelkan transaksi BPMN dengan event
 ## Ad-hoc subprocess
 
 Ad-hoc menandai aktivitas internal yang tidak sepenuhnya diurutkan oleh Sequence Flow; urutan, pengulangan, atau aktivitas yang dilewati ditentukan sesuai model ad-hoc. Gunakan hanya bila kebebasan itu memang bagian realitas bisnis.
+
+## Bentuk notasi subprocess
+
+<BpmnNotationGallery
+  title="Visual varian subprocess"
+  items={[
+    { kind: 'subprocess', variant: 'collapsed', label: 'Collapsed Subprocess', description: 'Tanda plus menunjukkan detail internal disembunyikan.' },
+    { kind: 'subprocess', variant: 'expanded', label: 'Expanded Subprocess', description: 'Batas scope menampilkan flow internal.' },
+    { kind: 'subprocess', variant: 'call', label: 'Call Activity', description: 'Garis tebal dan tanda plus menunjukkan pemanggilan definisi reusable.' },
+    { kind: 'subprocess', variant: 'event-interrupting', label: 'Event Subprocess — interrupting', description: 'Start event memulai penanganan dan menginterupsi alur scope.' },
+    { kind: 'subprocess', variant: 'event-noninterrupting', label: 'Event Subprocess — non-interrupting', description: 'Start event bergaris putus-putus memulai jalur tambahan.' },
+    { kind: 'subprocess', variant: 'transaction', label: 'Transaction Subprocess', description: 'Batas ganda menandai scope transaksi BPMN.' },
+    { kind: 'subprocess', variant: 'adhoc', label: 'Ad-hoc Subprocess', description: 'Tilde menandai aktivitas internal yang tidak diurutkan sepenuhnya.' },
+  ]}
+/>
 
 ## Pilih struktur
 

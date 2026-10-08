@@ -3,6 +3,8 @@ title: Sequence Flow, Message Flow, dan Association
 description: Pilih koneksi BPMN berdasarkan makna, bukan rupa panah.
 ---
 
+import BpmnNotationGallery from '../../../components/BpmnNotationGallery.astro';
+
 ## Sequence Flow
 
 Garis penuh berpanah menunjukkan urutan eksekusi di dalam satu process. Sequence Flow menghubungkan flow node. Ia tidak digunakan untuk berpindah ke pool participant lain.
@@ -27,11 +29,23 @@ Garis titik-titik menghubungkan artifact atau informasi pendukung dengan elemen 
 | Message Flow | Pesan dikirim/diterima oleh participant mana? | Tidak | Antarpool participant |
 | Association | Catatan/data/artifact ini terkait dengan elemen mana? | Tidak | Menghubungkan artifact atau data |
 
-> **[STANDARD — perlu pemeriksaan rinci]** Sequence Flow dan Message Flow tidak dapat saling menggantikan. Rujukan normatif: [OMG BPMN 2.0.2](https://www.omg.org/spec/BPMN/2.0.2/PDF). Detail penggunaan dipertahankan berstatus DRAFTED sampai klausul spesifikasi diperiksa.
+> **[BPMN 2.0.2]** Sequence Flow dan Message Flow tidak dapat saling menggantikan. Rujukan normatif: [OMG BPMN 2.0.2](https://www.omg.org/spec/BPMN/2.0.2/PDF).
 
 ## Conditional dan Default Sequence Flow
 
 Conditional flow membawa kondisi yang harus dievaluasi. Default flow menandai jalur fallback saat jalur bersyarat lain tidak terpenuhi; ia bukan sinonim untuk XOR. Gateway dan konfigurasi default perlu ditinjau bersama supaya alur pilihan jelas.
+
+<BpmnNotationGallery
+  title="Visual varian connecting object"
+  items={[
+    { kind: 'flow', variant: 'sequence', label: 'Sequence Flow', description: 'Garis penuh berpanah membawa urutan token.' },
+    { kind: 'flow', variant: 'conditional', label: 'Conditional Sequence Flow', description: 'Diamond kecil di pangkal menandai alur bersyarat.' },
+    { kind: 'flow', variant: 'default', label: 'Default Sequence Flow', description: 'Garis miring di pangkal menandai jalur fallback.' },
+    { kind: 'flow', variant: 'message', label: 'Message Flow', description: 'Garis putus-putus dan lingkaran pangkal menunjukkan komunikasi antarpool.' },
+    { kind: 'flow', variant: 'association', label: 'Association', description: 'Garis titik-titik menghubungkan catatan atau artifact.' },
+    { kind: 'flow', variant: 'data-association', label: 'Data Association', description: 'Garis putus-putus berpanah menunjukkan relasi input atau output data.' },
+  ]}
+/>
 
 ## Argumen pemodelan
 

@@ -1,0 +1,104 @@
+---
+interface Props {
+  title: string;
+  chart: string;
+}
+
+const { title, chart } = Astro.props;
+---
+<figure class="mermaid-figure">
+  <div class="mermaid-output" data-mermaid-output role="img" aria-label={title} hidden></div>
+  <pre class="mermaid-fallback">{chart}</pre>
+  <figcaption>{title}</figcaption>
+  <p class="mermaid-status" data-mermaid-status aria-live="polite">Diagram sedang dimuat…</p>
+</figure>
+
+<script>
+  const diagramOutputs = [...document.querySelectorAll<HTMLElement>('[data-mermaid-output]')];
+  if (diagramOutputs.length) void renderDiagrams(diagramOutputs);
+
+  async function renderDiagrams(outputs: HTMLElement[]) {
+    try {
+      const { default: mermaid } = await import('mermaid');
+      mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'strict',
+        theme: 'neutral',
+        flowchart: {
+          htmlLabels: false,
+          useMaxWidth: true,
+          curve: 'linear',
+          nodeSpacing: 24,
+          rankSpacing: 32,
+          padding: 8,
+          diagramPadding: 8,
+        },
+      });
+
+      await Promise.all(outputs.map(async (output, index) => {
+        const figure = output.closest('figure');
+        const fallback = figure?.querySelector<HTMLPreElement>('.mermaid-fallback');
+        const status = figure?.querySelector<HTMLParagraphElement>('[data-mermaid-status]');
+        const chart = fallback?.textContent;
+
+        if (!figure || !fallback || !status || !chart) {
+          if (status) status.textContent = 'Diagram tidak dapat dimuat karena markup atau sumber Mermaid tidak lengkap.';
+          return;
+        }
+
+        try {
+          const { svg, bindFunctions } = await mermaid.render(`tutorial-flowchart-${index}`, chart);
+          output.innerHTML = svg;
+          output.hidden = false;
+          fallback.hidden = true;
+          bindFunctions?.(output);
+          status.textContent = 'Diagram berhasil dimuat.';
+        } catch (error) {
+          output.hidden = true;
+          fallback.hidden = false;
+          status.textContent = `Diagram gagal dirender: ${error instanceof Error ? error.message : String(error)}. Kode diagram ditampilkan sebagai alternatif.`;
+        }
+      }));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      outputs.forEach((output) => {
+        const status = output.closest('figure')?.querySelector<HTMLParagraphElement>('[data-mermaid-status]');
+        if (status) status.textContent = `Renderer Mermaid gagal dimuat: ${message}. Kode diagram ditampilkan sebagai alternatif.`;
+      });
+    }
+  }
+</script>
+
+<style>
+  .mermaid-figure {
+    margin-block: 1.5rem;
+    overflow-x: auto;
+    padding: 1rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 6px;
+    background: #fff;
+    color: #202724;
+  }
+
+  .mermaid-output :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-inline: auto;
+  }
+
+  .mermaid-fallback {
+    overflow-x: auto;
+    white-space: pre-wrap;
+  }
+
+  figcaption,
+  .mermaid-status {
+    margin-block: .5rem 0;
+    font-size: .875rem;
+  }
+
+  .mermaid-status {
+    color: #4b5550;
+  }
+</style>

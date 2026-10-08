@@ -3,6 +3,9 @@ title: Task dan Jenis Task
 description: Bedakan aktivitas berdasarkan siapa atau apa yang mengerjakannya.
 ---
 
+import MermaidDiagram from '../../../components/MermaidDiagram.astro';
+import BpmnNotationGallery from '../../../components/BpmnNotationGallery.astro';
+
 Task adalah aktivitas atomik pada level diagram: model menunjukkan pekerjaan, tetapi tidak membuka urutan langkah internalnya. Nama yang jelas umumnya memakai kata kerja + objek, misalnya “Verifikasi Pembayaran”.
 
 <div class="diagram-frame"><svg viewBox="0 0 580 115" role="img" aria-label="None task BPMN di antara start event dan end event"><circle cx="55" cy="55" r="20" fill="white" stroke="#111" stroke-width="2"/><line x1="75" y1="55" x2="140" y2="55" stroke="#111" stroke-width="2"/><polygon points="140,55 130,50 130,60"/><rect x="140" y="30" width="180" height="50" rx="10" fill="white" stroke="#111" stroke-width="2"/><text x="177" y="59" font-size="14">Verifikasi Pembayaran</text><line x1="320" y1="55" x2="430" y2="55" stroke="#111" stroke-width="2"/><polygon points="430,55 420,50 420,60"/><circle cx="455" cy="55" r="20" fill="white" stroke="#111" stroke-width="3"/><text x="20" y="102" font-size="12">Start</text><text x="430" y="102" font-size="12">End</text></svg></div>
@@ -22,6 +25,20 @@ Task adalah aktivitas atomik pada level diagram: model menunjukkan pekerjaan, te
 | Send Task | Mengirim pesan sebagai pekerjaan | Kirim Konfirmasi |
 | Receive Task | Menunggu/menerima pesan sebagai pekerjaan | Tunggu Respons Bank |
 
+<BpmnNotationGallery
+  title="Visual delapan task type BPMN"
+  items={[
+    { kind: 'task', variant: 'none', label: 'None Task', description: 'Aktivitas tanpa task type khusus.' },
+    { kind: 'task', variant: 'user', label: 'User Task', description: 'Ikon orang menandai pekerjaan manusia melalui workflow.' },
+    { kind: 'task', variant: 'manual', label: 'Manual Task', description: 'Ikon tangan menandai pekerjaan manual.' },
+    { kind: 'task', variant: 'service', label: 'Service Task', description: 'Ikon roda gigi menandai pekerjaan layanan atau worker.' },
+    { kind: 'task', variant: 'script', label: 'Script Task', description: 'Ikon dokumen menandai eksekusi script.' },
+    { kind: 'task', variant: 'business-rule', label: 'Business Rule Task', description: 'Ikon tabel menandai evaluasi aturan bisnis.' },
+    { kind: 'task', variant: 'send', label: 'Send Task', description: 'Amplop terisi menandai pekerjaan mengirim pesan.' },
+    { kind: 'task', variant: 'receive', label: 'Receive Task', description: 'Amplop garis menandai pekerjaan menerima pesan.' },
+  ]}
+/>
+
 Nama task type BPMN tidak otomatis menentukan bagaimana implementasi dibuat. Contoh: User Task tidak berarti aktor harus berada dalam lane bernama “User”.
 
 ## Markers
@@ -30,6 +47,16 @@ Nama task type BPMN tidak otomatis menentukan bagaimana implementasi dibuat. Con
 - **Multi-instance sequential:** banyak instance dikerjakan berurutan.
 - **Multi-instance parallel:** banyak instance dibuat sebagai kumpulan; tidak menjamin mesin CPU mengeksekusinya serentak.
 - **Compensation marker:** task didefinisikan sebagai handler kompensasi, bukan task biasa yang muncul lewat Sequence Flow.
+
+<BpmnNotationGallery
+  title="Visual task marker"
+  items={[
+    { kind: 'task', variant: 'none', marker: 'loop', label: 'Loop', description: 'Panah melingkar menandai pengulangan aktivitas.' },
+    { kind: 'task', variant: 'none', marker: 'multi-instance-sequential', label: 'Multi-instance sequential', description: 'Tiga garis mendatar menandai instance yang dijalankan berurutan.' },
+    { kind: 'task', variant: 'none', marker: 'multi-instance-parallel', label: 'Multi-instance parallel', description: 'Tiga garis tegak menandai instance paralel.' },
+    { kind: 'task', variant: 'none', marker: 'compensation', label: 'Compensation marker', description: 'Dua segitiga menandai activity handler kompensasi.' },
+  ]}
+/>
 
 Marker tertentu dapat digabung sesuai aturan model. Lihat [Camunda BPMN Reference](https://camunda.com/bpmn/reference/) dan [coverage Camunda 8.9](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/); status executable tergantung versi.
 
@@ -41,7 +68,22 @@ Marker tertentu dapat digabung sesuai aturan model. Lihat [Camunda BPMN Referenc
 
 ## Decision rule
 
-Pekerjaan oleh manusia melalui aplikasi task → pertimbangkan User Task. Kerja manual di luar orkestrasi UI → Manual Task. Panggilan worker/service → Service Task. Script → Script Task. Keputusan aturan → Business Rule Task. Menunggu pesan → pilih Receive Task atau Message Catch Event berdasarkan apakah menunggu itu dimodelkan sebagai pekerjaan atau event.
+<MermaidDiagram
+  title="Panduan memilih task atau message event"
+  chart={`flowchart TD
+    work["Apa yang dimodelkan?"] --> messageWait{"Menunggu pesan?"}
+    messageWait -->|Ya, sebagai pekerjaan| receive["Receive Task"]
+    messageWait -->|Ya, sebagai event| catch["Message Catch Event"]
+    messageWait -->|Tidak| human{"Dikerjakan manusia?"}
+    human -->|Ya, melalui aplikasi workflow| user["User Task"]
+    human -->|Ya, di luar orkestrasi UI| manual["Manual Task"]
+    human -->|Tidak| kind{"Jenis pekerjaan?"}
+    kind -->|Worker atau layanan| service["Service Task"]
+    kind -->|Eksekusi script| script["Script Task"]
+    kind -->|Evaluasi aturan| rule["Business Rule Task"]
+    kind -->|Mengirim pesan sebagai pekerjaan| send["Send Task"]`}/>
+
+Diagram ini membantu membedakan aktivitas menerima pesan dari event yang menangkap pesan; cabang lainnya mengelompokkan pekerjaan berdasarkan pelaksananya. Ini panduan klasifikasi, bukan urutan pekerjaan dalam satu proses.
 
 ## Argumen
 

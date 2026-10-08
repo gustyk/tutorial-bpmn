@@ -3,13 +3,23 @@ title: Pool dan Lane
 description: Bedakan batas participant dari pembagian tanggung jawab.
 ---
 
+import BpmnNotationGallery from '../../../components/BpmnNotationGallery.astro';
+
 ## Pool: satu participant
 
 Pool merepresentasikan participant dalam collaboration. Participant dapat berupa organisasi, pihak eksternal, atau proses yang berpartisipasi. Pool dapat memperlihatkan proses internal (white-box) atau menyembunyikannya (black-box). [Camunda: Pool](https://camunda.com/bpmn/reference/)
 
-<div class="diagram-frame"><svg viewBox="0 0 720 170" role="img" aria-label="Pool Merchant dengan dua lane, Layanan dan Gudang"><rect x="12" y="12" width="690" height="146" fill="white" stroke="#111" stroke-width="2"/><rect x="12" y="12" width="72" height="146" fill="#f1f3ef" stroke="#111" stroke-width="2"/><line x1="84" y1="85" x2="702" y2="85" stroke="#111"/><text x="22" y="92" font-size="14" transform="rotate(-90 22 92)">Merchant</text><text x="98" y="42" font-size="14">Layanan</text><text x="98" y="118" font-size="14">Gudang</text><circle cx="185" cy="48" r="15" fill="white" stroke="#111" stroke-width="2"/><text x="165" y="76" font-size="12">Pesanan</text><rect x="240" y="30" width="150" height="38" rx="8" fill="white" stroke="#111" stroke-width="2"/><text x="257" y="54" font-size="12">Validasi Pesanan</text><line x1="201" y1="48" x2="240" y2="48" stroke="#111" stroke-width="2"/><polygon points="240,48 231,43 231,53"/><line x1="390" y1="49" x2="475" y2="49" stroke="#111" stroke-width="2"/><polygon points="475,49 466,44 466,54"/><rect x="475" y="101" width="155" height="38" rx="8" fill="white" stroke="#111" stroke-width="2"/><text x="489" y="125" font-size="12">Siapkan Pesanan</text><path d="M540 49 V82 H540 V101" fill="none" stroke="#111" stroke-width="2"/><polygon points="540,101 535,92 545,92"/></svg></div>
+<BpmnNotationGallery
+  title="Pool white-box dan black-box"
+  items={[
+    { kind: 'participant', variant: 'white-box', label: 'White-box pool', description: 'Pool menampilkan flow internal participant.' },
+    { kind: 'participant', variant: 'black-box', label: 'Black-box pool', description: 'Pool menunjukkan participant tanpa membuka proses internal.' },
+  ]}
+/>
 
-**Gambar 2.1 — Satu pool Merchant dengan lane tanggung jawab.** Ilustrasi dibuat ulang; sequence flow tidak melintasi lane/pool boundary.
+<div class="diagram-frame"><svg viewBox="0 0 720 170" role="img" aria-label="Pool Merchant dengan dua lane, Layanan dan Gudang"><rect x="12" y="12" width="690" height="146" fill="white" stroke="#111" stroke-width="2"/><rect x="12" y="12" width="72" height="146" fill="#f1f3ef" stroke="#111" stroke-width="2"/><line x1="84" y1="85" x2="702" y2="85" stroke="#111"/><text x="22" y="92" font-size="14" transform="rotate(-90 22 92)">Merchant</text><text x="98" y="42" font-size="14">Layanan</text><text x="98" y="118" font-size="14">Gudang</text><circle cx="185" cy="48" r="15" fill="white" stroke="#111" stroke-width="2"/><text x="165" y="76" font-size="12">Pesanan</text><rect x="240" y="30" width="150" height="38" rx="8" fill="white" stroke="#111" stroke-width="2"/><text x="257" y="54" font-size="12">Validasi Pesanan</text><line x1="201" y1="48" x2="240" y2="48" stroke="#111" stroke-width="2"/><polygon points="240,48 231,43 231,53"/><path d="M390 49 H430 V120 H475" fill="none" stroke="#111" stroke-width="2"/><polygon points="475,120 466,115 466,125"/><rect x="475" y="101" width="155" height="38" rx="8" fill="white" stroke="#111" stroke-width="2"/><text x="489" y="125" font-size="12">Siapkan Pesanan</text></svg></div>
+
+**Gambar 2.1 — Satu pool Merchant dengan lane tanggung jawab.** Sequence Flow dapat berpindah antar-lane dalam pool yang sama, tetapi tidak antarpool.
 
 ## Lane: tanggung jawab di dalam participant
 

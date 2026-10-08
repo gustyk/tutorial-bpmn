@@ -3,6 +3,8 @@ title: Memilih Event
 description: Tentukan posisi event, arah interaksi, pemicu, dan dampak terhadap alur.
 ---
 
+import BpmnNotationGallery from '../../../components/BpmnNotationGallery.astro';
+
 Event menyatakan sesuatu yang terjadi, bukan pekerjaan. Mulai dengan dua keputusan terpisah: **posisi** event (start, tengah, akhir, boundary, event subprocess) dan **trigger** (message, timer, error, dan seterusnya).
 
 ## Pilih posisi
@@ -13,6 +15,20 @@ Event menyatakan sesuatu yang terjadi, bukan pekerjaan. Mulai dengan dua keputus
 - Pemicu harus diperhatikan selama activity aktif → Boundary Event.
 - Pemicu mengawali penanganan dalam scope yang masih aktif → Event Subprocess Start Event.
 - Akhiri alur dengan hasil/efek tertentu → End Event.
+
+<BpmnNotationGallery
+  title="Visual posisi event dan batas interrupting"
+  items={[
+    { kind: 'event', trigger: 'none', position: 'start', label: 'Start Event', description: 'Satu lingkaran tipis menandai awal proses.' },
+    { kind: 'event', trigger: 'message', position: 'intermediate-catch', label: 'Intermediate Catch', description: 'Dua lingkaran tipis menandai event yang ditunggu di tengah alur.' },
+    { kind: 'event', trigger: 'signal', position: 'intermediate-throw', label: 'Intermediate Throw', description: 'Event di tengah alur melempar pemicu ke penerima yang relevan.' },
+    { kind: 'event', trigger: 'error', position: 'boundary', interrupting: true, label: 'Boundary — interrupting', description: 'Batas solid menandai event yang menghentikan activity terpasang.' },
+    { kind: 'event', trigger: 'timer', position: 'boundary', interrupting: false, label: 'Boundary — non-interrupting', description: 'Batas putus-putus menandai jalur tambahan tanpa menghentikan activity.' },
+    { kind: 'event', trigger: 'message', position: 'event-subprocess', interrupting: true, label: 'Event Subprocess — interrupting', description: 'Start event menangani pemicu dan menginterupsi scope induk.' },
+    { kind: 'event', trigger: 'timer', position: 'event-subprocess', interrupting: false, label: 'Event Subprocess — non-interrupting', description: 'Start event bergaris putus-putus menjalankan penanganan tambahan.' },
+    { kind: 'event', trigger: 'message', position: 'end', label: 'End Event', description: 'Lingkaran tebal menandai akhir alur dengan hasil event.' },
+  ]}
+/>
 
 ## Pilih trigger
 
@@ -29,6 +45,45 @@ Event menyatakan sesuatu yang terjadi, bukan pekerjaan. Mulai dengan dua keputus
 - Salah satu dari beberapa trigger alternatif → Multiple.
 - Semua trigger paralel harus terjadi → Parallel Multiple Catching Event.
 
+<BpmnNotationGallery
+  title="Visual 13 event definition BPMN"
+  items={[
+    { kind: 'event', trigger: 'none', position: 'start', label: 'None', description: 'Tanpa event definition khusus.' },
+    { kind: 'event', trigger: 'message', position: 'intermediate-catch', label: 'Message', description: 'Menerima atau melempar pesan.' },
+    { kind: 'event', trigger: 'timer', position: 'intermediate-catch', label: 'Timer', description: 'Tanggal, durasi, atau siklus waktu.' },
+    { kind: 'event', trigger: 'conditional', position: 'intermediate-catch', label: 'Conditional', description: 'Kondisi data terpenuhi.' },
+    { kind: 'event', trigger: 'signal', position: 'intermediate-catch', label: 'Signal', description: 'Sinyal broadcast yang tidak dialamatkan khusus.' },
+    { kind: 'event', trigger: 'error', position: 'boundary', label: 'Error', description: 'Exception atau kegagalan dalam scope.' },
+    { kind: 'event', trigger: 'escalation', position: 'intermediate-throw', label: 'Escalation', description: 'Mengangkat kondisi bisnis ke scope yang lebih tinggi.' },
+    { kind: 'event', trigger: 'compensation', position: 'intermediate-throw', label: 'Compensation', description: 'Memicu handler untuk membalikkan efek bisnis.' },
+    { kind: 'event', trigger: 'link', position: 'intermediate-catch', label: 'Link', description: 'Pasangan penghubung alur dalam diagram.' },
+    { kind: 'event', trigger: 'cancel', position: 'boundary', label: 'Cancel', description: 'Membatalkan transaction BPMN.' },
+    { kind: 'event', trigger: 'terminate', position: 'end', label: 'Terminate', description: 'Menghentikan activity aktif dalam scope proses.' },
+    { kind: 'event', trigger: 'multiple', position: 'intermediate-catch', label: 'Multiple', description: 'Salah satu trigger alternatif terjadi.' },
+    { kind: 'event', trigger: 'parallel-multiple', position: 'intermediate-catch', label: 'Parallel Multiple', description: 'Semua trigger yang ditentukan perlu terjadi.' },
+  ]}
+/>
+
+<BpmnNotationGallery
+  title="Visual varian event start, catch, throw, dan end"
+  items={[
+    { kind: 'event', trigger: 'message', position: 'start', label: 'Message Start', description: 'Start event menerima pesan untuk memulai proses.' },
+    { kind: 'event', trigger: 'message', position: 'intermediate-catch', label: 'Message Catch', description: 'Alur menunggu pesan di tengah proses.' },
+    { kind: 'event', trigger: 'message', position: 'intermediate-throw', label: 'Message Throw', description: 'Amplop terisi menunjukkan pesan dilempar dari alur.' },
+    { kind: 'event', trigger: 'message', position: 'end', label: 'Message End', description: 'Mengakhiri alur sambil melempar pesan.' },
+    { kind: 'event', trigger: 'signal', position: 'intermediate-catch', label: 'Signal Catch', description: 'Segitiga kosong menunjukkan alur menangkap signal.' },
+    { kind: 'event', trigger: 'signal', position: 'intermediate-throw', label: 'Signal Throw', description: 'Segitiga terisi menunjukkan alur melempar signal.' },
+    { kind: 'event', trigger: 'error', position: 'boundary', interrupting: true, label: 'Error Catch', description: 'Error ditangkap pada boundary atau event subprocess.' },
+    { kind: 'event', trigger: 'error', position: 'end', label: 'Error End', description: 'Error dilempar untuk ditangani scope pemanggil.' },
+    { kind: 'event', trigger: 'escalation', position: 'intermediate-catch', label: 'Escalation Catch', description: 'Panah terbuka menandai escalation yang ditangkap.' },
+    { kind: 'event', trigger: 'escalation', position: 'intermediate-throw', label: 'Escalation Throw', description: 'Panah terisi menandai escalation yang dilempar.' },
+    { kind: 'event', trigger: 'compensation', position: 'boundary', label: 'Compensation Boundary', description: 'Boundary event menangkap pemicu kompensasi untuk activity terkait.' },
+    { kind: 'event', trigger: 'compensation', position: 'intermediate-throw', label: 'Compensation Throw', description: 'Meminta handler kompensasi yang telah terdaftar.' },
+    { kind: 'event', trigger: 'multiple', position: 'intermediate-catch', label: 'Multiple Catch', description: 'Menunggu salah satu event definition yang dicantumkan.' },
+    { kind: 'event', trigger: 'multiple', position: 'intermediate-throw', label: 'Multiple Throw', description: 'Melempar beberapa event definition sesuai model.' },
+  ]}
+/>
+
 ## Interrupting vs non-interrupting
 
 Boundary event interrupting menghentikan activity yang dilekatinya dan mengalihkan kontrol ke exception path. Non-interrupting membuat jalur tambahan; activity utama terus berjalan. Event subprocess menggunakan perbedaan serupa pada scope induknya. Jangan memakai garis putus-putus sebagai hiasan: ia mengubah jumlah token/alur aktif.
@@ -39,7 +94,7 @@ Message Catch Event memodelkan penantian event. Receive Task memodelkan pekerjaa
 
 ## Batas dan catatan
 
-Matrix awal masih DRAFTED; lihat [Event Compatibility Matrix](/events/matrix). Error, compensation, cancel, multiple, dan parallel multiple memiliki batas posisi khusus yang wajib dicek terhadap sumber normatif. Rujukan: [Camunda Reference](https://camunda.com/bpmn/reference/) dan [OMG BPMN 2.0.2](https://www.omg.org/spec/BPMN/2.0.2/PDF).
+Lihat [Event Compatibility Matrix](/events/matrix) untuk ringkasan posisi event yang ditampilkan pada referensi Camunda. Error, compensation, cancel, multiple, dan parallel multiple memiliki aturan posisi dan perilaku khusus; gunakan [OMG BPMN 2.0.2](https://www.omg.org/spec/BPMN/2.0.2/PDF) untuk aturan normatif dan [Camunda BPMN Reference](https://camunda.com/bpmn/reference/) untuk notasi Camunda.
 
 ### Quiz argumentasi
 

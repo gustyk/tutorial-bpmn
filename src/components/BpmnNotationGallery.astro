@@ -1,0 +1,361 @@
+---
+type EventTrigger =
+  | 'none'
+  | 'message'
+  | 'timer'
+  | 'conditional'
+  | 'signal'
+  | 'error'
+  | 'escalation'
+  | 'compensation'
+  | 'link'
+  | 'cancel'
+  | 'terminate'
+  | 'multiple'
+  | 'parallel-multiple';
+type EventPosition = 'start' | 'intermediate-catch' | 'intermediate-throw' | 'boundary' | 'end' | 'event-subprocess';
+type TaskVariant = 'none' | 'user' | 'manual' | 'service' | 'script' | 'business-rule' | 'send' | 'receive';
+type TaskMarker = 'loop' | 'multi-instance-sequential' | 'multi-instance-parallel' | 'compensation';
+type SubprocessVariant = 'collapsed' | 'expanded' | 'call' | 'transaction' | 'adhoc' | 'event-interrupting' | 'event-noninterrupting';
+type GatewayVariant = 'exclusive' | 'parallel' | 'inclusive' | 'event-based' | 'complex';
+type DataVariant = 'object' | 'collection' | 'store' | 'input' | 'output' | 'annotation' | 'group';
+type FlowVariant = 'sequence' | 'conditional' | 'default' | 'message' | 'association' | 'data-association';
+type ParticipantVariant = 'white-box' | 'black-box' | 'lanes';
+
+type NotationItem =
+  | { kind: 'event'; label: string; description: string; trigger: EventTrigger; position: EventPosition; interrupting?: boolean }
+  | { kind: 'task'; label: string; description: string; variant: TaskVariant; marker?: TaskMarker }
+  | { kind: 'subprocess'; label: string; description: string; variant: SubprocessVariant }
+  | { kind: 'gateway'; label: string; description: string; variant: GatewayVariant }
+  | { kind: 'data'; label: string; description: string; variant: DataVariant }
+  | { kind: 'flow'; label: string; description: string; variant: FlowVariant }
+  | { kind: 'participant'; label: string; description: string; variant: ParticipantVariant };
+
+interface Props {
+  title: string;
+  items: NotationItem[];
+}
+
+const { title, items } = Astro.props;
+const isThrowingEvent = (position: EventPosition) => position === 'intermediate-throw' || position === 'end';
+---
+<div class="notation-gallery" role="list" aria-label={title}>
+  {items.map((item) => (
+    <figure class="notation-card" role="listitem">
+      <svg viewBox="0 0 132 92" role="img" aria-label={`${item.label}: ${item.description}`}>
+        {item.kind === 'event' && (
+          <>
+            <circle
+              cx="66"
+              cy="41"
+              r="29"
+              fill="#fff"
+              stroke="#202724"
+              stroke-width={item.position === 'end' ? 4 : 2}
+              stroke-dasharray={(item.position === 'boundary' || item.position === 'event-subprocess') && item.interrupting === false ? '5 3' : undefined}
+            />
+            {(item.position === 'intermediate-catch' || item.position === 'intermediate-throw' || item.position === 'boundary') && (
+              <circle cx="66" cy="41" r="24" fill="none" stroke="#202724" stroke-width="2" />
+            )}
+            {item.trigger === 'message' && (
+              <g>
+                <rect x="55" y="34" width="22" height="15" rx="1" fill={item.position === 'intermediate-throw' || item.position === 'end' ? '#202724' : '#fff'} stroke="#202724" stroke-width="1.8" />
+                <path d="M56 35 L66 42 L76 35" fill="none" stroke={item.position === 'intermediate-throw' || item.position === 'end' ? '#fff' : '#202724'} stroke-width="1.6" />
+              </g>
+            )}
+            {item.trigger === 'timer' && (
+              <g fill="none" stroke="#202724" stroke-width="1.8">
+                <circle cx="66" cy="41" r="10" />
+                <path d="M66 34 V41 L72 45 M62 28 H70 M66 28 V31" />
+              </g>
+            )}
+            {item.trigger === 'conditional' && (
+              <g fill="#fff" stroke="#202724" stroke-width="1.6">
+                <path d="M58 32 H70 L75 37 V51 H58 Z M70 32 V37 H75" />
+                <path d="M61 41 H71 M61 45 H71 M61 49 H68" fill="none" />
+              </g>
+            )}
+            {item.trigger === 'signal' && (
+              <polygon points="66,30 77,50 55,50" fill={isThrowingEvent(item.position) ? '#202724' : '#fff'} stroke="#202724" stroke-width="1.8" />
+            )}
+            {item.trigger === 'error' && (
+              <path d="M68 28 L57 43 H65 L61 55 L76 38 H68 Z" fill="#202724" />
+            )}
+            {item.trigger === 'escalation' && (
+              isThrowingEvent(item.position) ? (
+                <path d="M66 28 L78 42 H71 V54 H61 V42 H54 Z" fill="#202724" />
+              ) : (
+                <g fill="none" stroke="#202724" stroke-width="2">
+                  <path d="M66 52 V32 M66 32 L58 40 M66 32 L74 40" />
+                  <path d="M59 51 H73" />
+                </g>
+              )
+            )}
+            {item.trigger === 'compensation' && (
+              <g fill="#202724">
+                <polygon points="64,31 64,51 54,41" />
+                <polygon points="78,31 78,51 68,41" />
+              </g>
+            )}
+            {item.trigger === 'link' && (
+              <polygon points="55,34 68,34 77,41 68,48 55,48 62,41" fill="#202724" />
+            )}
+            {item.trigger === 'cancel' && (
+              <g>
+                <polygon points="66,29 77,37 73,51 59,51 55,37" fill="#fff" stroke="#202724" stroke-width="1.8" />
+                <path d="M62 37 L70 45 M70 37 L62 45" stroke="#202724" stroke-width="2" />
+              </g>
+            )}
+            {item.trigger === 'multiple' && (
+              <polygon points="66,28 70,36 79,37 72,43 74,52 66,47 58,52 60,43 53,37 62,36" fill="#202724" />
+            )}
+            {item.trigger === 'parallel-multiple' && (
+              <g stroke="#202724" stroke-width="2.4">
+                <path d="M66 32 V50 M57 41 H75" />
+              </g>
+            )}
+            {item.trigger === 'terminate' && <circle cx="66" cy="41" r="19" fill="#202724" />}
+          </>
+        )}
+
+        {item.kind === 'gateway' && (
+          <>
+            <polygon points="66,10 100,44 66,78 32,44" fill="#fff" stroke="#202724" stroke-width="2" />
+            {item.variant === 'exclusive' && <text class="gateway-mark" x="66" y="45">X</text>}
+            {item.variant === 'parallel' && <text class="gateway-mark" x="66" y="45">+</text>}
+            {item.variant === 'inclusive' && <circle cx="66" cy="44" r="11" fill="none" stroke="#202724" stroke-width="2" />}
+            {item.variant === 'event-based' && <polygon points="66,27 78,36 74,51 58,51 54,36" fill="#fff" stroke="#202724" stroke-width="2" />}
+            {item.variant === 'complex' && <text class="gateway-mark" x="66" y="45">*</text>}
+          </>
+        )}
+
+        {item.kind === 'task' && (
+          <>
+            <rect x="10" y="15" width="112" height="58" rx="9" fill="#fff" stroke="#202724" stroke-width="2" />
+            {item.variant === 'user' && (
+              <g fill="none" stroke="#202724" stroke-width="1.8">
+                <circle cx="66" cy="34" r="4" fill="#fff" />
+                <path d="M56 51 C57 42 75 42 76 51" />
+              </g>
+            )}
+            {item.variant === 'manual' && <path d="M58 50 V38 Q58 35 61 36 L63 43 V32 Q63 29 66 29 Q69 29 69 32 V42 L71 38 Q74 36 76 39 L74 50 Z" fill="#fff" stroke="#202724" stroke-width="1.7" />}
+            {item.variant === 'service' && (
+              <g fill="none" stroke="#202724" stroke-width="1.8">
+                <circle cx="66" cy="40" r="7" />
+                <circle cx="66" cy="40" r="2.5" />
+                <path d="M66 29 V33 M66 47 V51 M55 40 H59 M73 40 H77 M58 32 L61 35 M71 45 L74 48 M74 32 L71 35 M61 45 L58 48" />
+              </g>
+            )}
+            {item.variant === 'script' && (
+              <g fill="#fff" stroke="#202724" stroke-width="1.5">
+                <path d="M58 29 H70 L75 34 V52 H58 Z M70 29 V34 H75" />
+                <path d="M61 40 H71 M61 44 H71 M61 48 H68" />
+              </g>
+            )}
+            {item.variant === 'business-rule' && (
+              <g fill="#fff" stroke="#202724" stroke-width="1.5">
+                <rect x="56" y="30" width="20" height="20" />
+                <path d="M56 36 H76 M56 43 H76 M63 30 V50 M70 30 V50" />
+              </g>
+            )}
+            {(item.variant === 'send' || item.variant === 'receive') && (
+              <g>
+                <rect x="55" y="33" width="22" height="15" fill={item.variant === 'send' ? '#202724' : '#fff'} stroke="#202724" stroke-width="1.7" />
+                <path d="M56 34 L66 41 L76 34" fill="none" stroke={item.variant === 'send' ? '#fff' : '#202724'} stroke-width="1.5" />
+              </g>
+            )}
+            {item.marker === 'loop' && (
+              <g fill="none" stroke="#202724" stroke-width="1.6">
+                <path d="M61 62 A6 6 0 1 1 70 64" />
+                <path d="M68 59 L71 64 L66 64" fill="#202724" />
+              </g>
+            )}
+            {item.marker === 'multi-instance-sequential' && <g stroke="#202724" stroke-width="1.6"><path d="M60 58 H72 M60 62 H72 M60 66 H72" /></g>}
+            {item.marker === 'multi-instance-parallel' && <g stroke="#202724" stroke-width="1.6"><path d="M61 57 V67 M66 57 V67 M71 57 V67" /></g>}
+            {item.marker === 'compensation' && (
+              <g fill="#202724">
+                <polygon points="64,57 64,68 58,62.5" />
+                <polygon points="74,57 74,68 68,62.5" />
+              </g>
+            )}
+          </>
+        )}
+
+        {item.kind === 'subprocess' && (
+          <>
+            <rect x="12" y="17" width="108" height="58" rx="4" fill="#fff" stroke="#202724" stroke-width={item.variant === 'call' ? 4 : 2} stroke-dasharray={item.variant === 'event-interrupting' || item.variant === 'event-noninterrupting' ? '6 3' : undefined} />
+            {item.variant === 'collapsed' && <path d="M66 61 V71 M61 66 H71" stroke="#202724" stroke-width="1.8" />}
+            {item.variant === 'call' && <path d="M66 61 V71 M61 66 H71" stroke="#202724" stroke-width="1.8" />}
+            {item.variant === 'transaction' && <rect x="17" y="22" width="98" height="48" rx="2" fill="none" stroke="#202724" stroke-width="1" />}
+            {item.variant === 'adhoc' && <text class="subprocess-marker" x="66" y="70">~</text>}
+            {item.variant === 'expanded' && (
+              <g>
+                <circle cx="28" cy="44" r="8" fill="#fff" stroke="#202724" stroke-width="1.5" />
+                <rect x="47" y="35" width="39" height="18" rx="3" fill="#fff" stroke="#202724" stroke-width="1.5" />
+                <circle cx="103" cy="44" r="8" fill="#fff" stroke="#202724" stroke-width="2.5" />
+                <path d="M36 44 H47 M86 44 H95" stroke="#202724" stroke-width="1.5" />
+                <path d="M91 41 L96 44 L91 47 M36 41 L41 44 L36 47" fill="#202724" />
+              </g>
+            )}
+            {(item.variant === 'event-interrupting' || item.variant === 'event-noninterrupting') && (
+              <g>
+                <circle cx="31" cy="44" r="11" fill="#fff" stroke="#202724" stroke-width="1.6" stroke-dasharray={item.variant === 'event-noninterrupting' ? '4 2' : undefined} />
+                <circle cx="31" cy="44" r="8" fill="none" stroke="#202724" stroke-width="1.3" />
+                <path d="M27 41 H35 V47 H27 Z M27 41 L31 44 L35 41" fill="#fff" stroke="#202724" stroke-width="1" />
+                <path d="M43 44 H58 M58 41 L63 44 L58 47" fill="#202724" />
+              </g>
+            )}
+          </>
+        )}
+
+        {item.kind === 'data' && (
+          <>
+            {item.variant === 'store' && (
+              <g>
+                <path d="M31 27 C31 20 101 20 101 27 V63 C101 70 31 70 31 63 Z" fill="#fff" stroke="#202724" stroke-width="2" />
+                <ellipse cx="66" cy="27" rx="35" ry="8" fill="#fff" stroke="#202724" stroke-width="2" />
+                <path d="M31 45 C31 53 101 53 101 45" fill="none" stroke="#202724" stroke-width="1.5" />
+              </g>
+            )}
+            {item.variant === 'annotation' && (
+              <g fill="none" stroke="#202724" stroke-width="2">
+                <path d="M31 22 V70 M31 22 H42 M31 70 H42 M48 31 H108 M48 43 H104 M48 55 H109" />
+              </g>
+            )}
+            {item.variant === 'group' && <rect x="21" y="22" width="90" height="48" rx="6" fill="none" stroke="#202724" stroke-width="2" stroke-dasharray="6 4" />}
+            {(item.variant === 'object' || item.variant === 'collection' || item.variant === 'input' || item.variant === 'output') && (
+              <g>
+                {item.variant === 'input' && <path d="M10 46 H33 M10 46 L17 40 M10 46 L17 52" fill="none" stroke="#202724" stroke-width="2" />}
+                <path d="M35 15 H79 L94 30 V73 H35 Z M79 15 V30 H94" fill="#fff" stroke="#202724" stroke-width="2" />
+                <path d="M46 41 H81 M46 49 H81 M46 57 H76" stroke="#202724" stroke-width="1.5" />
+                {item.variant === 'collection' && <path d="M48 65 H82 M48 69 H82" stroke="#202724" stroke-width="1.5" />}
+                {item.variant === 'output' && <path d="M96 46 H121 M121 46 L114 40 M121 46 L114 52" fill="none" stroke="#202724" stroke-width="2" />}
+              </g>
+            )}
+          </>
+        )}
+
+        {item.kind === 'flow' && (
+          <>
+            <path
+              d="M17 46 H113"
+              fill="none"
+              stroke="#202724"
+              stroke-width="2"
+              stroke-dasharray={item.variant === 'message' || item.variant === 'association' || item.variant === 'data-association' ? item.variant === 'association' ? '2 5' : '7 4' : undefined}
+            />
+            {(item.variant === 'sequence' || item.variant === 'conditional' || item.variant === 'default') && <polygon points="113,41 123,46 113,51" fill="#202724" />}
+            {(item.variant === 'message' || item.variant === 'data-association') && <polygon points="113,41 123,46 113,51" fill="#fff" stroke="#202724" stroke-width="1.5" />}
+            {item.variant === 'message' && <circle cx="17" cy="46" r="4" fill="#fff" stroke="#202724" stroke-width="1.5" />}
+            {item.variant === 'conditional' && <polygon points="27,40 33,46 27,52 21,46" fill="#fff" stroke="#202724" stroke-width="1.5" />}
+            {item.variant === 'default' && <path d="M28 37 L36 55" stroke="#202724" stroke-width="2" />}
+          </>
+        )}
+
+        {item.kind === 'participant' && (
+          <>
+            <rect x="12" y="18" width="108" height="56" fill="#fff" stroke="#202724" stroke-width="2" />
+            <rect x="12" y="18" width="23" height="56" fill="#e7f1ec" stroke="#202724" stroke-width="1.5" />
+            <text class="pool-label" x="23" y="48" transform="rotate(-90 23 48)">Pool</text>
+            {item.variant === 'white-box' && (
+              <g>
+                <rect x="48" y="37" width="43" height="19" rx="4" fill="#fff" stroke="#202724" stroke-width="1.5" />
+                <path d="M35 46 H48 M91 46 H108" stroke="#202724" stroke-width="1.5" />
+                <polygon points="48,43 54,46 48,49" fill="#202724" />
+                <polygon points="108,43 114,46 108,49" fill="#202724" />
+              </g>
+            )}
+            {item.variant === 'black-box' && <text class="pool-label" x="76" y="49">Vendor</text>}
+            {item.variant === 'lanes' && (
+              <g>
+                <path d="M35 46 H120 M35 46 V74" fill="none" stroke="#202724" stroke-width="1.5" />
+                <path d="M35 46 H120" stroke="#202724" stroke-width="1.5" />
+                <text class="pool-label" x="77" y="39">Lane</text>
+                <text class="pool-label" x="77" y="64">Lane</text>
+              </g>
+            )}
+          </>
+        )}
+      </svg>
+      <figcaption>
+        <strong>{item.label}</strong>
+        <span>{item.description}</span>
+      </figcaption>
+    </figure>
+  ))}
+</div>
+
+<style>
+  .notation-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+    gap: .75rem;
+    margin-block: 1rem 1.5rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .notation-card {
+    min-width: 0;
+    margin: 0;
+    padding: .75rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 6px;
+    background: var(--sl-color-bg-sidebar);
+  }
+
+  .notation-card svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 132 / 92;
+    margin-inline: auto;
+    border: 1px solid #d6d9d7;
+    border-radius: 4px;
+    background: #fff;
+  }
+
+  .notation-card figcaption {
+    display: grid;
+    gap: .25rem;
+    margin-block-start: .6rem;
+    font-size: .9rem;
+    line-height: 1.4;
+  }
+
+  .notation-card figcaption strong {
+    color: var(--sl-color-text);
+  }
+
+  .notation-card figcaption span {
+    color: var(--sl-color-gray-2);
+  }
+
+  .gateway-mark,
+  .subprocess-marker,
+  .pool-label {
+    fill: #202724;
+    font-family: "Aptos", "Segoe UI", sans-serif;
+    text-anchor: middle;
+    dominant-baseline: middle;
+  }
+
+  .gateway-mark {
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  .subprocess-marker {
+    font-size: 22px;
+  }
+
+  .pool-label {
+    font-size: 8px;
+  }
+
+  @media (max-width: 600px) {
+    .notation-gallery {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

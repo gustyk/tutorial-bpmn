@@ -1,33 +1,32 @@
 ---
 title: Event Compatibility Matrix
-description: Matriks awal kombinasi event type dan posisi; status verifikasinya dicatat.
+description: Ringkasan posisi event yang ditampilkan dalam overview Camunda BPMN Reference.
 ---
 
-Matriks berikut dibangun dari daftar overview Camunda dan pemahaman awal kompatibilitas BPMN. Seluruh kombinasi berstatus **DRAFTED** sampai diverifikasi langsung terhadap event definition/tabel pada OMG BPMN 2.0.2. Kosong berarti belum dicatat sebagai kombinasi yang sah, bukan bukti final.
+Matriks ini merangkum posisi event yang ditampilkan pada overview [Camunda BPMN Reference](https://camunda.com/bpmn/reference/). Lihat [panduan Event](/events/) untuk ilustrasi bentuk simbol dan perbedaan posisi event. Matriks bukan pengganti aturan normatif BPMN 2.0.2 atau dokumentasi dukungan eksekusi untuk versi platform tertentu.
 
 | Trigger | Start | Int. Catch | Int. Throw | Boundary I | Boundary NI | Event Subprocess I | Event Subprocess NI | End |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| None | D | — | D | — | — | — | — | D |
-| Message | D | D | D | D | D | D | D | D |
-| Timer | D | D | — | D | D | D | D | — |
-| Conditional | D | D | — | D | D | D | D | — |
-| Signal | D | D | D | D | D | D | D | D |
-| Error | — | — | — | D | — | D | — | D |
-| Escalation | — | — | D | D | D | D | D | D |
-| Compensation | — | — | D | Khusus: setelah activity selesai | — | — | D | D |
-| Link | — | D | D | — | — | — | — | — |
-| Cancel | — | — | — | D | — | — | — | D |
-| Terminate | — | — | — | — | — | — | — | D |
-| Multiple | D | D | D | D | D | D | D | D |
-| Parallel Multiple | D | D | — | D | D | D | D | — |
+| None | ● | — | — | — | — | — | — | — |
+| Message | ● | ● | ● | ● | ● | ● | ● | ● |
+| Timer | ● | ● | — | ● | ● | ● | ● | — |
+| Conditional | ● | ● | — | ● | ● | ● | ● | — |
+| Signal | ● | ● | ● | ● | ● | ● | ● | ● |
+| Error | — | — | — | ● | — | ● | — | ● |
+| Escalation | — | — | ● | ● | ● | ● | ● | ● |
+| Compensation | — | — | ● | Khusus: setelah activity selesai | — | — | ● | ● |
+| Link | — | ● | ● | — | — | — | — | — |
+| Cancel | — | — | — | ● | — | — | — | ● |
+| Terminate | — | — | — | — | — | — | — | ● |
+| Multiple | ● | ● | ● | ● | ● | ● | ● | ● |
+| Parallel Multiple | ● | ● | — | ● | ● | ● | ● | — |
 
-Legenda: `D` = drafted/provisional; `—` = tidak dicantumkan sebagai kombinasi yang didukung dalam inventory awal. Boundary/event-subprocess trigger yang tidak mendukung non-interrupting harus dikeluarkan setelah pemeriksaan normatif.
+Legenda: `●` = posisi ditampilkan pada overview Camunda; `—` = posisi tidak ditampilkan pada overview tersebut. Tanda `—` tidak dengan sendirinya menyatakan bahwa kombinasi dilarang oleh BPMN.
 
-## Temuan yang masih perlu diperiksa
+## Catatan penggunaan
 
-- Error event subprocess start memang terlihat pada overview Camunda tetapi aturan umum error-catching perlu dibaca tepat pada standar.
-- Compensation boundary/event-subprocess start memiliki aturan khusus dan tidak boleh digeneralisasi dari event lain.
-- Parallel Multiple bersifat catching-only pada informasi overview; kompatibilitas start/boundary/subprocess harus dibandingkan dengan spesifikasi dan dukungan Camunda.
-- Event subprocess dalam prompt awalnya satu kolom; dipisah menjadi interrupting/non-interrupting agar perilaku tidak hilang.
+- Event subprocess dibedakan menjadi interrupting dan non-interrupting karena keduanya memiliki dampak berbeda pada scope induk.
+- Event compensation memiliki aturan khusus terkait activity yang dikompensasi dan handler-nya.
+- Parallel Multiple menggunakan semantik penangkapan beberapa trigger; lihat BPMN 2.0.2 untuk aturan normatif.
 
-Sumber: [Camunda BPMN Reference](https://camunda.com/bpmn/reference/), [OMG BPMN 2.0.2](https://www.omg.org/spec/BPMN/2.0.2/PDF), [Camunda 8.9 BPMN coverage](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/).
+Sumber: [Camunda BPMN Reference](https://camunda.com/bpmn/reference/), [OMG BPMN 2.0.2](https://www.omg.org/spec/BPMN/2.0.2/PDF), dan [Camunda 8.9 BPMN coverage](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/).

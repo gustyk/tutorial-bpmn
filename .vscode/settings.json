@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^npm run check; if \\(\\$LASTEXITCODE -eq 0\\) \\{ npm run build \\}$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

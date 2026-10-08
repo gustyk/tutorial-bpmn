@@ -3,25 +3,70 @@ title: Pola BPMN Lanjutan
 description: Gabungkan event, gateway, scope, dan compensation untuk memodelkan exception nyata.
 ---
 
+import BpmnNotationGallery from '../../../components/BpmnNotationGallery.astro';
+
 ## Menunggu event atau timeout
 
 Gunakan event-based race ketika proses menunggu salah satu kejadian eksternal, misalnya pembayaran diterima atau batas waktu habis. Alternatif XOR cocok bila hasil sudah tersedia sebagai data pada saat keputusan dibuat. Bedakan menunggu pesan dari pekerjaan receive task.
+
+<BpmnNotationGallery
+  title="Visual pola menunggu event"
+  items={[
+    { kind: 'gateway', variant: 'event-based', label: 'Event-Based Gateway', description: 'Gateway menunggu salah satu event kandidat.' },
+    { kind: 'event', trigger: 'message', position: 'intermediate-catch', label: 'Message Catch Event', description: 'Menunggu pesan sebagai kejadian, bukan pekerjaan task.' },
+    { kind: 'event', trigger: 'timer', position: 'intermediate-catch', label: 'Timer Catch Event', description: 'Menunggu tanggal, durasi, atau siklus waktu.' },
+  ]}
+/>
 
 ## Timeout pada pekerjaan
 
 Timer boundary interrupting mengalihkan proses dan menghentikan activity yang masih berjalan; non-interrupting menjalankan jalur pengingat sementara activity tetap aktif. Pilih berdasarkan aturan SLA dan konsekuensi bisnis.
 
+<BpmnNotationGallery
+  title="Visual timer boundary event"
+  items={[
+    { kind: 'event', trigger: 'timer', position: 'boundary', interrupting: true, label: 'Interrupting Timer', description: 'Batas solid menghentikan activity dan mengalihkan alur.' },
+    { kind: 'event', trigger: 'timer', position: 'boundary', interrupting: false, label: 'Non-interrupting Timer', description: 'Batas putus-putus membuka jalur pengingat; activity tetap berjalan.' },
+  ]}
+/>
+
 ## Exception dan escalation
 
 Error mengomunikasikan exception/failure dalam scope BPMN; escalation mengangkat kondisi untuk ditangani scope yang lebih tinggi tanpa secara otomatis menyatakan kegagalan teknis. Terminate menghentikan alur aktif di scope proses, bukan sekadar satu cabang. Validasi scope sebelum memilih.
+
+<BpmnNotationGallery
+  title="Visual event untuk exception"
+  items={[
+    { kind: 'event', trigger: 'error', position: 'boundary', interrupting: true, label: 'Error Boundary Event', description: 'Petir menandai penangkapan error dari activity.' },
+    { kind: 'event', trigger: 'escalation', position: 'event-subprocess', interrupting: false, label: 'Escalation Event', description: 'Panah ke atas menandai eskalasi kondisi bisnis.' },
+    { kind: 'event', trigger: 'terminate', position: 'end', label: 'Terminate End Event', description: 'Lingkaran akhir terisi menghentikan alur aktif dalam scope.' },
+  ]}
+/>
 
 ## Compensation
 
 Compensation menjalankan handler untuk membalikkan efek bisnis yang sudah selesai, seperti refund charge atau melepas reservasi. Bukan rollback ajaib dan bukan task “undo” yang otomatis berjalan. Definisikan kapan compensation dipicu dan activity mana yang punya handler.
 
+<BpmnNotationGallery
+  title="Visual notasi compensation"
+  items={[
+    { kind: 'event', trigger: 'compensation', position: 'intermediate-throw', label: 'Compensation Event', description: 'Dua segitiga menandai pemicu handler kompensasi.' },
+    { kind: 'task', variant: 'none', marker: 'compensation', label: 'Compensation Activity', description: 'Marker ganda menandai task sebagai handler kompensasi.' },
+  ]}
+/>
+
 ## Parallel fulfillment
 
 Parallel Gateway memecah/menggabungkan alur; multi-instance mereplikasi activity untuk anggota koleksi. Gunakan AND untuk pekerjaan cabang berbeda yang semuanya diperlukan; multi-instance bila pekerjaan yang sama diterapkan pada banyak item.
+
+<BpmnNotationGallery
+  title="Visual parallel dan multi-instance"
+  items={[
+    { kind: 'gateway', variant: 'parallel', label: 'Parallel Gateway', description: 'Tanda plus mengaktifkan semua cabang atau menunggu cabang aktif.' },
+    { kind: 'task', variant: 'none', marker: 'multi-instance-sequential', label: 'Sequential Multi-instance', description: 'Task yang sama diulang untuk item koleksi secara berurutan.' },
+    { kind: 'task', variant: 'none', marker: 'multi-instance-parallel', label: 'Parallel Multi-instance', description: 'Task yang sama dibuat untuk beberapa item koleksi.' },
+  ]}
+/>
 
 ## Pola lain
 
@@ -30,5 +75,14 @@ Parallel Gateway memecah/menggabungkan alur; multi-instance mereplikasi activity
 - **Fire-and-forget:** pengiriman tidak menunggu jawaban; jangan gambar response catch tanpa requirement.
 - **Reusable process:** Call Activity bila definisi global dipanggil ulang.
 - **Link event:** pasangan intermediate untuk menghindari sequence flow yang panjang; bukan komunikasi antarpeserta.
+
+<BpmnNotationGallery
+  title="Visual notasi reusable process dan link"
+  items={[
+    { kind: 'subprocess', variant: 'call', label: 'Call Activity', description: 'Garis tebal menandai pemanggilan definisi proses reusable.' },
+    { kind: 'event', trigger: 'link', position: 'intermediate-catch', label: 'Link Catch Event', description: 'Penerima pasangan link pada alur yang berlanjut.' },
+    { kind: 'event', trigger: 'link', position: 'intermediate-throw', label: 'Link Throw Event', description: 'Pengirim pasangan link untuk menyambung alur.' },
+  ]}
+/>
 
 **[CAMUNDA]** Dukungan execution berbeda menurut versi dan konfigurasi. Verifikasi pada [Camunda BPMN coverage](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/); jangan mengasumsikan semua pola standar langsung executable.
