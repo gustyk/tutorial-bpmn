@@ -1,0 +1,98 @@
+---
+/**
+ * DeltaBlock — ringkasan perubahan di awal setiap modul.
+ * Menampilkan notasi baru + notasi yang digunakan kembali.
+ * ID elemen baru diteruskan ke BpmnViewer sebagai prop highlight.
+ */
+interface Props {
+  introduces: string[];   // ID inventory.json, mis. ["E03", "G04"]
+  reuses?: string[];      // ID yang muncul lagi
+  moduleLabel?: string;   // mis. "Modul 5"
+}
+
+const { introduces, reuses = [], moduleLabel } = Astro.props;
+---
+
+<div class="delta-block" data-delta-introduces={JSON.stringify(introduces)}>
+  <div class="delta-block__inner">
+    <section class="delta-section delta-section--new" aria-label="Notasi baru">
+      <h4 class="delta-section__heading">
+        <svg aria-hidden="true" width="14" height="14" viewBox="0 0 14 14">
+          <circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.5" fill="none"/>
+          <path d="M7 4v6M4 7h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        Notasi baru{moduleLabel ? ` di ${moduleLabel}` : ''}
+      </h4>
+      <ul class="delta-section__list">
+        {introduces.map((id) => <li><code>{id}</code></li>)}
+      </ul>
+    </section>
+
+    {reuses.length > 0 && (
+      <section class="delta-section delta-section--reuse" aria-label="Notasi yang muncul kembali">
+        <h4 class="delta-section__heading">
+          <svg aria-hidden="true" width="14" height="14" viewBox="0 0 14 14">
+            <path d="M2 7a5 5 0 0110 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+            <path d="M12 7l-1.5-1.5M12 7l-1.5 1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+          Muncul kembali
+        </h4>
+        <ul class="delta-section__list">
+          {reuses.map((id) => <li><code>{id}</code></li>)}
+        </ul>
+      </section>
+    )}
+  </div>
+</div>
+
+<style>
+.delta-block {
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 6px;
+  margin: 1.2rem 0;
+  overflow: hidden;
+}
+.delta-block__inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+}
+.delta-section {
+  flex: 1;
+  min-width: 180px;
+  padding: .6rem .8rem;
+}
+.delta-section + .delta-section {
+  border-left: 1px solid var(--sl-color-gray-5);
+}
+.delta-section--new { background: color-mix(in srgb, var(--sl-color-green) 5%, transparent); }
+.delta-section--reuse { background: color-mix(in srgb, var(--sl-color-blue) 5%, transparent); }
+.delta-section__heading {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin: 0 0 .4rem;
+  color: var(--sl-color-gray-2);
+}
+.delta-section--new .delta-section__heading { color: var(--sl-color-green); }
+.delta-section--reuse .delta-section__heading { color: var(--sl-color-blue); }
+.delta-section__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .3rem;
+}
+.delta-section__list code {
+  font-size: .8rem;
+  padding: .1rem .35rem;
+  border-radius: 3px;
+  background: var(--sl-color-gray-6);
+  border: 1px solid var(--sl-color-gray-5);
+}
+</style>

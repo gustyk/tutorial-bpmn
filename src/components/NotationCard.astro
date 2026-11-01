@@ -1,0 +1,61 @@
+---
+/**
+ * NotationCard — kartu notasi tunggal dengan caption bernomor.
+ * Digunakan di halaman notasi Tier A/B untuk menampilkan satu elemen.
+ */
+import BpmnNotationGallery from './BpmnNotationGallery.astro';
+
+type EventTrigger = 'none'|'message'|'timer'|'conditional'|'signal'|'error'|'escalation'|'compensation'|'link'|'cancel'|'terminate'|'multiple'|'parallel-multiple';
+type EventPosition = 'start'|'intermediate-catch'|'intermediate-throw'|'boundary'|'end'|'event-subprocess';
+type TaskVariant = 'none'|'user'|'manual'|'service'|'script'|'business-rule'|'send'|'receive';
+type TaskMarker = 'loop'|'multi-instance-sequential'|'multi-instance-parallel'|'compensation';
+type SubprocessVariant = 'collapsed'|'expanded'|'call'|'transaction'|'adhoc'|'event-interrupting'|'event-noninterrupting';
+type GatewayVariant = 'exclusive'|'parallel'|'inclusive'|'event-based'|'complex';
+type DataVariant = 'object'|'collection'|'store'|'input'|'output'|'annotation'|'group';
+type FlowVariant = 'sequence'|'conditional'|'default'|'message'|'association'|'data-association';
+type ParticipantVariant = 'white-box'|'black-box'|'lanes';
+
+type NotationItem =
+  | { kind: 'event'; label: string; description: string; trigger: EventTrigger; position: EventPosition; interrupting?: boolean }
+  | { kind: 'task'; label: string; description: string; variant: TaskVariant; marker?: TaskMarker }
+  | { kind: 'subprocess'; label: string; description: string; variant: SubprocessVariant }
+  | { kind: 'gateway'; label: string; description: string; variant: GatewayVariant }
+  | { kind: 'data'; label: string; description: string; variant: DataVariant }
+  | { kind: 'flow'; label: string; description: string; variant: FlowVariant }
+  | { kind: 'participant'; label: string; description: string; variant: ParticipantVariant };
+
+interface Props {
+  item: NotationItem;
+  /** Nomor gambar, mis. "2.1" → ditampilkan sebagai "Gambar 2.1" */
+  figureNumber?: string;
+  /** Caption tambahan di bawah label otomatis */
+  caption?: string;
+}
+
+const { item, figureNumber, caption } = Astro.props;
+---
+
+<div class="notation-card-wrap">
+  <BpmnNotationGallery title={item.label} items={[item]} />
+  {figureNumber && (
+    <p class="notation-card-wrap__caption">
+      <strong>Gambar {figureNumber}:</strong> {item.label}
+      {caption && ` — ${caption}`}
+    </p>
+  )}
+</div>
+
+<style>
+.notation-card-wrap {
+  margin: 1rem 0;
+}
+.notation-card-wrap :global(.notation-gallery) {
+  grid-template-columns: minmax(155px, 200px);
+}
+.notation-card-wrap__caption {
+  font-size: .8rem;
+  color: var(--sl-color-gray-3);
+  margin: .25rem 0 0;
+  text-align: center;
+}
+</style>

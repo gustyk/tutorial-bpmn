@@ -1,0 +1,63 @@
+---
+/**
+ * NotationIcon — renders a single BPMN notation symbol.
+ * Delegates SVG rendering to BpmnNotationGallery (single item) to avoid
+ * duplicating the icon drawing code.
+ */
+import BpmnNotationGallery from './BpmnNotationGallery.astro';
+
+type EventTrigger = 'none'|'message'|'timer'|'conditional'|'signal'|'error'|'escalation'|'compensation'|'link'|'cancel'|'terminate'|'multiple'|'parallel-multiple';
+type EventPosition = 'start'|'intermediate-catch'|'intermediate-throw'|'boundary'|'end'|'event-subprocess';
+type TaskVariant = 'none'|'user'|'manual'|'service'|'script'|'business-rule'|'send'|'receive';
+type TaskMarker = 'loop'|'multi-instance-sequential'|'multi-instance-parallel'|'compensation';
+type SubprocessVariant = 'collapsed'|'expanded'|'call'|'transaction'|'adhoc'|'event-interrupting'|'event-noninterrupting';
+type GatewayVariant = 'exclusive'|'parallel'|'inclusive'|'event-based'|'complex';
+type DataVariant = 'object'|'collection'|'store'|'input'|'output'|'annotation'|'group';
+type FlowVariant = 'sequence'|'conditional'|'default'|'message'|'association'|'data-association';
+type ParticipantVariant = 'white-box'|'black-box'|'lanes';
+
+type NotationItem =
+  | { kind: 'event'; label: string; description: string; trigger: EventTrigger; position: EventPosition; interrupting?: boolean }
+  | { kind: 'task'; label: string; description: string; variant: TaskVariant; marker?: TaskMarker }
+  | { kind: 'subprocess'; label: string; description: string; variant: SubprocessVariant }
+  | { kind: 'gateway'; label: string; description: string; variant: GatewayVariant }
+  | { kind: 'data'; label: string; description: string; variant: DataVariant }
+  | { kind: 'flow'; label: string; description: string; variant: FlowVariant }
+  | { kind: 'participant'; label: string; description: string; variant: ParticipantVariant };
+
+interface Props {
+  item: NotationItem;
+  /** Tampilkan label di bawah ikon */
+  showLabel?: boolean;
+}
+
+const { item, showLabel = false } = Astro.props;
+---
+
+<span class={`notation-icon-wrap${showLabel ? ' notation-icon-wrap--labeled' : ''}`}>
+  <BpmnNotationGallery title={item.label} items={[item]} />
+</span>
+
+<style>
+.notation-icon-wrap :global(.notation-gallery) {
+  /* Override galeri menjadi inline single icon */
+  display: contents;
+}
+.notation-icon-wrap :global(.notation-card) {
+  display: inline-block;
+  vertical-align: middle;
+  width: 3.5rem;
+  padding: .25rem;
+  border-radius: 4px;
+}
+.notation-icon-wrap :global(figcaption) {
+  display: none;
+}
+.notation-icon-wrap--labeled :global(figcaption) {
+  display: block;
+  text-align: center;
+}
+.notation-icon-wrap--labeled :global(.notation-card) {
+  width: 6rem;
+}
+</style>

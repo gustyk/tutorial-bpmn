@@ -1,26 +1,290 @@
 ---
-interface Props { question: string; options?: string[]; answer?: number; explanation?: string }
-const { question, options = [], answer = 0, explanation = '' } = Astro.props as Props;
+/**
+ * Quiz v2 — 6 tipe soal (SPEC §10.1).
+ * Semua umpan balik menjelaskan mengapa opsi lain salah.
+ */
+type QuizType = 'single' | 'multi' | 'trueFalse' | 'errorDetection' | 'selection' | 'argumentation';
+
+interface OptionItem {
+  text: string;
+  feedback?: string;
+}
+
+interface RubricPoint {
+  id: string;
+  text: string;
+}
+
+interface Props {
+  type: QuizType;
+  question: string;
+  // single / multi / trueFalse / errorDetection / selection
+  options?: (string | OptionItem)[];
+  // indeks jawaban benar (single/trueFalse) atau array indeks (multi)
+  answer?: number | number[];
+  // errorDetection — path ke file .bpmn
+  bpmnSrc?: string;
+  // argumentation — rubrik 3 poin mandiri
+  rubric?: RubricPoint[];
+  // selection — gunakan untuk hint
+  hint?: string;
+}
+
+const { type, question, options = [], answer, bpmnSrc, rubric, hint } = Astro.props;
+
+// Normalisasi options ke OptionItem
+const normalizedOptions: OptionItem[] = (options as (string | OptionItem)[]).map((o) =>
+  typeof o === 'string' ? { text: o } : o
+);
+
+// Encode data untuk client-side
+const answerJson = JSON.stringify(answer ?? null);
+const optionsJson = JSON.stringify(normalizedOptions);
+const rubricJson = JSON.stringify(rubric ?? []);
+
+const typeLabels: Record<QuizType, string> = {
+  single: 'Pilihan tunggal',
+  multi: 'Pilihan ganda',
+  trueFalse: 'Benar / Salah',
+  errorDetection: 'Deteksi kesalahan',
+  selection: 'Pemilihan notasi',
+  argumentation: 'Argumentasi',
+};
 ---
-<form class="quiz" data-quiz data-answer={answer} data-explanation={explanation}>
-  <fieldset><legend>{question}</legend>{options.map((option, index) => <label><input type="radio" name="answer" value={index} required /> {option}</label>)}</fieldset>
-  <button type="submit">Periksa jawaban</button>
-  <p class="quiz-feedback" aria-live="polite"></p>
-</form>
+
+<div
+  class={`quiz quiz--${type}`}
+  data-quiz-v2
+  data-type={type}
+  data-answer={answerJson}
+  data-options={optionsJson}
+  data-rubric={rubricJson}
+>
+  <div class="quiz__header">
+    <span class="quiz__type-tag">{typeLabels[type]}</span>
+  </div>
+  <p class="quiz__question">{question}</p>
+
+  {(type === 'single' || type === 'trueFalse') && (
+    <form class="quiz__form" data-quiz-form>
+      <fieldset>
+        <legend class="sr-only">{question}</legend>
+        {normalizedOptions.map((opt, i) => (
+          <label class="quiz__option">
+            <input type="radio" name="q" value={i} required />
+            <span>{opt.text}</span>
+          </label>
+        ))}
+      </fieldset>
+      <button type="submit" class="quiz__submit">Periksa</button>
+    </form>
+  )}
+
+  {type === 'multi' && (
+    <form class="quiz__form" data-quiz-form>
+      <fieldset>
+        <legend class="sr-only">{question}</legend>
+        {normalizedOptions.map((opt, i) => (
+          <label class="quiz__option">
+            <input type="checkbox" name="q" value={i} />
+            <span>{opt.text}</span>
+          </label>
+        ))}
+      </fieldset>
+      <button type="submit" class="quiz__submit">Periksa</button>
+    </form>
+  )}
+
+  {type === 'errorDetection' && bpmnSrc && (
+    <div class="quiz__bpmn-area">
+      <p class="quiz__hint">Perhatikan diagram di bawah ini, lalu pilih kesalahan yang ada.</p>
+      <div class="quiz__bpmn-viewer" data-bpmn-src={bpmnSrc} aria-label="Diagram BPMN untuk dianalisis"></div>
+      <form class="quiz__form" data-quiz-form>
+        <fieldset>
+          <legend class="sr-only">{question}</legend>
+          {normalizedOptions.map((opt, i) => (
+            <label class="quiz__option">
+              <input type="radio" name="q" value={i} required />
+              <span>{opt.text}</span>
+            </label>
+          ))}
+        </fieldset>
+        <button type="submit" class="quiz__submit">Periksa</button>
+      </form>
+    </div>
+  )}
+
+  {type === 'selection' && (
+    <form class="quiz__form" data-quiz-form>
+      {hint && <p class="quiz__hint">{hint}</p>}
+      <fieldset>
+        <legend class="sr-only">{question}</legend>
+        {normalizedOptions.map((opt, i) => (
+          <label class="quiz__option quiz__option--card">
+            <input type="radio" name="q" value={i} required />
+            <span>{opt.text}</span>
+          </label>
+        ))}
+      </fieldset>
+      <button type="submit" class="quiz__submit">Periksa</button>
+    </form>
+  )}
+
+  {type === 'argumentation' && (
+    <form class="quiz__form" data-quiz-form>
+      <label class="quiz__arg-label" for="arg-input">
+        Tulis jawabanmu (sebutkan konteks, hubungkan ke notasi, tolak minimal satu alternatif):
+      </label>
+      <textarea id="arg-input" class="quiz__arg-area" rows="5" required></textarea>
+      {rubric && rubric.length > 0 && (
+        <fieldset class="quiz__rubric">
+          <legend>Periksa jawabanmu sendiri:</legend>
+          {rubric.map((pt) => (
+            <label class="quiz__rubric-item">
+              <input type="checkbox" data-rubric-id={pt.id} />
+              <span>{pt.text}</span>
+            </label>
+          ))}
+        </fieldset>
+      )}
+      <button type="submit" class="quiz__submit">Nilai sendiri</button>
+    </form>
+  )}
+
+  <div class="quiz__feedback" aria-live="polite" aria-atomic="true"></div>
+</div>
+
 <script>
-  document.querySelectorAll<HTMLFormElement>('[data-quiz]').forEach((form) => {
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
-      const selected = form.querySelector<HTMLInputElement>('input:checked');
-      const feedback = form.querySelector<HTMLParagraphElement>('.quiz-feedback')!;
-      feedback.textContent = selected?.value === form.dataset.answer ? `Tepat. ${form.dataset.explanation}` : `Belum tepat. ${form.dataset.explanation}`;
+document.querySelectorAll<HTMLElement>('[data-quiz-v2]').forEach((container) => {
+  const type = container.dataset.type as string;
+  const answer = JSON.parse(container.dataset.answer ?? 'null');
+  const options: Array<{ text: string; feedback?: string }> = JSON.parse(container.dataset.options ?? '[]');
+  const rubric: Array<{ id: string; text: string }> = JSON.parse(container.dataset.rubric ?? '[]');
+  const feedback = container.querySelector<HTMLElement>('.quiz__feedback')!;
+  const form = container.querySelector<HTMLFormElement>('[data-quiz-form]');
+  if (!form) return;
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    feedback.innerHTML = '';
+
+    if (type === 'argumentation') {
+      const checks = form.querySelectorAll<HTMLInputElement>('[data-rubric-id]:checked');
+      const score = checks.length;
+      const total = rubric.length || 3;
+      const parts = rubric.map((pt) => {
+        const checked = form.querySelector<HTMLInputElement>(`[data-rubric-id="${pt.id}"]:checked`);
+        return `<li class="${checked ? 'ok' : 'missing'}">${checked ? '✓' : '○'} ${pt.text}</li>`;
+      });
+      feedback.innerHTML = `<p class="quiz__score">${score}/${total} poin rubrik</p><ul class="quiz__rubric-result">${parts.join('')}</ul>`;
+      return;
+    }
+
+    if (type === 'multi') {
+      const checked = Array.from(form.querySelectorAll<HTMLInputElement>('input[type=checkbox]:checked'))
+        .map((c) => Number(c.value));
+      const correct: number[] = Array.isArray(answer) ? answer : [];
+      const isCorrect =
+        checked.length === correct.length && checked.every((v) => correct.includes(v));
+      const parts = options.map((opt, i) => {
+        const selected = checked.includes(i);
+        const shouldSelect = correct.includes(i);
+        const icon = selected === shouldSelect ? '✓' : selected ? '✗' : '○';
+        const cls = selected === shouldSelect ? 'ok' : selected ? 'wrong' : 'missed';
+        return `<li class="${cls}">${icon} ${opt.text}${opt.feedback ? ` — ${opt.feedback}` : ''}</li>`;
+      });
+      feedback.innerHTML = `<p class="${isCorrect ? 'quiz__correct' : 'quiz__wrong'}">${isCorrect ? 'Tepat.' : 'Belum tepat.'}</p><ul>${parts.join('')}</ul>`;
+      return;
+    }
+
+    // single / trueFalse / errorDetection / selection
+    const selected = form.querySelector<HTMLInputElement>('input[type=radio]:checked');
+    if (!selected) return;
+    const selectedIdx = Number(selected.value);
+    const correctIdx = typeof answer === 'number' ? answer : 0;
+    const isCorrect = selectedIdx === correctIdx;
+    const parts = options.map((opt, i) => {
+      const isSel = i === selectedIdx;
+      const isCorr = i === correctIdx;
+      const icon = isCorr ? '✓' : isSel ? '✗' : '○';
+      const cls = isCorr ? 'ok' : isSel ? 'wrong' : '';
+      return `<li class="${cls}">${icon} ${opt.text}${opt.feedback ? ` — ${opt.feedback}` : ''}</li>`;
     });
+    feedback.innerHTML = `<p class="${isCorrect ? 'quiz__correct' : 'quiz__wrong'}">${isCorrect ? 'Tepat.' : 'Belum tepat.'}</p><ul>${parts.join('')}</ul>`;
   });
+});
 </script>
+
 <style>
-.quiz { padding: 1rem; border: 1px solid var(--sl-color-gray-5); border-radius: 4px; }
-.quiz fieldset { display: grid; gap: .6rem; border: 0; padding: 0; }
-.quiz label { display: flex; gap: .5rem; align-items: flex-start; }
-.quiz button { margin-top: .8rem; padding: .5rem .8rem; }
-.quiz-feedback { min-height: 1.5em; }
+.quiz {
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 6px;
+  margin: 1.4rem 0;
+  padding: .8rem 1rem;
+}
+.quiz__header { margin-bottom: .5rem; }
+.quiz__type-tag {
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  padding: .15rem .4rem;
+  border-radius: 3px;
+  background: var(--sl-color-gray-6);
+  color: var(--sl-color-gray-2);
+}
+.quiz__question { font-weight: 600; margin: .4rem 0 .8rem; }
+.quiz__form fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: .5rem; }
+.quiz__option { display: flex; align-items: baseline; gap: .5rem; cursor: pointer; }
+.quiz__option--card {
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 4px;
+  padding: .4rem .6rem;
+  align-items: center;
+}
+.quiz__submit {
+  margin-top: .8rem;
+  padding: .4rem .9rem;
+  border-radius: 4px;
+  border: 1px solid var(--sl-color-gray-4);
+  background: var(--sl-color-gray-7);
+  cursor: pointer;
+  font-size: .875rem;
+}
+.quiz__submit:focus-visible { outline: 2px solid var(--sl-color-text-accent); outline-offset: 2px; }
+.quiz__feedback { margin-top: .8rem; min-height: 1.5em; }
+.quiz__feedback ul { list-style: none; padding: 0; margin: .4rem 0 0; display: grid; gap: .3rem; }
+.quiz__feedback li.ok { color: var(--sl-color-green); }
+.quiz__feedback li.wrong { color: var(--sl-color-red); }
+.quiz__correct { color: var(--sl-color-green); font-weight: 600; margin: 0; }
+.quiz__wrong { color: var(--sl-color-red); font-weight: 600; margin: 0; }
+.quiz__score { font-weight: 600; margin: 0; }
+.quiz__rubric {
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 4px;
+  padding: .6rem .8rem;
+  margin-top: .8rem;
+  display: grid;
+  gap: .4rem;
+}
+.quiz__rubric legend { font-weight: 600; font-size: .85rem; padding: 0 .3rem; }
+.quiz__rubric-item { display: flex; align-items: baseline; gap: .5rem; cursor: pointer; }
+.quiz__rubric-result li.ok { color: var(--sl-color-green); }
+.quiz__rubric-result li.missing { color: var(--sl-color-gray-3); }
+.quiz__arg-label { display: block; margin-bottom: .4rem; font-size: .875rem; }
+.quiz__arg-area {
+  width: 100%;
+  border-radius: 4px;
+  border: 1px solid var(--sl-color-gray-4);
+  padding: .5rem;
+  background: var(--sl-color-gray-7);
+  color: var(--sl-color-text);
+  font-family: inherit;
+  font-size: .875rem;
+  resize: vertical;
+}
+.quiz__hint { font-size: .875rem; color: var(--sl-color-gray-3); margin-bottom: .6rem; }
+.quiz__bpmn-area { margin-bottom: .6rem; }
+.quiz__bpmn-viewer { min-height: 180px; border: 1px solid var(--sl-color-gray-5); border-radius: 4px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
 </style>

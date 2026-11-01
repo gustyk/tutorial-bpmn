@@ -1,0 +1,110 @@
+---
+interface CheckItem {
+  id: string;
+  text: string;
+  reviewPath?: string;
+}
+
+interface Props {
+  moduleId: string;
+  items: CheckItem[];
+}
+
+const { moduleId, items } = Astro.props;
+---
+
+<section class="checkpoint" aria-label="Checkpoint Kemampuan" data-checkpoint data-module-id={moduleId}>
+  <h3 class="checkpoint__heading">
+    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <circle cx="9" cy="9" r="8" stroke="currentColor" stroke-width="1.5"/>
+      <path d="M5.5 9l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Saya sudah mampu…
+  </h3>
+  <ul class="checkpoint__list" role="list">
+    {items.map((item) => (
+      <li class="checkpoint__item">
+        <label class="checkpoint__label">
+          <input
+            type="checkbox"
+            class="checkpoint__check"
+            data-item-id={item.id}
+            aria-label={item.text}
+          />
+          <span class="checkpoint__text">{item.text}</span>
+        </label>
+        {item.reviewPath && (
+          <a class="checkpoint__review" href={item.reviewPath} aria-label={`Baca ulang tentang ${item.text}`}>
+            Baca ulang ↗
+          </a>
+        )}
+      </li>
+    ))}
+  </ul>
+  <p class="checkpoint__status" aria-live="polite"></p>
+</section>
+
+<script>
+document.querySelectorAll<HTMLElement>('[data-checkpoint]').forEach((section) => {
+  const moduleId = section.dataset.moduleId!;
+  const checks = section.querySelectorAll<HTMLInputElement>('[data-item-id]');
+  const status = section.querySelector<HTMLParagraphElement>('.checkpoint__status')!;
+
+  // Restore dari localStorage
+  checks.forEach((cb) => {
+    const key = `checkpoint:${moduleId}:${cb.dataset.itemId}`;
+    if (localStorage.getItem(key) === '1') cb.checked = true;
+  });
+
+  function updateStatus() {
+    const done = Array.from(checks).filter((c) => c.checked).length;
+    status.textContent = done === checks.length
+      ? `Semua ${checks.length} kemampuan tercapai.`
+      : `${done} dari ${checks.length} kemampuan tercapai.`;
+  }
+
+  checks.forEach((cb) => {
+    cb.addEventListener('change', () => {
+      const key = `checkpoint:${moduleId}:${cb.dataset.itemId}`;
+      localStorage.setItem(key, cb.checked ? '1' : '0');
+      updateStatus();
+    });
+  });
+
+  updateStatus();
+});
+</script>
+
+<style>
+.checkpoint {
+  border: 1px solid var(--sl-color-green);
+  background: color-mix(in srgb, var(--sl-color-green) 6%, transparent);
+  border-radius: 6px;
+  padding: .8rem 1rem;
+  margin: 1.4rem 0;
+}
+.checkpoint__heading {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .9rem;
+  font-weight: 700;
+  margin: 0 0 .7rem;
+  color: var(--sl-color-green);
+}
+.checkpoint__list { list-style: none; padding: 0; margin: 0; display: grid; gap: .5rem; }
+.checkpoint__item { display: flex; align-items: baseline; gap: .5rem; flex-wrap: wrap; }
+.checkpoint__label { display: flex; align-items: baseline; gap: .5rem; cursor: pointer; flex: 1; }
+.checkpoint__check { flex-shrink: 0; margin-top: .1rem; accent-color: var(--sl-color-green); }
+.checkpoint__review {
+  font-size: .78rem;
+  color: var(--sl-color-text-accent);
+  white-space: nowrap;
+}
+.checkpoint__status {
+  margin: .6rem 0 0;
+  font-size: .8rem;
+  color: var(--sl-color-gray-3);
+  min-height: 1.2em;
+}
+</style>

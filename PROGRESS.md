@@ -2,9 +2,9 @@
 
 Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y — judul` → `- [x] T-x.y — judul · 2026-11-xx · catatan satu baris`.
 
-**Acuan:** [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) v1.1 · [SPEC.md](SPEC.md) v1.1 · **Status keseluruhan:** WP-1 selesai, menunggu G1
-**Keputusan pemilik:** S-01…S-04 dan D-01…D-03 sudah dijawab 2026-11-01 — tidak ada tugas yang diblokir
-**Gerbang berikutnya:** G1 — pemilik harus review dan setujui sebelum WP-2 dimulai
+**Acuan:** [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) v1.1 · [SPEC.md](SPEC.md) v1.1 · **Status keseluruhan:** WP-2 selesai
+**Keputusan pemilik:** S-01…S-04 dan D-01…D-03 sudah dijawab 2026-11-01 · G1 disetujui 2026-11-02
+**Gerbang berikutnya:** tidak ada sampai G2 (setelah WP-7)
 
 ---
 
@@ -33,16 +33,16 @@ Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y
 
 ## WP-2 · Sistem desain dan komponen dasar
 
-- [ ] T-2.1 — `Callout` (4 tipe, ikon + label, collapsible)
-- [ ] T-2.2 — `Reveal`
-- [ ] T-2.3 — `Checkpoint`
-- [ ] T-2.4 — `Quiz` v2 (6 tipe, umpan balik per opsi)
-- [ ] T-2.5 — `NotationIcon` + `NotationCard`
-- [ ] T-2.6 — `CoverageTable`
-- [ ] T-2.7 — `DeltaBlock`
-- [ ] T-2.8 — `Figure` (caption bernomor otomatis)
-- [ ] T-2.9 — Lintasan aksesibilitas komponen
-- [ ] T-2.10 — `MermaidDiagram` lazy-load + alternatif teks decision tree
+- [x] T-2.1 — `Callout.astro` · 2026-11-02 · 4 tipe (standard/camunda/bestpractice/pedagogical); collapsed prop; source prop; ikon+label tak hanya warna
+- [x] T-2.2 — `Reveal.astro` · 2026-11-02 · details native; storageKey localStorage; keyboard OK
+- [x] T-2.3 — `Checkpoint.astro` · 2026-11-02 · aria-live; localStorage per moduleId+itemId; tautan bacaUlang
+- [x] T-2.4 — `Quiz.astro` v2 · 2026-11-02 · 6 tipe; umpan balik per opsi; rubrik mandiri argumentation; check 0 errors
+- [x] T-2.5 — `NotationIcon` + `NotationCard` · 2026-11-02 · delegasi SVG ke BpmnNotationGallery; tidak ada set ikon kedua
+- [x] T-2.6 — `CoverageTable` · 2026-11-02 · dari inventory.ts saat build; angka sesuai audit:coverage --report
+- [x] T-2.7 — `DeltaBlock` · 2026-11-02 · introduces+reuses props; data-delta-introduces untuk BpmnViewer highlight
+- [x] T-2.8 — `Figure` · 2026-11-02 · penomoran client-side sequential; "Gambar N:" otomatis
+- [x] T-2.9 — Lintasan aksesibilitas · 2026-11-02 · focus outline; aria-label/live di semua komponen; info tidak hanya dari warna
+- [x] T-2.10 — `MermaidDiagram` lazy-load · 2026-11-02 · IntersectionObserver; tidak dimuat jika tidak ada diagram; textAlt prop
 
 ## WP-3 · Viewer dan simulasi token
 

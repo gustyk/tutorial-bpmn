@@ -1,0 +1,140 @@
+---
+/**
+ * Callout — 4 tipe sesuai label klaim SPEC Bagian 6:
+ *   standard    → [STANDARD] pernyataan OMG BPMN 2.0.2
+ *   camunda     → [CAMUNDA]  pernyataan Camunda-spesifik
+ *   bestpractice→ [BEST PRACTICE]
+ *   pedagogical → [PEDAGOGICAL SIMPLIFICATION]
+ */
+type CalloutType = 'standard' | 'camunda' | 'bestpractice' | 'pedagogical';
+
+interface Props {
+  type: CalloutType;
+  source?: string;   // Pelokasi klausa/tabel, mis. "§10.4.2, tabel 10.84"
+  collapsed?: boolean;
+}
+
+const { type, source, collapsed = false } = Astro.props;
+
+const META: Record<CalloutType, { label: string; icon: string; cls: string }> = {
+  standard: {
+    label: 'STANDARD',
+    icon: `<svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <rect x="1" y="1" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/>
+      <text x="8" y="11.5" text-anchor="middle" font-size="9" font-weight="700" fill="currentColor">S</text>
+    </svg>`,
+    cls: 'callout--standard',
+  },
+  camunda: {
+    label: 'CAMUNDA',
+    icon: `<svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
+      <text x="8" y="11.5" text-anchor="middle" font-size="9" font-weight="700" fill="currentColor">C</text>
+    </svg>`,
+    cls: 'callout--camunda',
+  },
+  bestpractice: {
+    label: 'BEST PRACTICE',
+    icon: `<svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M8 1.5l1.8 3.6 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4L2.2 5.7l4-.6L8 1.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+    </svg>`,
+    cls: 'callout--bestpractice',
+  },
+  pedagogical: {
+    label: 'PENYEDERHANAAN PEDAGOGIS',
+    icon: `<svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M8 2L2 6v8h4v-4h4v4h4V6z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+    </svg>`,
+    cls: 'callout--pedagogical',
+  },
+};
+
+const { label, icon, cls } = META[type];
+---
+
+{collapsed ? (
+  <details class={`callout ${cls}`}>
+    <summary class="callout__header">
+      <span class="callout__icon" set:html={icon} />
+      <span class="callout__label">{label}</span>
+      {source && <span class="callout__source">{source}</span>}
+    </summary>
+    <div class="callout__body">
+      <slot />
+    </div>
+  </details>
+) : (
+  <aside class={`callout ${cls}`} aria-label={label}>
+    <div class="callout__header">
+      <span class="callout__icon" set:html={icon} />
+      <span class="callout__label">{label}</span>
+      {source && <span class="callout__source">{source}</span>}
+    </div>
+    <div class="callout__body">
+      <slot />
+    </div>
+  </aside>
+)}
+
+<style>
+.callout {
+  border-left: 3px solid var(--callout-color, var(--sl-color-gray-4));
+  background: var(--callout-bg, var(--sl-color-gray-7));
+  border-radius: 0 4px 4px 0;
+  margin: 1.2rem 0;
+  padding: 0;
+}
+.callout__header {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .5rem .75rem;
+  font-size: .8rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--callout-color, var(--sl-color-gray-2));
+  cursor: default;
+}
+details.callout > summary.callout__header { cursor: pointer; list-style: none; }
+details.callout > summary.callout__header::after {
+  content: '▸';
+  margin-left: auto;
+  font-size: .7rem;
+  transition: transform .15s;
+}
+details.callout[open] > summary.callout__header::after { transform: rotate(90deg); }
+.callout__icon { display: flex; flex-shrink: 0; }
+.callout__source {
+  margin-left: auto;
+  font-weight: 400;
+  font-size: .75rem;
+  font-style: italic;
+  opacity: .75;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.callout__body { padding: .5rem .75rem .6rem; }
+.callout__body :global(p:last-child) { margin-bottom: 0; }
+
+/* tipe: standard — biru */
+.callout--standard {
+  --callout-color: var(--sl-color-blue);
+  --callout-bg: color-mix(in srgb, var(--sl-color-blue) 8%, transparent);
+}
+/* tipe: camunda — oranye */
+.callout--camunda {
+  --callout-color: var(--sl-color-orange, #e67c00);
+  --callout-bg: color-mix(in srgb, var(--sl-color-orange, #e67c00) 8%, transparent);
+}
+/* tipe: bestpractice — hijau */
+.callout--bestpractice {
+  --callout-color: var(--sl-color-green);
+  --callout-bg: color-mix(in srgb, var(--sl-color-green) 8%, transparent);
+}
+/* tipe: pedagogical — ungu */
+.callout--pedagogical {
+  --callout-color: var(--sl-color-purple, #8b5cf6);
+  --callout-bg: color-mix(in srgb, var(--sl-color-purple, #8b5cf6) 8%, transparent);
+}
+</style>

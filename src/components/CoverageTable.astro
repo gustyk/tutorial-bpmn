@@ -1,0 +1,122 @@
+---
+/**
+ * CoverageTable — tabel cakupan notasi BPMN.
+ * Data diambil dari inventory.json saat build via src/lib/inventory.ts.
+ * Angka cocok dengan `npm run audit:coverage --report`.
+ */
+import { getInventory, getElementsByTier } from '../lib/inventory';
+
+const inventory = getInventory();
+const tierA = getElementsByTier('A');
+const tierB = getElementsByTier('B');
+const tierC = getElementsByTier('C');
+
+const countByStatus = (els: typeof tierA) =>
+  els.reduce((acc, e) => { acc[e.status] = (acc[e.status] ?? 0) + 1; return acc; }, {} as Record<string, number>);
+
+const statsA = countByStatus(tierA);
+const statsB = countByStatus(tierB);
+const statsC = countByStatus(tierC);
+
+// Kelompokkan elemen per kasus (introducedIn)
+const byCaseA = tierA.reduce((acc, e) => {
+  const key = e.introducedIn ?? '(belum ditetapkan)';
+  (acc[key] ??= []).push(e);
+  return acc;
+}, {} as Record<string, typeof tierA>);
+---
+
+<section aria-label="Tabel Cakupan Notasi">
+  <h3>Ringkasan cakupan</h3>
+  <table class="cov-table">
+    <thead>
+      <tr>
+        <th>Tier</th>
+        <th>Jumlah</th>
+        <th>VERIFIED</th>
+        <th>DRAFTED</th>
+        <th>TODO</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>A</strong> <span class="cov-desc">— Tier inti kurikulum</span></td>
+        <td class="cov-num">{tierA.length}</td>
+        <td class="cov-num">{statsA.VERIFIED ?? 0}</td>
+        <td class="cov-num">{statsA.DRAFTED ?? 0}</td>
+        <td class="cov-num">{statsA.TODO ?? 0}</td>
+      </tr>
+      <tr>
+        <td><strong>B</strong> <span class="cov-desc">— Katalog, tidak semua dibahas</span></td>
+        <td class="cov-num">{tierB.length}</td>
+        <td class="cov-num">{statsB.VERIFIED ?? 0}</td>
+        <td class="cov-num">{statsB.DRAFTED ?? 0}</td>
+        <td class="cov-num">{statsB.TODO ?? 0}</td>
+      </tr>
+      <tr>
+        <td><strong>C</strong> <span class="cov-desc">— Referensi saja</span></td>
+        <td class="cov-num">{tierC.length}</td>
+        <td class="cov-num">{statsC.VERIFIED ?? 0}</td>
+        <td class="cov-num">{statsC.DRAFTED ?? 0}</td>
+        <td class="cov-num">{statsC.TODO ?? 0}</td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td><strong>Total</strong></td>
+        <td class="cov-num">{inventory.elements.length}</td>
+        <td class="cov-num">{(statsA.VERIFIED ?? 0) + (statsB.VERIFIED ?? 0) + (statsC.VERIFIED ?? 0)}</td>
+        <td class="cov-num">{(statsA.DRAFTED ?? 0) + (statsB.DRAFTED ?? 0) + (statsC.DRAFTED ?? 0)}</td>
+        <td class="cov-num">{(statsA.TODO ?? 0) + (statsB.TODO ?? 0) + (statsC.TODO ?? 0)}</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <h3>Notasi Tier A per kasus</h3>
+  <table class="cov-table">
+    <thead>
+      <tr>
+        <th>Kasus</th>
+        <th>Notasi yang diperkenalkan</th>
+      </tr>
+    </thead>
+    <tbody>
+      {Object.entries(byCaseA).sort(([a], [b]) => a.localeCompare(b)).map(([caseId, els]) => (
+        <tr>
+          <td><code>{caseId}</code></td>
+          <td>{els.map((e, i) => (
+            <>{i > 0 ? ', ' : ''}<span class={`cov-badge cov-badge--${e.status.toLowerCase()}`}>{e.id} {e.notation}</span></>
+          ))}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</section>
+
+<style>
+.cov-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .875rem;
+  margin: .6rem 0 1.2rem;
+}
+.cov-table th, .cov-table td {
+  padding: .4rem .6rem;
+  border: 1px solid var(--sl-color-gray-5);
+  text-align: left;
+}
+.cov-table th { background: var(--sl-color-gray-6); font-weight: 600; }
+.cov-table tfoot td { font-weight: 600; background: var(--sl-color-gray-7); }
+.cov-num { text-align: right; font-variant-numeric: tabular-nums; }
+.cov-desc { font-weight: 400; font-size: .78rem; color: var(--sl-color-gray-3); }
+.cov-badge {
+  display: inline-block;
+  font-size: .75rem;
+  padding: .1rem .3rem;
+  border-radius: 3px;
+  border: 1px solid transparent;
+}
+.cov-badge--verified { background: color-mix(in srgb, var(--sl-color-green) 15%, transparent); border-color: var(--sl-color-green); }
+.cov-badge--drafted { background: color-mix(in srgb, var(--sl-color-blue) 10%, transparent); border-color: var(--sl-color-blue); }
+.cov-badge--todo { background: var(--sl-color-gray-6); border-color: var(--sl-color-gray-4); }
+</style>

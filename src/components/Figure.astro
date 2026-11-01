@@ -1,0 +1,55 @@
+---
+/**
+ * Figure — gambar dengan caption "Gambar N.M" bernomor otomatis per halaman.
+ * Penomoran dilakukan di client-side karena Astro tidak menyediakan counter
+ * lintas-komponen saat build (setiap komponen dirender terpisah).
+ * Format: "Gambar M" (urutan kemunculan di halaman).
+ */
+interface Props {
+  /** Prefix caption, mis. "Alur pemrosesan pesanan". Nomor ditambahkan otomatis. */
+  caption: string;
+  /** Alt text untuk aksesibilitas; defaults to caption */
+  alt?: string;
+}
+
+const { caption } = Astro.props;
+---
+
+<figure class="auto-figure" data-auto-figure>
+  <div class="auto-figure__content">
+    <slot />
+  </div>
+  <figcaption class="auto-figure__caption">
+    <strong class="auto-figure__num" aria-label="nomor gambar">Gambar —</strong>
+    <span>{caption}</span>
+  </figcaption>
+</figure>
+
+<script>
+// Penomoran sequential per halaman, urutan kemunculan di DOM
+let figureCount = 0;
+document.querySelectorAll<HTMLElement>('[data-auto-figure]').forEach((fig) => {
+  figureCount++;
+  const numEl = fig.querySelector<HTMLElement>('.auto-figure__num');
+  if (numEl) numEl.textContent = `Gambar ${figureCount}:`;
+});
+</script>
+
+<style>
+.auto-figure {
+  margin: 1.2rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .4rem;
+}
+.auto-figure__content { width: 100%; }
+.auto-figure__caption {
+  font-size: .82rem;
+  color: var(--sl-color-gray-3);
+  display: flex;
+  gap: .3rem;
+  flex-wrap: wrap;
+}
+.auto-figure__num { white-space: nowrap; }
+</style>
