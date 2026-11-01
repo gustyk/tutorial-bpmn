@@ -1,3 +1,8 @@
+> **STATUS: KEDALUWARSA.**
+> Rencana fase di dokumen ini disusun sebelum keputusan 2026-11-01 (pemisahan Jalur Belajar dan Katalog,
+> pembagian Tier, tangga 10 kasus, kunci jawaban 4 lapis, demo.bpmn.io, fokus belajar mandiri).
+> Rencana kerja yang berlaku ada di [SPEC.md](SPEC.md) Bagian 16.
+
 ## Plan: Website Tutorial BPMN 2.0 untuk Pemula (Tikno, UISI)
 
 Rencana ini mengeksekusi [prompt.md](prompt.md) dalam dua jalur paralel. Jalur pertama adalah riset, inventaris, dan penulisan konten. Jalur kedua adalah membangun website statis Astro + Starlight dengan viewer bpmn-js. Keluaran statis bisa di-deploy ke Vercel Hobby dan ke cPanel. Prompt mewajibkan urutan RESEARCH → INVENTORY → COVERAGE → WRITING → VALIDATION, jadi website baru diisi konten penuh setelah inventaris tervalidasi.

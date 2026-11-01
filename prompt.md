@@ -1,3 +1,9 @@
+> **STATUS: BRIEF AWAL — BUKAN SPESIFIKASI KERJA.**
+> Sumber kebenaran proyek ini adalah [SPEC.md](SPEC.md) (versi 1.0, 2026-11-01).
+> Bila dokumen ini bertentangan dengan `SPEC.md`, `SPEC.md` yang menang. Lihat `SPEC.md` Bagian 15
+> untuk daftar bagian dokumen ini yang sudah diganti, dipersempit, atau diperluas.
+> Dokumen ini dipertahankan sebagai arsip rasional dan sebagai sumber bagian-bagian yang masih berlaku.
+
 # MASTER PROMPT
 ## Penyusunan Tutorial Lengkap BPMN 2.0 Berbasis Referensi Camunda untuk Pemula
 
