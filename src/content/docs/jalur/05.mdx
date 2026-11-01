@@ -1,6 +1,197 @@
 ---
-title: "Modul 5 — Proses persetujuan"
-description: "Kasus kelima: XOR gateway dan loop."
+title: "Modul 5: Pembayaran Punya Batas Waktu"
+description: "Ekspresikan batas waktu dengan Timer Event dan Event-Based Gateway. Jangan gunakan XOR saat data belum ada."
 ---
 
-Halaman ini akan diisi saat modul terkait diterbitkan.
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+import CriteriaChecker from '../../../components/CriteriaChecker.astro';
+
+## 1. Apa yang berubah
+
+**Perubahan requirement dari Modul 4:**
+
+> "Kalau pembayaran tidak masuk dalam 24 jam, pesanan batal."
+
+Di Modul 4, proses Merchant selesai ketika paket dikirim. Sekarang ada satu kondisi baru: **pembayaran dulu, baru pengemasan**. Dan pembayaran itu punya batas waktu.
+
+**Delta notasi:**
+
+| Kode | Nama | Peran dalam modul ini |
+|------|------|----------------------|
+| E03 | Timer Event | Event yang menunggu selama durasi tertentu atau hingga waktu tertentu |
+| G04 | Event-Based Gateway | Gateway yang menunggu salah satu dari beberapa event — berbeda dari XOR yang mengevaluasi data |
+
+**Dari Modul 4 yang dipakai ulang:** E01, E02, P01/P02, C01, F02, D01, F04, R01, A04/A05, G01, F01.
+
+---
+
+## 2. Kasus bisnis
+
+Kepala keuangan masuk ke rapat:
+
+> "Kami punya masalah: pesanan sering diproses tapi pembayarannya tidak masuk. Tim gudang sudah menyiapkan paket, tapi tidak ada uangnya. Solusinya: setelah kami kirim instruksi pembayaran ke customer, kami tunggu maksimal 24 jam. Kalau tidak ada, pesanan dibatalkan. Kalau ada, kami lanjutkan ke pengemasan."
+
+Dua pertanyaan langsung muncul:
+1. *"Apakah kita cukup gunakan XOR: 'Pembayaran masuk? Ya/Tidak'?"*
+2. *"Atau kita butuh sesuatu yang berbeda karena kita sedang menunggu, bukan mengevaluasi?"*
+
+---
+
+## 3. Requirement
+
+1. Setelah verifikasi data valid, Merchant **mengirim instruksi pembayaran** ke Customer via Message Flow.
+2. Merchant **menunggu** konfirmasi pembayaran dari Customer — tanpa batas waktu ini, proses akan terhenti selamanya.
+3. **Jika konfirmasi pembayaran masuk** dalam 24 jam: lanjutkan ke pengemasan.
+4. **Jika 24 jam berlalu** tanpa konfirmasi: batalkan pesanan, proses berakhir.
+5. Customer menerima instruksi, melakukan pembayaran, dan **mengirim bukti pembayaran** ke Merchant.
+6. Setelah pesanan dikemas dan dikirim, Merchant **mengirim konfirmasi pesanan** ke Customer.
+
+---
+
+## 4. Panduan analisis
+
+**Pertanyaan inti: XOR atau Event-Based Gateway?**
+
+> "Kapan sebuah titik keputusan membutuhkan XOR, dan kapan membutuhkan Event-Based Gateway?"
+
+Jawabannya ada di satu pertanyaan: **apakah data sudah tersedia saat token tiba?**
+
+Ketika token tiba di titik menunggu pembayaran, kamu belum tahu apakah pembayaran akan masuk atau tidak — datanya belum ada. XOR mengevaluasi kondisi berdasarkan data yang sudah ada. Jika data belum ada, XOR tidak bisa dievaluasi.
+
+Event-Based Gateway berbeda: ia tidak mengevaluasi data — ia **menunggu** salah satu dari beberapa event terjadi. Dalam kasus ini: tunggu pesan konfirmasi pembayaran *atau* tunggu timer 24 jam — mana yang lebih dulu menang.
+
+**Reuse negatif — jebakan terbesar di modul ini:**
+
+> *"XOR dipakai menunggu hasil pembayaran."*
+
+Gejala: ada XOR Gateway dengan outgoing flow berlabel "pembayaran masuk" dan "pembayaran tidak masuk".
+
+Diagnosis: Pada saat token tiba di gateway itu, mesin proses harus mengevaluasi kondisi. Tapi data "apakah pembayaran sudah masuk" belum ada — pesanan baru saja dikirim instruksinya. Mesin akan gagal atau mengambil jalur default secara sembarangan.
+
+Perbaikan: gunakan Event-Based Gateway, lalu pasangkan dengan Intermediate Message Catch Event (konfirmasi masuk) dan Intermediate Timer Event (24 jam berlalu).
+
+**Timer Event vs. batas waktu dalam anotasi teks:**
+
+Sering ada yang bertanya: *"Apakah tidak cukup menulis '24 jam' di Text Annotation?"*
+
+Text Annotation hanya dokumentasi — ia tidak membuat proses berhenti dan menunggu. Timer Event adalah elemen yang aktif menunggu; tanpa Timer Event, proses akan langsung melompat ke langkah berikutnya tanpa menunggu apapun.
+
+---
+
+## 5. Tugas
+
+Mulai dari diagram Modul 4:
+
+1. Setelah XOR Gateway jalur "ya" (data valid), tambahkan **Service Task "Kirim instruksi pembayaran ke customer"** dengan Message Flow ke Pool Customer.
+2. Setelah Service Task itu, tambahkan **Event-Based Gateway "Tunggu hasil pembayaran"**.
+3. Dari Event-Based Gateway, buat dua jalur:
+   - **Jalur 1:** → Intermediate Message Catch Event "Bukti pembayaran diterima" → lanjut ke pengemasan (Tim Gudang).
+   - **Jalur 2:** → Intermediate Timer Event "24 jam berlalu" → End Event "Pesanan dibatalkan — batas waktu habis".
+4. Di Pool Customer: tambahkan langkah **penerimaan instruksi** (Intermediate Message Catch Event), **pembayaran** (User Task), dan **pengiriman bukti** (Send Task).
+5. Pastikan ada **Text Annotation** yang mencatat durasi batas waktu 24 jam.
+
+:::tip[File starter]
+Gunakan [`case-05-order.bpmn`](/bpmn/case-05-order.bpmn) sebagai referensi, atau kembangkan file Modul 4-mu sendiri.
+:::
+
+---
+
+## 6. Pemeriksa kriteria
+
+<CriteriaChecker
+  criteriaSrc="/cases/case-05/criteria.json"
+  title="Periksa model Kasus 5"
+/>
+
+---
+
+## 7. Kunci jawaban
+
+:::caution[Coba kerjakan dulu]
+Buka hanya setelah kamu selesai mengerjakan tugas dan memeriksa modelmu.
+:::
+
+<details>
+<summary>**Lihat kunci jawaban Modul 5**</summary>
+
+### Lapis A — Model referensi
+
+<BpmnViewer src="/bpmn/case-05-order.bpmn" title="Kasus 5 — Timer Event dan Event-Based Gateway" />
+
+**Walkthrough token:**
+
+*Di Pool Customer:*
+1. Token lahir di Start Event → Send Task "Buat dan kirim pesanan" → Message Flow ke Merchant.
+2. Customer menunggu di **Intermediate Message Catch Event "Instruksi pembayaran diterima"**.
+3. Saat instruksi tiba: User Task "Lakukan pembayaran" → Send Task "Kirim bukti pembayaran" → Message Flow ke Merchant.
+4. Customer menunggu di Intermediate Catch Event "Konfirmasi pesanan diterima".
+5. Saat konfirmasi tiba: End Event "Pesanan dikonfirmasi".
+
+*Di Pool Merchant — Tim CS:*
+6. Token lahir di Message Start Event → catat pesanan → verifikasi → XOR.
+7. Jalur "tidak": End Event "Pesanan ditolak".
+8. Jalur "ya": Service Task "Kirim instruksi pembayaran" → Message Flow ke Customer → **Event-Based Gateway "Tunggu hasil pembayaran"**.
+9. **Event-Based Gateway** mengaktifkan dua "pendengar" sekaligus:
+   - Pendengar 1: Intermediate Message Catch Event "Bukti pembayaran diterima".
+   - Pendengar 2: Intermediate Timer Event "24 jam berlalu".
+10. **Mana yang lebih dulu tiba, itu yang menang** — token mengalir ke sana, pendengar lain dibatalkan.
+
+*Jika bayar masuk:*
+11. Token ke Tim Gudang: siapkan paket → kirim kurir → kirim konfirmasi pesanan → Message Flow ke Customer → End Event "Pesanan dikirim".
+
+*Jika timer habis:*
+11. Token ke End Event "Pesanan dibatalkan — batas waktu habis".
+
+### Lapis B — Kriteria wajib
+
+1. **Event-Based Gateway atau Boundary Timer** — bukan XOR untuk menunggu pembayaran.
+2. **Minimal satu Timer Event** yang menyatakan durasi 24 jam.
+3. **Jalur timeout berakhir di End Event** yang menyatakan pembatalan.
+4. **Minimal dua Pool** — Customer dan Merchant.
+5. **Minimal dua Message Flow** — instruksi bayar dan konfirmasi pesanan.
+
+### Lapis C — Variasi yang juga diterima
+
+**Variasi 1: Boundary Timer Interrupting pada Receive Task**
+
+Selain Event-Based Gateway, kamu bisa menggunakan **Boundary Timer Interrupting** yang menempel pada Receive Task "Terima bukti pembayaran":
+- Jika pembayaran masuk: Receive Task selesai secara normal, token keluar dari outgoing flow.
+- Jika 24 jam berlalu: Boundary Timer terpicu, interrupt Receive Task, token mengalir ke jalur pembatalan.
+
+Kedua-duanya sah secara BPMN. Event-Based Gateway lebih eksplisit dalam menyatakan "salah satu dari dua event" — lebih mudah dibaca. Boundary Timer lebih ringkas dan umum digunakan di Camunda.
+
+**Variasi 2: Merchant tidak mengirim konfirmasi ketika ditolak**
+
+Model referensi tidak mengirim pesan ke Customer ketika pesanan ditolak (validasi gagal) atau ketika timer habis. Variasi yang mengirim notifikasi penolakan/pembatalan juga diterima.
+
+### Lapis D — Kesalahan umum
+
+**Kesalahan 1: XOR dipakai untuk menunggu pembayaran**
+
+*Gejala:* Ada XOR Gateway setelah instruksi bayar dikirim, dengan outgoing flow "pembayaran masuk" dan "tidak masuk".
+
+*Diagnosis semantik:* XOR mengevaluasi kondisi berdasarkan data yang sudah ada di process instance. Pada titik itu, data "apakah pembayaran masuk" belum ada — Merchant baru saja mengirim instruksi. Menggunakan XOR di sini menyatakan bahwa mesin proses bisa langsung menentukan apakah pembayaran masuk, padahal secara bisnis Merchant harus menunggu respons dari Customer.
+
+Di Camunda, XOR tanpa data yang valid akan melempar `DecisionEvaluationException` atau mengikuti default flow secara langsung — artinya proses akan selalu memilih satu jalur tanpa benar-benar menunggu.
+
+*Perbaikan:* Gunakan Event-Based Gateway dengan dua cabang: Intermediate Message Catch Event (pembayaran masuk) dan Intermediate Timer Event (waktu habis).
+
+**Kesalahan 2: Timer Event tanpa jalur pembatalan**
+
+*Gejala:* Ada Timer Event, tapi tidak ada jalur yang berakhir di End Event "dibatalkan" — timer hanya terhubung ke task lain.
+
+*Diagnosis semantik:* Jika timer terpicu tapi tidak ada End Event, proses belum selesai — token masih aktif tanpa tujuan yang jelas. Kasus bisnis menyatakan "pesanan batal", yang artinya proses harus berakhir.
+
+*Perbaikan:* Pastikan jalur timer mengarah ke End Event yang secara eksplisit menyatakan pembatalan.
+
+**Kesalahan 3: Timer di Pool Customer, bukan di Merchant**
+
+*Gejala:* Timer Event ditempatkan di sisi Customer — "24 jam menunggu konfirmasi dari Merchant".
+
+*Diagnosis semantik:* Batas waktu pembayaran adalah kebijakan bisnis Merchant, bukan Customer. Customer tidak menerapkan timeout pada dirinya sendiri — Merchant yang membatalkan pesanan jika pembayaran tidak masuk. Timer harus berada di Pool Merchant.
+
+</details>
+
+---
+
+**← [Modul 4](/jalur/04/) · [Modul 6: Dua Pekerjaan Jalan Bersamaan](/jalur/06/) →**

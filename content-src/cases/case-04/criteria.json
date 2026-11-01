@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "caseId": "case-04",
+  "criteria": [
+    {
+      "id": "C04-1",
+      "statement": "Pool Merchant memiliki setidaknya dua Lane yang mencerminkan dua peran berbeda (misalnya Tim CS dan Tim Gudang).",
+      "rationale": "Modul 4 memperkenalkan bahwa pekerjaan di dalam Merchant dibagi antar-peran yang berbeda; Lane adalah cara BPMN menyatakan pembagian peran dalam satu Pool.",
+      "readIfFailed": ["/notasi/lane"],
+      "check": {
+        "mode": "auto",
+        "rule": "element-exists",
+        "type": "bpmn:Lane",
+        "min": 2
+      }
+    },
+    {
+      "id": "C04-2",
+      "statement": "Ada setidaknya satu Data Object (atau Data Object Reference) yang menyertai alur kerja Merchant.",
+      "rationale": "Dokumen pesanan berpindah state selama proses; tanpa Data Object, model tidak menyatakan bahwa keputusan dibuat atas data, bukan atas intuisi.",
+      "readIfFailed": ["/notasi/data-object"],
+      "check": {
+        "mode": "auto",
+        "anyOf": [
+          { "rule": "element-exists", "type": "bpmn:DataObjectReference", "min": 1 },
+          { "rule": "element-exists", "type": "bpmn:DataObject", "min": 1 }
+        ]
+      }
+    },
+    {
+      "id": "C04-3",
+      "statement": "Customer dimodelkan sebagai Pool terpisah (bukan Lane dalam Pool Merchant).",
+      "rationale": "Customer adalah entitas eksternal yang memiliki prosesnya sendiri — Lane hanya digunakan untuk peran internal dalam satu entitas. Menaruh Customer dalam Lane adalah reuse negatif yang dipelajari di Modul 4.",
+      "readIfFailed": ["/notasi/pool-participant", "/notasi/lane"],
+      "check": {
+        "mode": "auto",
+        "rule": "element-exists",
+        "type": "bpmn:Participant",
+        "min": 2
+      }
+    },
+    {
+      "id": "C04-4",
+      "statement": "Ada setidaknya satu Text Annotation yang menjelaskan aturan bisnis atau SLA pada salah satu task.",
+      "rationale": "Text Annotation dan Association diperkenalkan di Modul 4 untuk mendokumentasikan batasan bisnis yang tidak bisa dinyatakan dalam nama task saja.",
+      "readIfFailed": ["/notasi/text-annotation", "/notasi/association"],
+      "check": {
+        "mode": "auto",
+        "rule": "element-exists",
+        "type": "bpmn:TextAnnotation",
+        "min": 1
+      }
+    },
+    {
+      "id": "C04-5",
+      "statement": "Task verifikasi pesanan berada di Lane yang berbeda dari task pengemasan atau pengiriman.",
+      "rationale": "Tim CS dan Tim Gudang harus terpisah di Lane berbeda — ini adalah tujuan utama pengenalan Lane di Modul 4.",
+      "readIfFailed": ["/notasi/lane"],
+      "check": {
+        "mode": "manual",
+        "question": "Buka model Anda. Apakah task yang memeriksa/memverifikasi pesanan dan task yang mengemas barang berada di Lane yang berbeda? Sebutkan nama Lane masing-masing."
+      }
+    },
+    {
+      "id": "C04-6",
+      "statement": "Data Object memiliki paling sedikit dua state (label dalam tanda kurung siku, misalnya [dibuat] dan [diverifikasi]) yang mencerminkan perubahan status selama proses.",
+      "rationale": "Data Object tanpa state hanya menunjukkan keberadaan data; state menunjukkan transformasi data selama proses — ini adalah semantik utama D01.",
+      "readIfFailed": ["/notasi/data-object"],
+      "check": {
+        "mode": "manual",
+        "question": "Lihat Data Object pada model Anda. Apakah labelnya menyertakan state dalam tanda kurung siku (misalnya [dibuat], [diverifikasi])? Berapa state yang Anda tampilkan?"
+      }
+    }
+  ]
+}

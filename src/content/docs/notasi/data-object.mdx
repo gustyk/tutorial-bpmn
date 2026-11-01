@@ -1,0 +1,162 @@
+---
+title: "D01 — Data Object"
+description: "Representasi data yang dihasilkan, digunakan, atau dimodifikasi oleh satu task dalam satu proses instance."
+---
+
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | D01 |
+| **Nama BPMN** | Data Object |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 4 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §10.3.1 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+<BpmnViewer src="/bpmn/case-04-order.bpmn" title="D01 — Data Object: dokumen pesanan dengan state [dibuat], [diverifikasi], [dikemas]" />
+
+Ikon dokumen (persegi dengan sudut atas kanan terlipat). Nama di bawahnya, diikuti state dalam kurung kotak: `[dibuat]`, `[diverifikasi]`, `[dikemas]`. Data Association (panah putus-putus) menghubungkan Data Object ke task.
+
+*Cara membuat di demo.bpmn.io:* Klik task → ikon "Append Data Object" di context menu. Atau seret "Data Object" dari palet.
+
+---
+
+## 3. Apa artinya
+
+**Data Object** menyatakan: *"Ada data tertentu yang dihasilkan atau dikonsumsi oleh task ini, dan data itu hidup dalam lingkup proses instance ini."*
+
+Data Object bersifat **lokal**: ia dibuat dan dimusnahkan bersama satu instance proses. Ia tidak dibagi antar-instance.
+
+---
+
+## 4. Tujuan
+
+Memvisualkan data yang mengalir dalam proses — bukan hanya urutan task. Memperlihatkan *apa* yang diproduksi dan *apa* yang dikonsumsi di setiap langkah.
+
+---
+
+## 5. Semantik BPMN
+
+Data Object muncul sebagai Data Object *definition* (bpmndi:DataObject) dalam XML, tapi yang divisualisasikan adalah **Data Object Reference** — referensi ke definisi tersebut dengan state tertentu.
+
+Satu Data Object definition bisa memiliki beberapa referensi dengan state berbeda, memperlihatkan evolusi data sepanjang proses.
+
+---
+
+## 6. Kapan digunakan
+
+Gunakan Data Object ketika:
+- Kamu ingin menunjukkan dokumen atau data yang spesifik pada proses instance ini.
+- Data berubah state seiring berjalannya proses (dokumen yang dibuat → diverifikasi → dikemas).
+- Proses audit membutuhkan traceability data.
+
+---
+
+## 7. Kapan jangan digunakan
+
+Jangan gunakan Data Object untuk data yang:
+- Persisten dan digunakan oleh banyak process instance → gunakan Data Store (D04).
+- Tidak relevan dengan pemahaman alur proses (noise visual).
+- Dibuat oleh sistem eksternal yang tidak perlu divisualisasikan dalam diagram ini.
+
+---
+
+## 8. Contoh penggunaan
+
+Dalam Modul 4, "Dokumen Pesanan" memiliki tiga state:
+- `[dibuat]`: setelah task "Catat data pesanan".
+- `[diverifikasi]`: setelah task "Verifikasi data pesanan".
+- `[dikemas]`: setelah task "Kemas paket".
+
+Tiga referensi terpisah, satu definisi Data Object — menunjukkan transformasi dokumen.
+
+---
+
+## 9. Diagram contoh
+
+<BpmnViewer src="/bpmn/case-04-order.bpmn" title="Data Object 'Dokumen Pesanan' dengan state dalam proses Merchant" />
+
+---
+
+## 10. Cara membaca diagram
+
+1. Temukan ikon dokumen (persegi dengan sudut terlipat).
+2. Baca nama data dan state-nya dalam `[...]`.
+3. Ikuti Data Association (panah putus-putus) ke task yang menghasilkan atau menggunakannya.
+4. Panah **menuju** task = Data Input (task menggunakan data tersebut).
+5. Panah **dari** task = Data Output (task menghasilkan data tersebut).
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Data Object adalah file atau database."**
+
+Bukan. Data Object adalah representasi *konseptual* dari data dalam proses. Ia tidak menentukan di mana data disimpan secara teknis. Untuk menyatakan penyimpanan persisten, gunakan Data Store.
+
+---
+
+## 12. Anti-pattern
+
+**Anti-pattern: Menggunakan Data Object untuk data bersama lintas proses.**
+
+Contoh: Data Object "Stok Produk" yang dipakai oleh banyak proses pesanan secara bersamaan. Data Object tidak bisa diakses lintas process instance — gunakan Data Store Reference.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Elemen | Bedanya |
+|--------|---------|
+| Data Object | Lokal pada satu proses instance; memiliki state |
+| Data Store | Persisten, diakses bersama banyak instance |
+| Data Association | Panah yang menghubungkan Data Object ke task |
+
+---
+
+## 14. Aturan pemilihan
+
+- Data spesifik per transaksi/pesanan → Data Object.
+- Data yang dibagi antar-pesanan (inventori, katalog, log) → Data Store.
+
+---
+
+## 15. Pertanyaan diagnostik
+
+- Apakah data ini dibuat baru setiap kali proses ini berjalan? → Data Object.
+- Apakah data ini sudah ada sebelum proses ini dimulai? → Data Store.
+- Apakah data ini perlu diakses oleh proses lain? → Data Store.
+
+---
+
+## 16. Argumentasi pemodelan
+
+Mengapa "Dokumen Pesanan" menggunakan Data Object, bukan Data Store?
+
+Karena setiap pesanan adalah dokumen unik yang dibuat dalam proses itu dan relevan hanya untuk proses itu. Pesanan A tidak membutuhkan akses ke dokumen Pesanan B. Lifecycle dokumen selesai ketika proses selesai.
+
+---
+
+## 17. Validity check
+
+- Data Object harus dihubungkan ke task via Data Association (input atau output).
+- State dalam `[...]` bersifat opsional tapi direkomendasikan jika data berubah state.
+- Data Object tidak memiliki shape DI sendiri dalam definisi XML — yang divisualisasikan adalah Data Object Reference.
+
+---
+
+## 18. Catatan Camunda
+
+Di Camunda, Data Object dipetakan ke Process Variables. State tidak langsung dipetakan — biasanya diimplementasikan sebagai variabel terpisah atau sebagai properti dokumen.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Data Object merepresentasikan data yang dihasilkan atau dikonsumsi oleh task dalam lingkup satu proses instance, bukan lintas proses.

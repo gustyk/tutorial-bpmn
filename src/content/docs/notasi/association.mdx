@@ -1,0 +1,156 @@
+---
+title: "F03 — Association"
+description: "Panah putus-putus tanpa arah (atau dengan arah) yang menghubungkan artefak ke elemen alur — digunakan untuk Text Annotation."
+---
+
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | F03 |
+| **Nama BPMN** | Association |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 4 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §10.3 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+<BpmnViewer src="/bpmn/case-04-order.bpmn" title="F03 — Association: garis putus-putus dari task ke Text Annotation" />
+
+Garis putus-putus (*dashed line*) tanpa kepala panah — atau dengan kepala panah jika ada arah data. Menghubungkan artefak (Text Annotation atau Data Object) ke elemen alur (task, event, gateway).
+
+*Cara membuat di demo.bpmn.io:* Seret dari task ke Text Annotation yang sudah ada, atau klik ikon "Create Text Annotation" dari context menu task — connection dibuat otomatis.
+
+---
+
+## 3. Apa artinya
+
+**Association** menyatakan: *"Elemen ini secara konseptual terkait dengan artefak ini — tapi hubungan ini bukan aliran proses (bukan Sequence Flow) dan bukan pertukaran data terstruktur (bukan Data Association)."*
+
+Association adalah penghubung untuk dokumentasi dan anotasi — bukan untuk kontrol alur.
+
+---
+
+## 4. Tujuan
+
+Menghubungkan Text Annotation ke elemen yang dianotasi. Tanpa Association, Text Annotation hanya mengambang — pembaca tidak tahu elemen mana yang dianotasi.
+
+---
+
+## 5. Semantik BPMN
+
+Association tidak mempengaruhi pergerakan token sama sekali. Ia adalah elemen dokumentasi murni. Token tidak "melewati" Association dan tidak "membawa" data melalui Association.
+
+Berbeda dengan Data Association (F04) yang memiliki semantik data — Association standar adalah penghubung bebas semantik.
+
+---
+
+## 6. Kapan digunakan
+
+Gunakan Association ketika:
+- Menghubungkan Text Annotation ke elemen yang dianotasi.
+- Menghubungkan Data Object ke task (kasus khusus: menjadi Data Association / F04).
+- Menambahkan catatan SLA, constraint, atau konteks pada elemen tertentu.
+
+---
+
+## 7. Kapan jangan digunakan
+
+Jangan gunakan Association untuk menyatakan:
+- Aliran kontrol → gunakan Sequence Flow (F01).
+- Pertukaran pesan antar-Pool → gunakan Message Flow (F02).
+- Hubungan data yang terstruktur → gunakan Data Association (F04).
+
+---
+
+## 8. Contoh penggunaan
+
+Dalam Modul 4, Text Annotation "SLA: catat pesanan dalam 30 menit" dihubungkan dengan Association ke task "Catat data pesanan". Ini menyatakan bahwa SLA tersebut berlaku untuk task itu — tanpa mempengaruhi alur token.
+
+---
+
+## 9. Diagram contoh
+
+<BpmnViewer src="/bpmn/case-04-order.bpmn" title="Association menghubungkan Text Annotation SLA ke task" />
+
+---
+
+## 10. Cara membaca diagram
+
+1. Temukan garis putus-putus yang tidak memiliki kepala panah runcing (atau memiliki kepala panah terbuka/kecil).
+2. Cari artefak di salah satu ujungnya (Text Annotation atau Data Object).
+3. Artefak tersebut memberikan informasi tambahan tentang elemen di ujung lainnya.
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Association dan Sequence Flow sama — keduanya menghubungkan dua elemen."**
+
+Bukan. Sequence Flow memindahkan token (mengontrol alur eksekusi). Association hanya menyatakan relevansi konseptual — tidak ada eksekusi yang terjadi melalui Association.
+
+---
+
+## 12. Anti-pattern
+
+**Anti-pattern: Menggunakan Association sebagai pengganti Sequence Flow untuk menyembunyikan kompleksitas.**
+
+Gejala: dua task dihubungkan dengan Association alih-alih Sequence Flow. Akibatnya proses tidak bisa dieksekusi — mesin proses tidak mengenali Association sebagai jalur kontrol.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Elemen | Bedanya |
+|--------|---------|
+| Association (F03) | Garis putus-putus; tidak ada semantik data atau kontrol |
+| Data Association (F04) | Garis putus-putus dengan kepala panah; membawa data ke/dari task |
+| Sequence Flow (F01) | Garis solid dengan kepala panah; memindahkan token |
+
+---
+
+## 14. Aturan pemilihan
+
+- Menghubungkan Text Annotation → Association.
+- Menghubungkan Data Object ke task → Data Association (F04).
+- Menghubungkan task ke task → Sequence Flow (F01).
+
+---
+
+## 15. Pertanyaan diagnostik
+
+- Apakah hubungan ini memindahkan token? → Sequence Flow.
+- Apakah hubungan ini membawa data terstruktur ke/dari task? → Data Association.
+- Apakah hubungan ini hanya menambahkan konteks/dokumentasi? → Association.
+
+---
+
+## 16. Argumentasi pemodelan
+
+Mengapa SLA tidak cukup ditulis langsung di label task?
+
+Label task harus singkat — nama tindakan, bukan SLA. Memasukkan SLA dalam label membuat diagram padat. Text Annotation + Association memungkinkan konteks tambahan tanpa mengotori label.
+
+---
+
+## 17. Validity check
+
+- Association boleh tidak memiliki arah (undirected) atau satu arah.
+- Association tidak boleh menghubungkan dua Flow Object (task ke task) — itu melanggar BPMN; gunakan Sequence Flow.
+- Setidaknya satu ujung Association harus merupakan artefak (Text Annotation atau Data Object).
+
+---
+
+## 18. Catatan Camunda
+
+Association tidak dieksekusi oleh Camunda. Ia murni digunakan untuk dokumentasi diagram dan tidak mempengaruhi runtime.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Association adalah garis putus-putus yang menghubungkan artefak ke elemen alur untuk keperluan dokumentasi, tanpa mempengaruhi eksekusi token.

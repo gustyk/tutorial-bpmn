@@ -1,0 +1,167 @@
+---
+title: "G02 — Parallel Gateway (AND)"
+description: "Gateway yang memisahkan token ke semua jalur sekaligus (AND split) dan menunggu semua jalur selesai sebelum lanjut (AND join)."
+---
+
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | G02 |
+| **Nama BPMN** | Parallel Gateway |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 6 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §13.3 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+<BpmnViewer src="/bpmn/case-06-order.bpmn" title="G02 — Parallel Gateway: belah ketupat dengan tanda + di dalam, digunakan sebagai AND split dan AND join" />
+
+Belah ketupat dengan tanda **+** (plus) di dalam. Tidak ada label kondisi di outgoing flow — semua jalur aktif.
+
+*Cara membuat di demo.bpmn.io:* Klik Gateway → ubah tipe menjadi "Parallel Gateway" via context menu.
+
+---
+
+## 3. Apa artinya
+
+**AND split** (Parallel Gateway dengan banyak outgoing flow) menyatakan: *"Token ini dibagi menjadi banyak token — satu per outgoing flow — dan semua berjalan bersamaan."*
+
+**AND join** (Parallel Gateway dengan banyak incoming flow) menyatakan: *"Saya menunggu di sini sampai semua token dari semua incoming flow tiba, lalu saya gabungkan menjadi satu token dan lanjutkan."*
+
+---
+
+## 4. Tujuan
+
+Memodelkan pekerjaan yang harus atau bisa berjalan secara paralel, dan memastikan semua pekerjaan selesai sebelum proses berlanjut.
+
+---
+
+## 5. Semantik BPMN
+
+**AND split:**
+- Satu token masuk → satu token per outgoing flow keluar.
+- Semua outgoing flow aktif tanpa kondisi.
+- Tidak ada evaluasi — semua jalur selalu aktif.
+
+**AND join:**
+- Menunggu sampai satu token tiba dari *setiap* incoming flow.
+- Ketika semua token tiba: satu token baru dikirim ke outgoing flow.
+- Ini adalah *synchronization barrier*.
+
+---
+
+## 6. Kapan digunakan
+
+Gunakan Parallel Gateway ketika:
+- Dua atau lebih aktivitas bisa atau harus berjalan bersamaan.
+- Semua aktivitas harus selesai sebelum proses berlanjut.
+- Tidak ada kondisi yang menentukan jalur mana yang aktif — semua selalu aktif.
+
+---
+
+## 7. Kapan jangan digunakan
+
+Jangan gunakan Parallel Gateway ketika hanya *satu* jalur yang dipilih berdasarkan kondisi → XOR. Jangan gunakan Parallel Gateway ketika satu atau lebih jalur mungkin tidak aktif berdasarkan kondisi → Inclusive Gateway.
+
+---
+
+## 8. Contoh penggunaan
+
+Dalam Modul 6, setelah konfirmasi pembayaran:
+- **AND split** memisahkan dua jalur: "Terbitkan invoice" (Tim CS) dan "Siapkan paket" (Tim Gudang).
+- Keduanya berjalan bersamaan.
+- **AND join** menunggu kedua jalur selesai sebelum mengirim konfirmasi ke customer.
+
+---
+
+## 9. Diagram contoh
+
+<BpmnViewer src="/bpmn/case-06-order.bpmn" title="AND split dan AND join dalam proses Merchant — dua jalur paralel" />
+
+---
+
+## 10. Cara membaca diagram
+
+1. Temukan belah ketupat dengan tanda +.
+2. Hitung outgoing flow: jika banyak → ini adalah AND split.
+3. Hitung incoming flow: jika banyak → ini adalah AND join.
+4. AND split: semua outgoing flow aktif sekaligus.
+5. AND join: menunggu semua incoming flow selesai.
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"AND split otomatis diikuti AND join — tidak perlu keduanya."**
+
+Salah. AND split dan AND join adalah elemen terpisah yang harus dipasangkan secara eksplisit. Jika AND split tidak diikuti AND join, semua token berjalan bebas dan bisa menyebabkan task di hilir dieksekusi berkali-kali.
+
+---
+
+## 12. Anti-pattern
+
+**Anti-pattern #1: AND split tanpa AND join (hilir jalan dua kali).**
+
+Token dari AND split berjalan bebas. Ketika dua token mencapai task yang sama, task dieksekusi dua kali. Ini menyebabkan konfirmasi ganda, invoice ganda, atau anomali lainnya.
+
+**Anti-pattern #2: XOR join menggantikan AND join.**
+
+XOR join tidak menunggu — ia meneruskan setiap token yang tiba. Dua token dari AND split akan menghasilkan dua token di hilir XOR join, efeknya sama seperti tidak ada join.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Elemen | Bedanya |
+|--------|---------|
+| Exclusive Gateway / XOR (G01) | Memilih satu jalur berdasarkan kondisi |
+| Parallel Gateway / AND (G02) | Aktifkan semua jalur sekaligus; tunggu semua selesai |
+| Inclusive Gateway / OR (G03) | Aktifkan satu atau lebih jalur berdasarkan kondisi |
+
+---
+
+## 14. Aturan pemilihan
+
+- "Lakukan semua, lalu lanjutkan" → AND split + AND join.
+- "Lakukan salah satu" → XOR split.
+- "Lakukan yang relevan (bisa lebih dari satu), lalu lanjutkan" → OR split + OR join.
+
+---
+
+## 15. Pertanyaan diagnostik
+
+- Apakah semua jalur harus aktif tanpa kondisi? → AND split.
+- Apakah proses harus menunggu *semua* jalur selesai? → AND join.
+- Apakah ada kemungkinan beberapa jalur tidak aktif? → Inclusive Gateway.
+
+---
+
+## 16. Argumentasi pemodelan
+
+Mengapa AND join harus digunakan di Modul 6, bukan langsung melanjutkan ke task konfirmasi?
+
+Jika tidak ada AND join, task "Kirim konfirmasi" akan menerima dua token (satu dari invoice, satu dari gudang) dan dieksekusi dua kali. Customer menerima dua konfirmasi. AND join adalah barrier yang memastikan hanya satu token yang melanjutkan — tepat satu konfirmasi dikirim.
+
+---
+
+## 17. Validity check
+
+- AND split: semua outgoing flow tidak boleh memiliki kondisi (unconditional).
+- AND join: semua incoming flow harus dapat tiba — jika ada jalur yang tidak pernah mengirim token, AND join akan menunggu selamanya (deadlock).
+
+---
+
+## 18. Catatan Camunda
+
+Di Camunda, Parallel Gateway dieksekusi oleh execution engine. AND join menyimpan token yang sudah tiba dan menunggu yang belum. Jika ada incoming flow yang tidak pernah terpenuhi (karena proses lain dibatalkan), AND join perlu dikelola dengan Boundary Event atau Cancel.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Parallel Gateway (AND) membagi token ke semua jalur sekaligus saat split, dan menunggu semua token kembali saat join — memastikan semua pekerjaan paralel selesai sebelum proses berlanjut.

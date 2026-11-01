@@ -1,0 +1,157 @@
+---
+title: "R01 — Text Annotation"
+description: "Komentar teks yang menempel pada elemen diagram via Association — tidak mempengaruhi eksekusi, digunakan untuk SLA, constraint, dan catatan pemodelan."
+---
+
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | R01 |
+| **Nama BPMN** | Text Annotation |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 4 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §10.5 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+<BpmnViewer src="/bpmn/case-04-order.bpmn" title="R01 — Text Annotation: tanda kurung siku kiri dengan teks di dalam" />
+
+Tanda kurung siku kiri `[` dengan teks di dalam. Dihubungkan ke elemen yang dianotasi via Association (garis putus-putus).
+
+*Cara membuat di demo.bpmn.io:* Klik task → ikon "Append Text Annotation" dari context menu. Atau seret "Text Annotation" dari palet lalu hubungkan dengan Association.
+
+---
+
+## 3. Apa artinya
+
+**Text Annotation** menyatakan: *"Informasi ini relevan untuk elemen ini, tapi tidak merupakan bagian dari alur eksekusi."*
+
+Ia adalah catatan pemodelan yang tertempel pada diagram — bukan elemen yang dieksekusi.
+
+---
+
+## 4. Tujuan
+
+Menambahkan konteks yang tidak bisa dimasukkan dalam label singkat: SLA, constraint bisnis, aturan, asumsi, atau catatan implementasi.
+
+---
+
+## 5. Semantik BPMN
+
+Text Annotation tidak dieksekusi. Token tidak menyentuh Text Annotation. Ia adalah artefak murni — ada di diagram sebagai dokumentasi, tidak ada di runtime.
+
+---
+
+## 6. Kapan digunakan
+
+Gunakan Text Annotation ketika:
+- Ada SLA atau batas waktu yang tidak bisa diekspresikan dengan elemen BPMN (misalnya batas waktu yang tidak diterapkan sebagai Timer Event).
+- Ada constraint bisnis yang perlu diketahui oleh pembaca diagram.
+- Ada asumsi atau keputusan pemodelan yang perlu dijelaskan.
+- Label task terlalu panjang jika semua informasi dimasukkan.
+
+---
+
+## 7. Kapan jangan digunakan
+
+Jangan gunakan Text Annotation untuk:
+- Batas waktu yang harus *diterapkan* oleh proses → gunakan Timer Event (E03).
+- Kondisi keputusan yang harus dievaluasi → masukkan di label Sequence Flow atau condition expression.
+- Penjelasan panjang yang lebih cocok di dokumentasi eksternal.
+
+---
+
+## 8. Contoh penggunaan
+
+Dalam Modul 4, Text Annotation "SLA: catat pesanan dalam 30 menit" ditempelkan pada task "Catat data pesanan" via Association. Ini menyatakan bahwa ada SLA untuk task tersebut — tapi SLA ini tidak ditegakkan oleh mesin proses; ia adalah informasi untuk tim operasional.
+
+---
+
+## 9. Diagram contoh
+
+<BpmnViewer src="/bpmn/case-04-order.bpmn" title="Text Annotation SLA pada task 'Catat data pesanan'" />
+
+---
+
+## 10. Cara membaca diagram
+
+1. Temukan tanda `[` dengan teks di dalam.
+2. Ikuti garis putus-putus (Association) ke elemen yang dianotasi.
+3. Baca teks sebagai informasi tambahan tentang elemen tersebut.
+4. Teks ini tidak mengubah perilaku eksekusi.
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Text Annotation dengan '24 jam' cukup untuk menyatakan batas waktu."**
+
+Tidak. Text Annotation hanya dokumentasi — ia tidak membuat proses menunggu atau memicu tindakan apa pun. Jika batas waktu harus *diterapkan* (proses berhenti selama 24 jam atau mengambil jalur tertentu setelah 24 jam), dibutuhkan Timer Event atau Boundary Timer.
+
+---
+
+## 12. Anti-pattern
+
+**Anti-pattern: Menggunakan Text Annotation untuk menyatakan kondisi gateway.**
+
+Gejala: Sequence Flow keluar dari Gateway tidak memiliki label kondisi — kondisi ditulis di Text Annotation yang ditempelkan pada Sequence Flow.
+
+Text Annotation tidak dapat dievaluasi oleh mesin proses. Kondisi harus ada di label Sequence Flow atau `conditionExpression`.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Elemen | Bedanya |
+|--------|---------|
+| Text Annotation (R01) | Dokumentasi; tidak dieksekusi |
+| Timer Event (E03) | Menunggu durasi/waktu tertentu; dieksekusi |
+| Label Sequence Flow | Kondisi yang dievaluasi gateway; dieksekusi |
+
+---
+
+## 14. Aturan pemilihan
+
+- Informasi hanya untuk dibaca manusia → Text Annotation.
+- Batas waktu yang harus diterapkan oleh mesin → Timer Event.
+- Kondisi percabangan → label Sequence Flow.
+
+---
+
+## 15. Pertanyaan diagnostik
+
+- Apakah informasi ini perlu *dieksekusi* atau hanya *diketahui*? → Jika hanya diketahui, Text Annotation.
+- Apakah ini batas waktu yang harus membatalkan atau memindahkan proses? → Timer Event.
+- Apakah ini kondisi yang menentukan jalur mana yang diambil? → Label Sequence Flow.
+
+---
+
+## 16. Argumentasi pemodelan
+
+Mengapa perlu Text Annotation jika informasi bisa ditulis dalam dokumentasi eksternal?
+
+Karena dokumentasi eksternal sering tidak dibaca, atau tidak mudah dikaitkan dengan elemen spesifik. Text Annotation memastikan bahwa orang yang membaca diagram langsung mendapatkan konteks yang relevan — tanpa harus membuka dokumen lain.
+
+---
+
+## 17. Validity check
+
+- Text Annotation harus dihubungkan ke elemen via Association — Text Annotation yang mengambang (tanpa Association) tidak salah secara BPMN tapi ambigu.
+- Text Annotation boleh ada tanpa Association jika konteksnya sudah jelas dari posisi visual.
+
+---
+
+## 18. Catatan Camunda
+
+Text Annotation tidak diproses oleh Camunda Engine. Ia tersedia di diagram XML tapi tidak mempengaruhi eksekusi. Beberapa tool melaporkan Text Annotation dalam laporan audit sebagai metadata.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Text Annotation adalah catatan yang tertempel pada elemen diagram — murni untuk dokumentasi, tidak mempengaruhi eksekusi token sama sekali.

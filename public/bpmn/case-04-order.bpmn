@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  id="Def_Case04"
+  targetNamespace="https://uisi.ac.id/bpmn-tutorial">
+
+  <!-- Case 04: Siapa mengerjakan apa, dan atas data apa -->
+  <!-- Modul 4: superset Case 03 + P02 (Lane), D01 (Data Object), F04 (Data Association), -->
+  <!--          F03 (Association), R01 (Text Annotation) -->
+  <!-- Reuse negatif: Lane dipakai untuk pihak eksternal; Data Object dipakai sebagai task -->
+
+  <bpmn:collaboration id="Collab_Case04" name="Pesanan Kasus 4">
+
+    <bpmn:participant id="Part04_Customer" name="Customer" processRef="Proc04_Customer" />
+    <bpmn:participant id="Part04_Merchant" name="Merchant" processRef="Proc04_Merchant" />
+
+    <bpmn:messageFlow id="MF04_PesananDikirim" name="Pesanan dikirim"
+      sourceRef="TA04_BuatPesanan" targetRef="SE04_PesananDiterima" />
+    <bpmn:messageFlow id="MF04_KonfirmasiDikirim" name="Konfirmasi pesanan"
+      sourceRef="TA04_KirimKonfirmasi" targetRef="IE04_KonfirmasiDiterima" />
+
+  </bpmn:collaboration>
+
+  <!-- Proses Customer (sama seperti Case 03) -->
+  <bpmn:process id="Proc04_Customer" name="Proses Customer" isExecutable="false">
+
+    <bpmn:startEvent id="SE04_CustomerMulai" name="Kebutuhan barang muncul">
+      <bpmn:outgoing>SF04_C1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:sendTask id="TA04_BuatPesanan" name="Buat dan kirim pesanan">
+      <bpmn:incoming>SF04_C1</bpmn:incoming>
+      <bpmn:outgoing>SF04_C2</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <bpmn:intermediateCatchEvent id="IE04_KonfirmasiDiterima" name="Konfirmasi pesanan diterima">
+      <bpmn:incoming>SF04_C2</bpmn:incoming>
+      <bpmn:outgoing>SF04_C3</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED04_C1" />
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:endEvent id="EE04_CustomerSelesai" name="Pesanan dikonfirmasi">
+      <bpmn:incoming>SF04_C3</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="SF04_C1" sourceRef="SE04_CustomerMulai" targetRef="TA04_BuatPesanan" />
+    <bpmn:sequenceFlow id="SF04_C2" sourceRef="TA04_BuatPesanan" targetRef="IE04_KonfirmasiDiterima" />
+    <bpmn:sequenceFlow id="SF04_C3" sourceRef="IE04_KonfirmasiDiterima" targetRef="EE04_CustomerSelesai" />
+
+  </bpmn:process>
+
+  <!-- Proses Merchant: 2 Lane (Tim CS + Tim Gudang) -->
+  <bpmn:process id="Proc04_Merchant" name="Proses Merchant" isExecutable="false">
+
+    <bpmn:laneSet id="LS04_Merchant">
+      <bpmn:lane id="Lane04_CS" name="Tim CS">
+        <bpmn:flowNodeRef>SE04_PesananDiterima</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA04_CatatPesanan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA04_VerifikasiData</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW04_DataValid</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EE04_PesananDitolak</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane04_Gudang" name="Tim Gudang">
+        <bpmn:flowNodeRef>TA04_SiapkanPaket</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA04_KirimPaket</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA04_KirimKonfirmasi</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EE04_MerchantSelesai</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <!-- Data Object: Dokumen Pesanan dengan state -->
+    <bpmn:dataObject id="DO04_DokumenPesanan" name="Dokumen Pesanan" />
+    <bpmn:dataObjectReference id="DOR04_Dibuat" name="Dokumen Pesanan [dibuat]"
+      dataObjectRef="DO04_DokumenPesanan" />
+    <bpmn:dataObjectReference id="DOR04_Diverifikasi" name="Dokumen Pesanan [diverifikasi]"
+      dataObjectRef="DO04_DokumenPesanan" />
+    <bpmn:dataObjectReference id="DOR04_Dikemas" name="Dokumen Pesanan [dikemas]"
+      dataObjectRef="DO04_DokumenPesanan" />
+
+    <!-- Text Annotation -->
+    <bpmn:textAnnotation id="TA04_Note1">
+      <bpmn:text>SLA: catat pesanan dalam 30 menit sejak diterima</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Assoc04_1" sourceRef="TA04_CatatPesanan" targetRef="TA04_Note1" />
+
+    <!-- Tim CS -->
+    <bpmn:startEvent id="SE04_PesananDiterima" name="Pesanan diterima dari customer">
+      <bpmn:outgoing>SF04_M1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED04_M1" />
+    </bpmn:startEvent>
+
+    <bpmn:userTask id="TA04_CatatPesanan" name="Catat data pesanan">
+      <bpmn:incoming>SF04_M1</bpmn:incoming>
+      <bpmn:outgoing>SF04_M2</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="DA04_Catat">
+        <bpmn:targetRef>DOR04_Dibuat</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:userTask>
+
+    <bpmn:userTask id="TA04_VerifikasiData" name="Verifikasi data dan ketersediaan stok">
+      <bpmn:incoming>SF04_M2</bpmn:incoming>
+      <bpmn:outgoing>SF04_M3</bpmn:outgoing>
+      <bpmn:dataInputAssociation id="DA04_VerifIn">
+        <bpmn:sourceRef>DOR04_Dibuat</bpmn:sourceRef>
+      </bpmn:dataInputAssociation>
+      <bpmn:dataOutputAssociation id="DA04_VerifOut">
+        <bpmn:targetRef>DOR04_Diverifikasi</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="GW04_DataValid" name="Data dan stok valid?">
+      <bpmn:incoming>SF04_M3</bpmn:incoming>
+      <bpmn:outgoing>SF04_M_Ya</bpmn:outgoing>
+      <bpmn:outgoing>SF04_M_Tidak</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:endEvent id="EE04_PesananDitolak" name="Pesanan ditolak">
+      <bpmn:incoming>SF04_M_Tidak</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Tim Gudang -->
+    <bpmn:manualTask id="TA04_SiapkanPaket" name="Siapkan dan kemas paket">
+      <bpmn:incoming>SF04_M_Ya</bpmn:incoming>
+      <bpmn:outgoing>SF04_M4</bpmn:outgoing>
+      <bpmn:dataInputAssociation id="DA04_SiapIn">
+        <bpmn:sourceRef>DOR04_Diverifikasi</bpmn:sourceRef>
+      </bpmn:dataInputAssociation>
+      <bpmn:dataOutputAssociation id="DA04_SiapOut">
+        <bpmn:targetRef>DOR04_Dikemas</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:manualTask>
+
+    <bpmn:manualTask id="TA04_KirimPaket" name="Serahkan paket ke kurir">
+      <bpmn:incoming>SF04_M4</bpmn:incoming>
+      <bpmn:outgoing>SF04_M5</bpmn:outgoing>
+      <bpmn:dataInputAssociation id="DA04_KirimIn">
+        <bpmn:sourceRef>DOR04_Dikemas</bpmn:sourceRef>
+      </bpmn:dataInputAssociation>
+    </bpmn:manualTask>
+
+    <bpmn:serviceTask id="TA04_KirimKonfirmasi" name="Kirim konfirmasi ke customer">
+      <bpmn:incoming>SF04_M5</bpmn:incoming>
+      <bpmn:outgoing>SF04_M6</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="EE04_MerchantSelesai" name="Pesanan dikirim">
+      <bpmn:incoming>SF04_M6</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="SF04_M1" sourceRef="SE04_PesananDiterima" targetRef="TA04_CatatPesanan" />
+    <bpmn:sequenceFlow id="SF04_M2" sourceRef="TA04_CatatPesanan" targetRef="TA04_VerifikasiData" />
+    <bpmn:sequenceFlow id="SF04_M3" sourceRef="TA04_VerifikasiData" targetRef="GW04_DataValid" />
+    <bpmn:sequenceFlow id="SF04_M_Ya" name="ya" sourceRef="GW04_DataValid" targetRef="TA04_SiapkanPaket">
+      <bpmn:conditionExpression>data lengkap dan stok tersedia</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="SF04_M_Tidak" name="tidak" sourceRef="GW04_DataValid" targetRef="EE04_PesananDitolak">
+      <bpmn:conditionExpression>data tidak lengkap atau stok habis</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="SF04_M4" sourceRef="TA04_SiapkanPaket" targetRef="TA04_KirimPaket" />
+    <bpmn:sequenceFlow id="SF04_M5" sourceRef="TA04_KirimPaket" targetRef="TA04_KirimKonfirmasi" />
+    <bpmn:sequenceFlow id="SF04_M6" sourceRef="TA04_KirimKonfirmasi" targetRef="EE04_MerchantSelesai" />
+
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="Dia_Case04">
+    <bpmndi:BPMNPlane id="Pla_Case04" bpmnElement="Collab_Case04">
+
+      <!-- Pool Customer -->
+      <bpmndi:BPMNShape id="Shp04_PartC" bpmnElement="Part04_Customer" isHorizontal="true">
+        <dc:Bounds x="60" y="60" width="840" height="140" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shp04_SE_CM" bpmnElement="SE04_CustomerMulai">
+        <dc:Bounds x="130" y="113" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="108" y="156" width="80" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp04_TA_BP" bpmnElement="TA04_BuatPesanan">
+        <dc:Bounds x="220" y="91" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp04_IE_KD" bpmnElement="IE04_KonfirmasiDiterima">
+        <dc:Bounds x="430" y="113" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="410" y="156" width="76" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp04_EE_CS" bpmnElement="EE04_CustomerSelesai">
+        <dc:Bounds x="540" y="113" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="520" y="156" width="76" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Edg04_C1" bpmnElement="SF04_C1">
+        <di:waypoint x="166" y="131" /><di:waypoint x="220" y="131" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg04_C2" bpmnElement="SF04_C2">
+        <di:waypoint x="360" y="131" /><di:waypoint x="430" y="131" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg04_C3" bpmnElement="SF04_C3">
+        <di:waypoint x="466" y="131" /><di:waypoint x="540" y="131" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Pool Merchant dengan 2 Lane -->
+      <bpmndi:BPMNShape id="Shp04_PartM" bpmnElement="Part04_Merchant" isHorizontal="true">
+        <dc:Bounds x="60" y="240" width="840" height="460" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <!-- Lane Tim CS -->
+      <bpmndi:BPMNShape id="Shp04_LaneCS" bpmnElement="Lane04_CS" isHorizontal="true">
+        <dc:Bounds x="90" y="240" width="810" height="230" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <!-- Lane Tim Gudang -->
+      <bpmndi:BPMNShape id="Shp04_LaneGd" bpmnElement="Lane04_Gudang" isHorizontal="true">
+        <dc:Bounds x="90" y="470" width="810" height="230" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <!-- Tim CS elements -->
+      <bpmndi:BPMNShape id="Shp04_SE_PD" bpmnElement="SE04_PesananDiterima">
+        <dc:Bounds x="130" y="328" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="105" y="371" width="86" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp04_TA_CP" bpmnElement="TA04_CatatPesanan">
+        <dc:Bounds x="220" y="306" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp04_TA_VD" bpmnElement="TA04_VerifikasiData">
+        <dc:Bounds x="420" y="306" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp04_GW_DV" bpmnElement="GW04_DataValid" isMarkerVisible="true">
+        <dc:Bounds x="620" y="321" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="600" y="378" width="90" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp04_EE_PD" bpmnElement="EE04_PesananDitolak">
+        <dc:Bounds x="770" y="328" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="750" y="371" width="76" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Data Objects (between lanes) -->
+      <bpmndi:BPMNShape id="Shp04_DOR_Db" bpmnElement="DOR04_Dibuat">
+        <dc:Bounds x="240" y="430" width="36" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="215" y="487" width="86" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp04_DOR_Dv" bpmnElement="DOR04_Diverifikasi">
+        <dc:Bounds x="440" y="430" width="36" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="410" y="487" width="96" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp04_DOR_Dk" bpmnElement="DOR04_Dikemas">
+        <dc:Bounds x="240" y="630" width="36" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="215" y="687" width="86" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Text Annotation -->
+      <bpmndi:BPMNShape id="Shp04_Note1" bpmnElement="TA04_Note1">
+        <dc:Bounds x="200" y="240" width="200" height="40" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+
+      <!-- Tim Gudang elements -->
+      <bpmndi:BPMNShape id="Shp04_TA_SP" bpmnElement="TA04_SiapkanPaket">
+        <dc:Bounds x="420" y="530" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp04_TA_KP" bpmnElement="TA04_KirimPaket">
+        <dc:Bounds x="620" y="530" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp04_TA_KK" bpmnElement="TA04_KirimKonfirmasi">
+        <dc:Bounds x="760" y="530" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp04_EE_MS" bpmnElement="EE04_MerchantSelesai">
+        <dc:Bounds x="872" y="552" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="852" y="595" width="76" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Sequence Flow edges — Merchant -->
+      <bpmndi:BPMNEdge id="Edg04_M1" bpmnElement="SF04_M1">
+        <di:waypoint x="166" y="346" /><di:waypoint x="220" y="346" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg04_M2" bpmnElement="SF04_M2">
+        <di:waypoint x="360" y="346" /><di:waypoint x="420" y="346" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg04_M3" bpmnElement="SF04_M3">
+        <di:waypoint x="560" y="346" /><di:waypoint x="620" y="346" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg04_M_Ya" bpmnElement="SF04_M_Ya">
+        <di:waypoint x="645" y="371" /><di:waypoint x="645" y="570" /><di:waypoint x="420" y="570" />
+        <bpmndi:BPMNLabel><dc:Bounds x="650" y="460" width="14" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg04_M_Tidak" bpmnElement="SF04_M_Tidak">
+        <di:waypoint x="670" y="346" /><di:waypoint x="770" y="346" />
+        <bpmndi:BPMNLabel><dc:Bounds x="705" y="328" width="30" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg04_M4" bpmnElement="SF04_M4">
+        <di:waypoint x="560" y="570" /><di:waypoint x="620" y="570" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg04_M5" bpmnElement="SF04_M5">
+        <di:waypoint x="760" y="570" /><di:waypoint x="760" y="570" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg04_M6" bpmnElement="SF04_M6">
+        <di:waypoint x="860" y="570" /><di:waypoint x="872" y="570" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Data Associations -->
+      <bpmndi:BPMNEdge id="Edg04_DA_Catat" bpmnElement="DA04_Catat">
+        <di:waypoint x="258" y="386" /><di:waypoint x="258" y="430" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg04_DA_VIn" bpmnElement="DA04_VerifIn">
+        <di:waypoint x="258" y="430" /><di:waypoint x="458" y="430" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg04_DA_VOut" bpmnElement="DA04_VerifOut">
+        <di:waypoint x="458" y="386" /><di:waypoint x="458" y="430" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg04_DA_SIn" bpmnElement="DA04_SiapIn">
+        <di:waypoint x="458" y="480" /><di:waypoint x="490" y="530" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg04_DA_SOut" bpmnElement="DA04_SiapOut">
+        <di:waypoint x="490" y="530" /><di:waypoint x="258" y="630" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg04_DA_KIn" bpmnElement="DA04_KirimIn">
+        <di:waypoint x="258" y="630" /><di:waypoint x="650" y="610" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Association (text annotation) -->
+      <bpmndi:BPMNEdge id="Edg04_Assoc1" bpmnElement="Assoc04_1">
+        <di:waypoint x="290" y="306" /><di:waypoint x="300" y="280" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Message Flows -->
+      <bpmndi:BPMNEdge id="Edg04_MF1" bpmnElement="MF04_PesananDikirim">
+        <di:waypoint x="290" y="171" /><di:waypoint x="148" y="328" />
+        <bpmndi:BPMNLabel><dc:Bounds x="190" y="240" width="80" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg04_MF2" bpmnElement="MF04_KonfirmasiDikirim">
+        <di:waypoint x="810" y="530" /><di:waypoint x="448" y="149" />
+        <bpmndi:BPMNLabel><dc:Bounds x="590" y="320" width="80" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>

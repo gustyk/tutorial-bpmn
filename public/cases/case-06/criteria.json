@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "caseId": "case-06",
+  "criteria": [
+    {
+      "id": "C06-1",
+      "statement": "Ada Parallel Gateway (AND) yang memisahkan alur menjadi dua jalur yang berjalan bersamaan.",
+      "rationale": "Modul 6 memperkenalkan bahwa invoice dan pengemasan harus terjadi secara paralel — tanpa AND Gateway, keduanya akan berjalan berurutan, yang tidak mencerminkan requirement.",
+      "readIfFailed": ["/notasi/parallel-gateway"],
+      "check": {
+        "mode": "auto",
+        "rule": "element-exists",
+        "type": "bpmn:ParallelGateway",
+        "min": 2
+      }
+    },
+    {
+      "id": "C06-2",
+      "statement": "AND split dan AND join berpasangan — ada satu AND Gateway untuk memisahkan dan satu untuk menyinkronkan.",
+      "rationale": "AND split tanpa AND join menyebabkan dua token berjalan bebas — token pertama yang tiba di hilir akan diproses dua kali, yang merupakan reuse negatif kritis di Modul 6.",
+      "readIfFailed": ["/notasi/parallel-gateway"],
+      "check": {
+        "mode": "auto",
+        "rule": "gateway-join-type",
+        "splitType": "bpmn:ParallelGateway",
+        "joinType": "bpmn:ParallelGateway"
+      }
+    },
+    {
+      "id": "C06-3",
+      "statement": "Data Store (sistem inventori atau database) digunakan dalam proses, bukan hanya Data Object.",
+      "rationale": "Data Store diperkenalkan di Modul 6 untuk menyatakan data yang diakses bersama oleh beberapa proses atau yang tersimpan di luar proses instance saat ini.",
+      "readIfFailed": ["/notasi/data-store"],
+      "check": {
+        "mode": "auto",
+        "rule": "element-exists",
+        "type": "bpmn:DataStoreReference",
+        "min": 1
+      }
+    },
+    {
+      "id": "C06-4",
+      "statement": "Timer Event dan Event-Based Gateway dari Modul 5 dipertahankan — batas waktu pembayaran masih ada.",
+      "rationale": "Modul 6 adalah superset Modul 5; requirement batas waktu pembayaran tidak hilang hanya karena ada requirement baru.",
+      "readIfFailed": ["/notasi/event-based-gateway", "/notasi/timer-event"],
+      "check": {
+        "mode": "auto",
+        "rule": "element-exists",
+        "type": "bpmn:EventBasedGateway",
+        "min": 1
+      }
+    },
+    {
+      "id": "C06-5",
+      "statement": "Setelah AND join, proses dilanjutkan (tidak berakhir langsung) — AND join hanyalah titik sinkronisasi, bukan akhir proses.",
+      "rationale": "Setelah kedua pekerjaan paralel selesai, masih ada langkah mengirim konfirmasi ke customer sebelum proses berakhir.",
+      "readIfFailed": ["/notasi/parallel-gateway"],
+      "check": {
+        "mode": "manual",
+        "question": "Ikuti alur setelah AND Join pada model Anda. Apakah ada setidaknya satu task atau event setelah AND Join sebelum End Event? (Misalnya: 'Kirim konfirmasi ke customer')"
+      }
+    },
+    {
+      "id": "C06-6",
+      "statement": "Dua Pool (Customer dan Merchant) dipertahankan dengan Message Flow yang valid.",
+      "rationale": "Modul 6 mewarisi struktur Collaboration dari Modul 3–5.",
+      "readIfFailed": ["/notasi/collaboration", "/notasi/message-flow"],
+      "check": {
+        "mode": "auto",
+        "rule": "message-flow-between-participants",
+        "min": 2
+      }
+    }
+  ]
+}

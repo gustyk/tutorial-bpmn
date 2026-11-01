@@ -1,6 +1,206 @@
 ---
-title: "Modul 6 — Koordinasi paralel"
-description: "Kasus keenam: AND split/join dan sinkronisasi."
+title: "Modul 6: Dua Pekerjaan Jalan Bersamaan"
+description: "Gunakan Parallel Gateway untuk menjalankan dua task bersamaan. Pahami mengapa AND join harus berpasangan dengan AND split."
 ---
 
-Halaman ini akan diisi saat modul terkait diterbitkan.
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+import CriteriaChecker from '../../../components/CriteriaChecker.astro';
+
+## 1. Apa yang berubah
+
+**Perubahan requirement dari Modul 5:**
+
+> "Invoice dicetak sambil barang disiapkan; keduanya harus selesai sebelum kita kirim konfirmasi."
+
+Di Modul 5, semua langkah berjalan berurutan. Sekarang ada dua pekerjaan yang bisa berjalan **secara bersamaan** — dan keduanya harus selesai sebelum lanjut.
+
+**Delta notasi:**
+
+| Kode | Nama | Peran dalam modul ini |
+|------|------|----------------------|
+| G02 | Parallel Gateway (AND) | Gateway yang membagi token ke *semua* jalur sekaligus, dan menunggu *semua* selesai |
+| G03 | Inclusive Gateway (OR) | Gateway yang membagi ke *satu atau lebih* jalur berdasarkan kondisi — diperkenalkan beserta batasannya |
+| D04 | Data Store Reference | Referensi ke database atau sistem penyimpanan eksternal yang digunakan oleh proses |
+
+**Dari Modul 5 yang dipakai ulang:** E01, E02, E03, P01/P02, C01, F02, D01/F04, R01, G01, G04, F01.
+
+---
+
+## 2. Kasus bisnis
+
+Kepala gudang protes dalam rapat operasional:
+
+> "Selama ini Tim CS menunggu gudang selesai mengemas sebelum nerbitin invoice. Itu buang-buang waktu. Invoice bisa dicetak bersamaan dengan pengemasan — datanya sudah ada. Yang penting keduanya selesai sebelum kita kirim konfirmasi ke customer."
+
+Tim IT langsung bertanya:
+
+> "Bagaimana kita tahu kedua pekerjaan sudah selesai sebelum kita lanjut? Kalau invoice selesai duluan, kita tunggu gudang. Kalau gudang selesai duluan, kita tunggu invoice. Elemen BPMN apa yang menyatakan 'tunggu semuanya selesai'?"
+
+---
+
+## 3. Requirement
+
+1. Setelah konfirmasi pembayaran masuk (dari Modul 5), proses **memisah** menjadi dua jalur yang berjalan paralel:
+   - Jalur A (Tim CS): **Terbitkan invoice**.
+   - Jalur B (Tim Gudang): **Siapkan dan kemas paket**, lalu **Serahkan ke kurir**.
+2. Proses **hanya boleh lanjut** ke pengiriman konfirmasi ketika **kedua jalur sudah selesai**.
+3. Setelah keduanya selesai: kirim konfirmasi pesanan ke Customer.
+4. Verifikasi stok di Tim CS menggunakan data dari **Sistem Inventori** (Data Store) — bukan hanya Data Object lokal.
+5. Semua requirement Modul 5 (batas waktu pembayaran, Event-Based Gateway, Timer) tetap berlaku.
+
+---
+
+## 4. Panduan analisis
+
+**Pertanyaan inti: bagaimana token bisa ada di dua tempat sekaligus?**
+
+Dalam BPMN, **Parallel Gateway (AND split)** adalah satu-satunya cara resmi untuk membuat satu token menjadi dua token yang berjalan bersamaan. Ketika token tiba di AND split, ia tidak memilih jalur — ia menggandakan dirinya ke *semua* outgoing flow sekaligus.
+
+**Mengapa AND join harus berpasangan dengan AND split?**
+
+Bayangkan AND split tanpa AND join:
+1. Satu token masuk ke AND split → dua token keluar.
+2. Token pertama (invoice) selesai, tiba di task "Kirim konfirmasi".
+3. Token kedua (gudang) masih dalam perjalanan.
+4. Task "Kirim konfirmasi" dieksekusi sekali oleh token invoice.
+5. Token gudang selesai, tiba di task "Kirim konfirmasi".
+6. Task "Kirim konfirmasi" dieksekusi **lagi** oleh token gudang.
+
+Customer menerima dua konfirmasi. Ini bukan skenario hipotetis — ini perilaku nyata BPMN jika AND split tidak dipasangkan dengan AND join.
+
+**AND join adalah *barrier*: ia mengumpulkan semua token dan menunggu semuanya tiba** sebelum mengirimkan satu token ke outgoing flow.
+
+**Reuse negatif #1 — AND join dihilangkan:**
+
+> *"AND join dihilangkan sehingga hilir jalan dua kali."*
+
+Sudah dijelaskan di atas. Ini adalah kesalahan paling berbahaya karena diagram terlihat benar secara visual tapi perilaku eksekusinya salah.
+
+**Reuse negatif #2 — XOR join dipakai menyinkronkan:**
+
+> *"XOR join dipakai menunggu kedua jalur AND."*
+
+XOR join tidak menunggu — ia langsung meneruskan token yang pertama tiba. Jika dua token datang dari AND split, XOR join akan meneruskan keduanya tanpa menunggu. Efeknya sama seperti tidak ada join sama sekali: task hilir dieksekusi dua kali.
+
+**Data Store vs. Data Object:**
+
+| | Data Object | Data Store |
+|---|---|---|
+| Sifat | Lokal satu proses instance | Diakses oleh banyak proses instance |
+| State | Berubah dalam satu proses | Persisten di luar proses |
+| Contoh | Dokumen pesanan yang dibuat di modul ini | Database inventori yang dipakai banyak pesanan |
+
+---
+
+## 5. Tugas
+
+Mulai dari diagram Modul 5:
+
+1. Setelah Intermediate Message Catch Event "Bukti pembayaran diterima", **ganti atau tambahkan AND Gateway (Parallel Gateway)** sebagai titik split.
+2. Dari AND split, buat dua jalur:
+   - Jalur A (Tim CS): **Service Task "Terbitkan invoice"**.
+   - Jalur B (Tim Gudang): **Manual Task "Siapkan dan kemas paket"** → **Manual Task "Serahkan ke kurir"**.
+3. Setelah kedua jalur, tambahkan **AND Join (Parallel Gateway)** yang menerima dua incoming flow.
+4. Dari AND join: **Service Task "Kirim konfirmasi pesanan ke customer"** → End Event.
+5. Ubah Data Association verifikasi stok untuk merujuk **Data Store Reference "Sistem Inventori"**, bukan hanya Data Object.
+6. Tambahkan **Text Annotation** yang menjelaskan semantik AND split/join.
+
+:::tip[File starter]
+Gunakan [`case-06-order.bpmn`](/bpmn/case-06-order.bpmn) sebagai referensi, atau kembangkan file Modul 5-mu sendiri.
+:::
+
+---
+
+## 6. Pemeriksa kriteria
+
+<CriteriaChecker
+  criteriaSrc="/cases/case-06/criteria.json"
+  title="Periksa model Kasus 6"
+/>
+
+---
+
+## 7. Kunci jawaban
+
+:::caution[Coba kerjakan dulu]
+Buka hanya setelah kamu selesai mengerjakan tugas dan memeriksa modelmu.
+:::
+
+<details>
+<summary>**Lihat kunci jawaban Modul 6**</summary>
+
+### Lapis A — Model referensi
+
+<BpmnViewer src="/bpmn/case-06-order.bpmn" title="Kasus 6 — Parallel Gateway, Data Store" />
+
+**Walkthrough token:**
+
+*Dari titik bayar berhasil:*
+1. Token tiba di **AND split (Parallel Gateway)** — tidak ada kondisi dievaluasi.
+2. Token **digandakan** menjadi dua: satu ke Tim CS (invoice), satu ke Tim Gudang (pengemasan).
+
+*Jalur A — Tim CS:*
+3. Token CS masuk ke **Service Task "Terbitkan invoice"** → output ke Data Store "Sistem Inventori".
+4. Token CS tiba di **AND join** dan *berhenti menunggu*.
+
+*Jalur B — Tim Gudang (bersamaan dengan Jalur A):*
+5. Token Gudang masuk ke **Manual Task "Siapkan dan kemas paket"**.
+6. Token Gudang masuk ke **Manual Task "Serahkan paket ke kurir"**.
+7. Token Gudang tiba di **AND join**.
+
+*Keduanya tiba:*
+8. **AND join memusnahkan kedua token** dan mengirimkan **satu token baru** ke outgoing flow.
+9. Token tunggal masuk ke **Service Task "Kirim konfirmasi ke customer"** — hanya sekali.
+10. End Event "Pesanan dikirim".
+
+### Lapis B — Kriteria wajib
+
+1. **Minimal dua Parallel Gateway** (AND split + AND join).
+2. **AND join berpasangan dengan AND split** — tidak ada sinkronisasi dengan XOR join.
+3. **Data Store Reference** untuk sistem inventori.
+4. **Event-Based Gateway dan Timer** dari Modul 5 dipertahankan.
+5. **Minimal dua Message Flow** antar-Pool.
+
+### Lapis C — Variasi yang juga diterima
+
+**Variasi 1: Hanya satu jalur paralel yang dikenal dalam model Modul 6**
+
+Model referensi menunjukkan invoice (CS) + pengemasan (Gudang) sebagai dua jalur. Variasi yang memiliki tiga jalur paralel (misal: terbitkan invoice, siapkan paket, kirim notifikasi sistem) juga diterima selama AND join memiliki incoming flow yang sesuai.
+
+**Variasi 2: Posisi Data Store**
+
+Data Store bisa ditempatkan di antara Lane atau di luar Pool sebagai shared resource. Keduanya valid; yang penting ada Data Association yang menghubungkan task ke Data Store.
+
+### Lapis D — Kesalahan umum
+
+**Kesalahan 1: AND join dihilangkan**
+
+*Gejala:* Setelah AND split, dua jalur langsung masuk ke task yang sama tanpa melalui AND join.
+
+*Diagnosis semantik:* BPMN menjalankan token secara independen. Jika dua token masuk ke task yang sama (tanpa gateway yang menunggu), task itu dieksekusi dua kali — sekali per token. Dalam kasus ini, task "Kirim konfirmasi" akan mengirimkan dua konfirmasi ke customer.
+
+*Perbaikan:* Tambahkan AND join sebelum task hilir. AND join menunggu sampai semua token yang dihasilkan AND split tiba, lalu mengirimkan satu token ke outgoing flow.
+
+**Kesalahan 2: XOR join menggantikan AND join**
+
+*Gejala:* Ada XOR Gateway (belah ketupat dengan X) di titik konvergensi dua jalur AND.
+
+*Diagnosis semantik:* XOR join bukan barrier — ia meneruskan setiap token yang tiba tanpa menunggu. Dengan dua token dari AND split, XOR join akan meneruskan token pertama yang tiba, lalu token kedua juga ketika tiba. Efeknya: dua token ke hilir, dan task konfirmasi dieksekusi dua kali.
+
+Cara membedakannya: **AND join** menunggu, **XOR join** tidak. Jika requirement menyebut "keduanya harus selesai", itu adalah sinyal AND join.
+
+*Perbaikan:* Ganti XOR join dengan AND join (Parallel Gateway tanpa marker).
+
+**Kesalahan 3: Data Object lokal digunakan untuk data inventori**
+
+*Gejala:* Task verifikasi stok hanya menggunakan Data Object yang dibuat di process instance ini.
+
+*Diagnosis semantik:* Data Object bersifat lokal — ia dibuat dan dimusnahkan bersama process instance. Data stok inventori ada *sebelum* pesanan ini dibuat dan harus tersedia untuk semua pesanan lain. Menggunakan Data Object untuk data inventori menyatakan bahwa stok hanya "ada" selama proses berlangsung — yang tidak mencerminkan realitas sistem.
+
+*Perbaikan:* Gunakan Data Store Reference untuk data yang persisten dan diakses bersama.
+
+</details>
+
+---
+
+**← [Modul 5](/jalur/05/) · [Modul 7: Model Mulai Terlalu Padat](/jalur/07/) →**

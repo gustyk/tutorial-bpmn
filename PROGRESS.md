@@ -82,14 +82,14 @@ Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y
 - [x] T-7.4 — Modul 3 (Resep 5.1) + reuse negatif · 2026-11-02 · jalur/03.mdx: 7 bagian; reuse negatif: SF lintas Pool, MF sebagai SF; case-03-order.bpmn 2 Pool + 2 Message Flow
 - [x] T-7.5 — 15 halaman notasi Tier A · 2026-11-02 · E01/A01/A02/F01/G01/A03/A04/A05/A07/P01/C01/F02/E02/A08/A09; masing-masing 19 bagian; inventory.json docPath diperbarui; sidebar 15 entri
 - [x] T-7.5b — Tambah BpmnViewer visual di semua 15 halaman notasi · 2026-11-02 · 3 demo BPMN baru (notasi-demo-linear, notasi-demo-gateway, notasi-demo-task-types); section 2 (gambar notasi), 8 (contoh penggunaan), 9 (diagram contoh) kini menampilkan diagram visual via BpmnViewer; verify exit 0
-- [ ] **G2** — Gerbang pemilik: purwarupa mutu 3 modul. **Jangan lanjut WP-8 tanpa persetujuan.**
+- [x] **G2** — Gerbang pemilik: purwarupa mutu 3 modul · 2026-11-02 · LULUS: pemilik menyetujui WP-7, meminta perbaikan visual notasi (T-7.5b), kemudian memberi lampu hijau ke WP-8.
 
 ## WP-8 · Modul 4–6 dan notasinya
 
-- [ ] T-8.1 — Modul 4
-- [ ] T-8.2 — Modul 5 + reuse negatif "XOR menunggu pembayaran"
-- [ ] T-8.3 — Modul 6 + reuse negatif "XOR join menyinkronkan"
-- [ ] T-8.4 — 10 halaman notasi: P02, D01, F03, F04, R01, E03, G04, G02, G03, D04
+- [x] T-8.1 — Modul 4 · 2026-11-02 · case-04-order.bpmn (Lane/P02, DataObject/D01, DataAssociation/F04, Association/F03, TextAnnotation/R01); criteria.json (6 kriteria 4 auto 2 manual); jalur/04.mdx (7 seksi, 2 reuse negatif Lane vs Pool); verify exit 0
+- [x] T-8.2 — Modul 5 + reuse negatif "XOR menunggu pembayaran" · 2026-11-02 · case-05-order.bpmn (EventBasedGateway/G04, TimerEvent/E03, PT24H); criteria.json (6 kriteria); jalur/05.mdx (7 seksi, walkthrough token, 3 kesalahan umum); verify exit 0
+- [x] T-8.3 — Modul 6 + reuse negatif "XOR join menyinkronkan" · 2026-11-02 · case-06-order.bpmn (ParallelGateway/G02 split+join, DataStore/D04, tetap ada G04+E03 dari M5); criteria.json (6 kriteria); jalur/06.mdx (7 seksi, walkthrough token AND split/join); notasi-demo-inclusive-gateway.bpmn untuk G03; verify exit 0
+- [x] T-8.4 — 10 halaman notasi Tier A · 2026-11-02 · P02/lane.mdx, D01/data-object.mdx, F03/association.mdx, F04/data-association.mdx, R01/text-annotation.mdx, E03/timer-event.mdx, G04/event-based-gateway.mdx, G02/parallel-gateway.mdx, G03/inclusive-gateway.mdx, D04/data-store.mdx; inventory.json docPath diperbarui; sidebar 10 entri baru; PeriksaModelApp case-04/05/06 ditambah; verify exit 0
 
 ## WP-9 · Modul 7–9, Cabang S2, dan notasinya
 

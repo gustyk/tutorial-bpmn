@@ -1,0 +1,170 @@
+---
+title: "G04 — Event-Based Gateway"
+description: "Gateway yang menunggu salah satu dari beberapa event terjadi — berbeda dari XOR yang mengevaluasi data yang sudah ada."
+---
+
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | G04 |
+| **Nama BPMN** | Event-Based Gateway |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 5 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §13.5 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+<BpmnViewer src="/bpmn/case-05-order.bpmn" title="G04 — Event-Based Gateway: belah ketupat dengan lingkaran ganda dan pentagon di dalam" />
+
+Belah ketupat dengan lingkaran ganda (*double circle*) di dalam — berisi ikon pentagon (segi lima) atau ikon event. Memiliki beberapa outgoing flow yang masing-masing menuju Intermediate Catch Event.
+
+*Cara membuat di demo.bpmn.io:* Klik Gateway → ubah tipe menjadi "Event-Based Gateway" via context menu.
+
+---
+
+## 3. Apa artinya
+
+**Event-Based Gateway** menyatakan: *"Tunggu di sini. Saya tidak tahu event mana yang akan terjadi. Ketika salah satu event terjadi, token akan mengalir ke sana — dan event lainnya dibatalkan."*
+
+Ini adalah *race condition*: beberapa event bersaing, yang pertama menang.
+
+---
+
+## 4. Tujuan
+
+Memodelkan situasi di mana proses harus *menunggu* salah satu dari beberapa kemungkinan event eksternal — sebelum data untuk evaluasi tersedia.
+
+---
+
+## 5. Semantik BPMN
+
+Ketika token tiba di Event-Based Gateway:
+1. Gateway mengaktifkan semua "pendengar" sekaligus — satu per outgoing flow.
+2. Token tidak mengalir ke manapun — ia menunggu.
+3. Event pertama yang terjadi: token mengalir ke sana.
+4. Semua pendengar lain dibatalkan.
+
+[PEDAGOGICAL SIMPLIFICATION] Seperti "siapa cepat dia dapat" — tapi hanya satu yang bisa menang, dan semua yang lain langsung gugur.
+
+---
+
+## 6. Kapan digunakan
+
+Gunakan Event-Based Gateway ketika:
+- Proses perlu menunggu *salah satu* dari beberapa event eksternal.
+- Data untuk keputusan belum ada saat token tiba di gateway.
+- Ada batas waktu yang bersaing dengan event bisnis (timer vs. konfirmasi).
+
+---
+
+## 7. Kapan jangan digunakan
+
+Jangan gunakan Event-Based Gateway ketika data sudah ada dan keputusan bisa dievaluasi langsung — gunakan XOR (G01). Event-Based Gateway untuk *menunggu*, bukan *mengevaluasi*.
+
+---
+
+## 8. Contoh penggunaan
+
+Dalam Modul 5:
+- Event-Based Gateway "Tunggu hasil pembayaran" memiliki dua cabang:
+  - Cabang 1: Intermediate Message Catch Event "Bukti pembayaran diterima".
+  - Cabang 2: Intermediate Timer Catch Event "24 jam berlalu".
+- Ketika bukti pembayaran masuk: token ke jalur pengemasan.
+- Ketika timer habis lebih dulu: token ke End Event "Pesanan dibatalkan".
+
+---
+
+## 9. Diagram contoh
+
+<BpmnViewer src="/bpmn/case-05-order.bpmn" title="Event-Based Gateway dengan dua cabang: Message Event dan Timer Event" />
+
+---
+
+## 10. Cara membaca diagram
+
+1. Temukan belah ketupat dengan lingkaran ganda di dalam.
+2. Hitung outgoing flow — setiap flow menuju satu Intermediate Catch Event.
+3. Baca jenis setiap catch event (Message, Timer, Signal, dll.).
+4. Baca sebagai: "Tunggu sampai salah satu ini terjadi. Yang pertama menang."
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Event-Based Gateway sama dengan XOR — sama-sama memilih satu jalur."**
+
+Secara hasil akhir memang satu jalur yang dipilih, tapi cara kerjanya sangat berbeda:
+- XOR mengevaluasi kondisi berdasarkan data yang *sudah ada*.
+- Event-Based Gateway *menunggu* sampai data/event baru tiba dari luar.
+
+Menggunakan XOR ketika data belum ada menyebabkan proses gagal atau mengambil jalur default secara tidak sengaja.
+
+---
+
+## 12. Anti-pattern
+
+**Anti-pattern: XOR dipakai untuk menunggu pembayaran.**
+
+Gejala: XOR Gateway dengan kondisi "pembayaran masuk / tidak masuk" — tapi pada saat token tiba, belum ada data pembayaran.
+
+Diagnosis: Mesin proses harus mengevaluasi kondisi sekarang. Jika data pembayaran tidak ada, evaluasi gagal atau selalu false. Proses akan langsung memilih jalur "tidak masuk" atau melempar exception.
+
+Perbaikan: Gunakan Event-Based Gateway + Intermediate Message Catch Event.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Elemen | Bedanya |
+|--------|---------|
+| Exclusive Gateway / XOR (G01) | Mengevaluasi data yang sudah ada; tidak menunggu |
+| Event-Based Gateway (G04) | Menunggu event eksternal; data belum ada saat dilewati |
+| Inclusive Gateway / OR (G03) | Mengevaluasi kondisi dan bisa memilih lebih dari satu jalur |
+
+---
+
+## 14. Aturan pemilihan
+
+- Data sudah ada, pilih satu jalur → XOR (G01).
+- Harus menunggu event eksternal, satu yang menang → Event-Based Gateway (G04).
+- Data sudah ada, bisa pilih lebih dari satu jalur → Inclusive Gateway (G03).
+
+---
+
+## 15. Pertanyaan diagnostik
+
+- Apakah data untuk keputusan sudah ada saat token tiba? → Jika tidak, Event-Based Gateway.
+- Apakah proses perlu menunggu sesuatu dari luar (pesan, waktu) sebelum bisa lanjut? → Event-Based Gateway.
+- Bisakah lebih dari satu event terjadi sekaligus dan semuanya perlu diproses? → Parallel Gateway.
+
+---
+
+## 16. Argumentasi pemodelan
+
+Mengapa Modul 5 memilih Event-Based Gateway, bukan Boundary Timer pada Receive Task?
+
+Keduanya valid. Event-Based Gateway dipilih karena lebih eksplisit: kedua kompetitor terlihat sejajar dalam diagram — lebih mudah dipahami pemula. Boundary Timer lebih ringkas tapi membutuhkan pemahaman bahwa Receive Task memiliki dua cara keluar.
+
+---
+
+## 17. Validity check
+
+- Outgoing flow dari Event-Based Gateway harus menuju Intermediate Catch Event (Message, Timer, Signal, Condition, dll.) — tidak boleh langsung ke task atau gateway lain.
+- Event-Based Gateway tidak memiliki kondisi di outgoing flow — kondisi ada di jenis event-nya.
+
+---
+
+## 18. Catatan Camunda
+
+Di Camunda, Event-Based Gateway diimplementasikan dengan menunggu di salah satu pendengar event. Ketika event pertama terpenuhi, semua langganan event lain dibatalkan otomatis oleh engine.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Event-Based Gateway menunggu salah satu dari beberapa event eksternal terjadi — berbeda dari XOR yang mengevaluasi data yang sudah ada.

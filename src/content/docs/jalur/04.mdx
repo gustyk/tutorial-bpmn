@@ -1,6 +1,195 @@
 ---
-title: "Modul 4 — Pemesanan multi-pemasok"
-description: "Kasus keempat: kolaborasi antar-pool."
+title: "Modul 4: Siapa Mengerjakan Apa, dan atas Data Apa"
+description: "Tambahkan Lane untuk membagi peran internal. Dokumentasikan data yang berubah state selama proses dengan Data Object."
 ---
 
-Halaman ini akan diisi saat modul terkait diterbitkan.
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+import CriteriaChecker from '../../../components/CriteriaChecker.astro';
+
+## 1. Apa yang berubah
+
+**Perubahan requirement dari Modul 3:**
+
+> "Tim CS dan tim gudang kerjanya berbeda; dokumen order punya status."
+
+Di Modul 3, semua pekerjaan Merchant terlihat seperti tanggung jawab satu entitas. Sekarang kamu diminta memperjelas **siapa mengerjakan apa** dan **atas data apa keputusan dibuat**.
+
+**Delta notasi:**
+
+| Kode | Nama | Peran dalam modul ini |
+|------|------|----------------------|
+| P02 | Lane | Jalur swim-lane dalam satu Pool — membagi peran internal tanpa membuat Pool baru |
+| D01 | Data Object | Dokumen atau data yang berubah state selama proses |
+| F04 | Data Association | Panah data: menghubungkan task dengan Data Object (input/output) |
+| F03 | Association | Garis penghubung antara elemen dan Text Annotation |
+| R01 | Text Annotation | Catatan teks yang melekat pada elemen tanpa membawa token |
+
+**Dari Modul 3 yang dipakai ulang:** E01, P01, C01, F02, E02, A04, A05, G01, F01.
+
+---
+
+## 2. Kasus bisnis
+
+Minggu depan ada audit proses dari manajemen. Kepala operasional memberikan satu catatan baru:
+
+> "Diagram kita tidak menunjukkan siapa yang bertanggung jawab atas apa. Tim CS mencatat dan memverifikasi pesanan; Tim Gudang yang mengemas dan mengirimnya. Selain itu, dokumen pesanan berubah statusnya — dari 'dibuat' ke 'diverifikasi' ke 'dikemas' — dan itu penting untuk audit. Bisa tolong tambahkan?"
+
+Pertanyaan yang muncul: apakah Tim CS dan Tim Gudang adalah *entitas terpisah* seperti Customer, atau *peran berbeda dalam satu organisasi*?
+
+---
+
+## 3. Requirement
+
+1. Dalam Pool Merchant, pekerjaan dibagi antara **Tim CS** dan **Tim Gudang** sebagai dua peran internal.
+2. Tim CS bertanggung jawab atas **mencatat pesanan** dan **memverifikasi data dan stok**.
+3. Tim Gudang bertanggung jawab atas **menyiapkan paket**, **menyerahkan ke kurir**, dan **mengirim konfirmasi ke customer**.
+4. Ada sebuah **Dokumen Pesanan** yang dibuat oleh Tim CS, diverifikasi, lalu diteruskan ke Gudang — dengan state yang berubah: `[dibuat]` → `[diverifikasi]` → `[dikemas]`.
+5. Task "Catat data pesanan" di Tim CS memiliki **SLA 30 menit** yang harus didokumentasikan.
+6. Komunikasi antara Customer dan Merchant tetap melalui **Message Flow** (sama seperti Modul 3).
+7. Keputusan validasi data tetap menggunakan **XOR Gateway** (dari Modul 2).
+
+---
+
+## 4. Panduan analisis
+
+**Lane vs. Pool:**
+
+Sebelum menggambar, jawab dua pertanyaan ini:
+
+> "Apakah Tim CS dan Tim Gudang adalah entitas yang berbeda — punya manajemen sendiri, sistem sendiri — atau mereka sub-unit dalam satu organisasi Merchant yang sama?"
+
+Jika mereka sub-unit dalam satu Merchant: gunakan **Lane**. Lane memperlihatkan siapa mengerjakan apa di dalam satu proses.
+
+Jika mereka entitas terpisah dengan proses independen: gunakan **Pool** baru. Tapi dalam konteks ini — ini adalah tim internal — Lane adalah pilihan yang tepat.
+
+**Reuse negatif — dua jebakan modul ini:**
+
+1. *Lane dipakai untuk pihak eksternal* — misalnya menaruh Customer dalam Lane Merchant.
+
+   Mengapa ini salah? Customer punya proses independen, tidak bisa dikendalikan dari Merchant. Lane menyatakan pembagian tanggung jawab dalam satu proses milik satu entitas. Customer adalah entitas lain yang memiliki prosesnya sendiri.
+
+2. *Data Object dipakai sebagai task* — menggambar "Dokumen Pesanan" sebagai kotak task.
+
+   Mengapa ini salah? Task adalah aktivitas — sesuatu yang dilakukan. Data Object adalah artefak — sesuatu yang ada dan bisa berubah state. Membuat pesanan adalah task; dokumen pesanan yang dihasilkan adalah Data Object. Keduanya berbeda secara fundamental.
+
+**Data Object:**
+
+- Apa saja state yang dilalui Dokumen Pesanan dalam proses ini?
+- Di task mana state berubah?
+- Bagaimana cara menyatakan bahwa sebuah task "membaca" data vs. "mengubah" data?
+
+---
+
+## 5. Tugas
+
+Mulai dari diagram Modul 3, perbarui Pool Merchant:
+
+1. **Tambahkan dua Lane** di dalam Pool Merchant: "Tim CS" dan "Tim Gudang".
+2. **Pindahkan** elemen proses Merchant ke Lane yang sesuai:
+   - Tim CS: Message Start Event, task verifikasi, XOR Gateway, End Event penolakan.
+   - Tim Gudang: task pengemasan, pengiriman, konfirmasi, End Event selesai.
+3. **Tambahkan Data Object** "Dokumen Pesanan" dengan tiga referensi state: `[dibuat]`, `[diverifikasi]`, `[dikemas]`.
+4. **Hubungkan** dengan Data Association:
+   - Task "Catat data pesanan" → output ke `[dibuat]`.
+   - Task "Verifikasi data" → input dari `[dibuat]`, output ke `[diverifikasi]`.
+   - Task "Siapkan paket" → input dari `[diverifikasi]`, output ke `[dikemas]`.
+5. **Tambahkan Text Annotation** "SLA: catat pesanan dalam 30 menit sejak diterima" pada task pencatatan, dan hubungkan dengan Association.
+
+:::tip[File starter]
+Gunakan [`case-04-order.bpmn`](/bpmn/case-04-order.bpmn) sebagai referensi, atau kembangkan file Modul 3-mu sendiri.
+:::
+
+---
+
+## 6. Pemeriksa kriteria
+
+<CriteriaChecker
+  criteriaSrc="/cases/case-04/criteria.json"
+  title="Periksa model Kasus 4"
+/>
+
+---
+
+## 7. Kunci jawaban
+
+:::caution[Coba kerjakan dulu]
+Buka hanya setelah kamu selesai mengerjakan tugas dan memeriksa modelmu.
+:::
+
+<details>
+<summary>**Lihat kunci jawaban Modul 4**</summary>
+
+### Lapis A — Model referensi
+
+<BpmnViewer src="/bpmn/case-04-order.bpmn" title="Kasus 4 — Lane, Data Object, dan Text Annotation" />
+
+**Walkthrough token:**
+
+*Di Pool Customer (sama seperti Modul 3):*
+1. Token lahir di Start Event → Send Task → Intermediate Catch Event (menunggu konfirmasi).
+
+*Di Pool Merchant — Tim CS:*
+2. Token lahir di **Message Start Event** saat pesan pesanan tiba.
+3. Token masuk ke **User Task "Catat data pesanan"** (Tim CS) → Data Object Dokumen Pesanan berubah state menjadi `[dibuat]`.
+4. Token masuk ke **User Task "Verifikasi data dan ketersediaan stok"** → membaca `[dibuat]`, menghasilkan `[diverifikasi]`.
+5. Token tiba di **XOR Gateway "Data dan stok valid?"**:
+   - Jalur "tidak": → **End Event "Pesanan ditolak"**. Token dimusnahkan.
+   - Jalur "ya": → turun ke Lane Tim Gudang.
+
+*Di Pool Merchant — Tim Gudang:*
+6. Token masuk ke **Manual Task "Siapkan dan kemas paket"** → membaca `[diverifikasi]`, menghasilkan `[dikemas]`.
+7. Token masuk ke **Manual Task "Serahkan paket ke kurir"** → membaca `[dikemas]`.
+8. Token masuk ke **Service Task "Kirim konfirmasi ke customer"** → Message Flow ke Pool Customer.
+9. Token Customer di Catch Event terlepas → Customer menerima konfirmasi.
+10. Token Merchant ke **End Event "Pesanan dikirim"**. Token dimusnahkan.
+
+### Lapis B — Kriteria wajib
+
+1. **Minimal dua Lane** dalam Pool Merchant — Tim CS dan Tim Gudang sebagai dua peran internal.
+2. **Data Object Reference** dengan state `[dibuat]`, `[diverifikasi]`, `[dikemas]`.
+3. **Minimal dua Participant (Pool)** — Customer eksternal, Merchant internal.
+4. **Text Annotation** pada task pencatatan dengan batasan waktu/SLA.
+5. **Sequence Flow tidak melintasi batas Pool** — sama seperti Modul 3.
+
+### Lapis C — Variasi yang juga diterima
+
+**Variasi 1: Jumlah Lane**
+Model referensi memakai dua Lane. Model dengan tiga Lane (misalnya: Tim CS, Tim Gudang, Tim Pengiriman) juga diterima jika pembagian kerja masih logis dan didukung teks narasi.
+
+**Variasi 2: Granularitas state Data Object**
+State `[dibuat]` → `[diverifikasi]` → `[dikemas]` adalah minimum. Model dengan state tambahan seperti `[dikirim]` atau `[selesai]` juga diterima.
+
+**Variasi 3: Posisi Data Object**
+BPMN mengizinkan Data Object di luar Lane (sebagai artefak proses). Posisi di antara dua Lane (seperti di model referensi) adalah cara paling mudah dibaca, tapi bukan satu-satunya.
+
+### Lapis D — Kesalahan umum
+
+**Kesalahan 1: Lane dipakai untuk Customer**
+
+*Gejala:* Customer muncul sebagai Lane dalam Pool Merchant, bukan sebagai Pool terpisah.
+
+*Diagnosis semantik:* Lane menyatakan *siapa dalam satu entitas* yang mengerjakan bagian tertentu dari proses milik entitas itu. Customer adalah entitas eksternal dengan proses dan sistem sendiri — bukan karyawan Merchant. Menaruh Customer dalam Lane menyatakan bahwa Customer bekerja di bawah kendali proses Merchant, yang tidak benar.
+
+*Perbaikan:* Pertahankan Customer sebagai Pool terpisah. Lane hanya untuk peran internal (Tim CS, Tim Gudang).
+
+**Kesalahan 2: Data Object sebagai task**
+
+*Gejala:* Ada kotak berlabel "Dokumen Pesanan" atau "Catat Dokumen" sebagai task, bukan sebagai Data Object.
+
+*Diagnosis semantik:* Task adalah aktivitas — sesuatu yang dilakukan oleh actor atau sistem. "Dokumen Pesanan" adalah artefak — sesuatu yang dihasilkan, digunakan, atau diubah oleh aktivitas. Menggunakannya sebagai task menyatakan bahwa "dokumen melakukan pekerjaan", yang tidak masuk akal secara semantik.
+
+*Perbaikan:* Buat Data Object terpisah dengan state yang sesuai. Hubungkan ke task dengan Data Association, bukan Sequence Flow.
+
+**Kesalahan 3: Data Association dipakai sebagai Sequence Flow**
+
+*Gejala:* Data Association (garis putus-putus ke Data Object) dipakai untuk menyambungkan dua task secara berurutan.
+
+*Diagnosis semantik:* Data Association tidak membawa token — ia hanya menyatakan hubungan data. Token tetap berjalan lewat Sequence Flow. Jika kamu menghapus Sequence Flow dan mengganti dengan Data Association, token tidak akan pernah sampai ke task berikutnya.
+
+*Perbaikan:* Gunakan Sequence Flow untuk urutan task. Data Association hanya untuk menghubungkan task ke Data Object.
+
+</details>
+
+---
+
+**← [Modul 3](/jalur/03/) · [Modul 5: Pembayaran Punya Batas Waktu](/jalur/05/) →**

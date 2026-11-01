@@ -1,0 +1,444 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  id="Def_Case05"
+  targetNamespace="https://uisi.ac.id/bpmn-tutorial">
+
+  <!-- Case 05: Pembayaran ada batas waktu -->
+  <!-- Modul 5: superset Case 04 + E03 (Timer Intermediate, Boundary Interrupting), G04 (Event-Based Gateway) -->
+  <!-- Reuse negatif: XOR dipakai menunggu hasil pembayaran (data belum ada saat token tiba) -->
+
+  <bpmn:collaboration id="Collab_Case05" name="Pesanan Kasus 5">
+
+    <bpmn:participant id="Part05_Customer" name="Customer" processRef="Proc05_Customer" />
+    <bpmn:participant id="Part05_Merchant" name="Merchant" processRef="Proc05_Merchant" />
+
+    <bpmn:messageFlow id="MF05_PesananDikirim" name="Pesanan dikirim"
+      sourceRef="TA05_BuatPesanan" targetRef="SE05_PesananDiterima" />
+    <bpmn:messageFlow id="MF05_InstruksiBayar" name="Instruksi pembayaran"
+      sourceRef="TA05_KirimInstruksiBayar" targetRef="IE05_InstruksiBayarDiterima" />
+    <bpmn:messageFlow id="MF05_KonfirmasiBayar" name="Konfirmasi pembayaran"
+      sourceRef="TA05_KirimKonfirmasiBayar" targetRef="IE05_KonfirmasiBayarDiterima" />
+    <bpmn:messageFlow id="MF05_KonfirmasiPesanan" name="Konfirmasi pesanan"
+      sourceRef="TA05_KirimKonfirmasi" targetRef="IE05_KonfirmasiDiterima" />
+
+  </bpmn:collaboration>
+
+  <!-- Proses Customer -->
+  <bpmn:process id="Proc05_Customer" name="Proses Customer" isExecutable="false">
+
+    <bpmn:startEvent id="SE05_CustomerMulai" name="Kebutuhan barang muncul">
+      <bpmn:outgoing>SF05_C1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:sendTask id="TA05_BuatPesanan" name="Buat dan kirim pesanan">
+      <bpmn:incoming>SF05_C1</bpmn:incoming>
+      <bpmn:outgoing>SF05_C2</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <bpmn:intermediateCatchEvent id="IE05_InstruksiBayarDiterima" name="Instruksi pembayaran diterima">
+      <bpmn:incoming>SF05_C2</bpmn:incoming>
+      <bpmn:outgoing>SF05_C3</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED05_C1" />
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:userTask id="TA05_LakukanPembayaran" name="Lakukan pembayaran">
+      <bpmn:incoming>SF05_C3</bpmn:incoming>
+      <bpmn:outgoing>SF05_C4</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:sendTask id="TA05_KirimKonfirmasiBayar" name="Kirim bukti pembayaran">
+      <bpmn:incoming>SF05_C4</bpmn:incoming>
+      <bpmn:outgoing>SF05_C5</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <bpmn:intermediateCatchEvent id="IE05_KonfirmasiDiterima" name="Konfirmasi pesanan diterima">
+      <bpmn:incoming>SF05_C5</bpmn:incoming>
+      <bpmn:outgoing>SF05_C6</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED05_C2" />
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:endEvent id="EE05_CustomerSelesai" name="Pesanan dikonfirmasi">
+      <bpmn:incoming>SF05_C6</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="SF05_C1" sourceRef="SE05_CustomerMulai" targetRef="TA05_BuatPesanan" />
+    <bpmn:sequenceFlow id="SF05_C2" sourceRef="TA05_BuatPesanan" targetRef="IE05_InstruksiBayarDiterima" />
+    <bpmn:sequenceFlow id="SF05_C3" sourceRef="IE05_InstruksiBayarDiterima" targetRef="TA05_LakukanPembayaran" />
+    <bpmn:sequenceFlow id="SF05_C4" sourceRef="TA05_LakukanPembayaran" targetRef="TA05_KirimKonfirmasiBayar" />
+    <bpmn:sequenceFlow id="SF05_C5" sourceRef="TA05_KirimKonfirmasiBayar" targetRef="IE05_KonfirmasiDiterima" />
+    <bpmn:sequenceFlow id="SF05_C6" sourceRef="IE05_KonfirmasiDiterima" targetRef="EE05_CustomerSelesai" />
+
+  </bpmn:process>
+
+  <!-- Proses Merchant: 2 Lane + Timer Boundary + Event-Based Gateway -->
+  <bpmn:process id="Proc05_Merchant" name="Proses Merchant" isExecutable="false">
+
+    <bpmn:laneSet id="LS05_Merchant">
+      <bpmn:lane id="Lane05_CS" name="Tim CS">
+        <bpmn:flowNodeRef>SE05_PesananDiterima</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA05_CatatPesanan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA05_VerifikasiData</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW05_DataValid</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EE05_PesananDitolak</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA05_KirimInstruksiBayar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW05_TunggubBayar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>IE05_KonfirmasiBayarDiterima</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>IE05_TimerHabis</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EE05_BatasWaktuHabis</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane05_Gudang" name="Tim Gudang">
+        <bpmn:flowNodeRef>TA05_SiapkanPaket</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA05_KirimPaket</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA05_KirimKonfirmasi</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EE05_MerchantSelesai</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <!-- Data Objects -->
+    <bpmn:dataObject id="DO05_DokumenPesanan" name="Dokumen Pesanan" />
+    <bpmn:dataObjectReference id="DOR05_Dibuat" name="Dokumen Pesanan [dibuat]"
+      dataObjectRef="DO05_DokumenPesanan" />
+    <bpmn:dataObjectReference id="DOR05_Diverifikasi" name="Dokumen Pesanan [diverifikasi]"
+      dataObjectRef="DO05_DokumenPesanan" />
+
+    <!-- Text Annotation -->
+    <bpmn:textAnnotation id="TA05_NoteTimer">
+      <bpmn:text>Batas waktu: 24 jam sejak instruksi pembayaran dikirim</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Assoc05_Timer" sourceRef="GW05_TunggubBayar" targetRef="TA05_NoteTimer" />
+
+    <!-- Tim CS -->
+    <bpmn:startEvent id="SE05_PesananDiterima" name="Pesanan diterima dari customer">
+      <bpmn:outgoing>SF05_M1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED05_M1" />
+    </bpmn:startEvent>
+
+    <bpmn:userTask id="TA05_CatatPesanan" name="Catat data pesanan">
+      <bpmn:incoming>SF05_M1</bpmn:incoming>
+      <bpmn:outgoing>SF05_M2</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="DA05_Catat">
+        <bpmn:targetRef>DOR05_Dibuat</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:userTask>
+
+    <bpmn:userTask id="TA05_VerifikasiData" name="Verifikasi data dan ketersediaan stok">
+      <bpmn:incoming>SF05_M2</bpmn:incoming>
+      <bpmn:outgoing>SF05_M3</bpmn:outgoing>
+      <bpmn:dataInputAssociation id="DA05_VerifIn">
+        <bpmn:sourceRef>DOR05_Dibuat</bpmn:sourceRef>
+      </bpmn:dataInputAssociation>
+      <bpmn:dataOutputAssociation id="DA05_VerifOut">
+        <bpmn:targetRef>DOR05_Diverifikasi</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="GW05_DataValid" name="Data dan stok valid?">
+      <bpmn:incoming>SF05_M3</bpmn:incoming>
+      <bpmn:outgoing>SF05_M_Ya</bpmn:outgoing>
+      <bpmn:outgoing>SF05_M_Tidak</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:endEvent id="EE05_PesananDitolak" name="Pesanan ditolak">
+      <bpmn:incoming>SF05_M_Tidak</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Kirim instruksi bayar lalu tunggu dengan Event-Based Gateway -->
+    <bpmn:serviceTask id="TA05_KirimInstruksiBayar" name="Kirim instruksi pembayaran ke customer">
+      <bpmn:incoming>SF05_M_Ya</bpmn:incoming>
+      <bpmn:outgoing>SF05_M4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- G04: Event-Based Gateway — menunggu salah satu dari: konfirmasi bayar ATAU timer 24 jam -->
+    <bpmn:eventBasedGateway id="GW05_TunggubBayar" name="Tunggu hasil pembayaran">
+      <bpmn:incoming>SF05_M4</bpmn:incoming>
+      <bpmn:outgoing>SF05_M_Bayar</bpmn:outgoing>
+      <bpmn:outgoing>SF05_M_Timer</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+
+    <!-- Jalur 1: konfirmasi pembayaran masuk (Message Catch) -->
+    <bpmn:intermediateCatchEvent id="IE05_KonfirmasiBayarDiterima" name="Bukti pembayaran diterima">
+      <bpmn:incoming>SF05_M_Bayar</bpmn:incoming>
+      <bpmn:outgoing>SF05_M5</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED05_M2" />
+    </bpmn:intermediateCatchEvent>
+
+    <!-- Jalur 2: timer 24 jam habis -->
+    <bpmn:intermediateCatchEvent id="IE05_TimerHabis" name="24 jam berlalu tanpa pembayaran">
+      <bpmn:incoming>SF05_M_Timer</bpmn:incoming>
+      <bpmn:outgoing>SF05_M_Cancel</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TED05_M1">
+        <bpmn:timeDuration>PT24H</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:endEvent id="EE05_BatasWaktuHabis" name="Pesanan dibatalkan — batas waktu habis">
+      <bpmn:incoming>SF05_M_Cancel</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Tim Gudang -->
+    <bpmn:manualTask id="TA05_SiapkanPaket" name="Siapkan dan kemas paket">
+      <bpmn:incoming>SF05_M5</bpmn:incoming>
+      <bpmn:outgoing>SF05_M6</bpmn:outgoing>
+      <bpmn:dataInputAssociation id="DA05_SiapIn">
+        <bpmn:sourceRef>DOR05_Diverifikasi</bpmn:sourceRef>
+      </bpmn:dataInputAssociation>
+    </bpmn:manualTask>
+
+    <bpmn:manualTask id="TA05_KirimPaket" name="Serahkan paket ke kurir">
+      <bpmn:incoming>SF05_M6</bpmn:incoming>
+      <bpmn:outgoing>SF05_M7</bpmn:outgoing>
+    </bpmn:manualTask>
+
+    <bpmn:serviceTask id="TA05_KirimKonfirmasi" name="Kirim konfirmasi pesanan ke customer">
+      <bpmn:incoming>SF05_M7</bpmn:incoming>
+      <bpmn:outgoing>SF05_M8</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="EE05_MerchantSelesai" name="Pesanan dikirim">
+      <bpmn:incoming>SF05_M8</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="SF05_M1" sourceRef="SE05_PesananDiterima" targetRef="TA05_CatatPesanan" />
+    <bpmn:sequenceFlow id="SF05_M2" sourceRef="TA05_CatatPesanan" targetRef="TA05_VerifikasiData" />
+    <bpmn:sequenceFlow id="SF05_M3" sourceRef="TA05_VerifikasiData" targetRef="GW05_DataValid" />
+    <bpmn:sequenceFlow id="SF05_M_Ya" name="ya" sourceRef="GW05_DataValid" targetRef="TA05_KirimInstruksiBayar">
+      <bpmn:conditionExpression>data lengkap dan stok tersedia</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="SF05_M_Tidak" name="tidak" sourceRef="GW05_DataValid" targetRef="EE05_PesananDitolak">
+      <bpmn:conditionExpression>data tidak lengkap atau stok habis</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="SF05_M4" sourceRef="TA05_KirimInstruksiBayar" targetRef="GW05_TunggubBayar" />
+    <bpmn:sequenceFlow id="SF05_M_Bayar" sourceRef="GW05_TunggubBayar" targetRef="IE05_KonfirmasiBayarDiterima" />
+    <bpmn:sequenceFlow id="SF05_M_Timer" sourceRef="GW05_TunggubBayar" targetRef="IE05_TimerHabis" />
+    <bpmn:sequenceFlow id="SF05_M5" sourceRef="IE05_KonfirmasiBayarDiterima" targetRef="TA05_SiapkanPaket" />
+    <bpmn:sequenceFlow id="SF05_M_Cancel" sourceRef="IE05_TimerHabis" targetRef="EE05_BatasWaktuHabis" />
+    <bpmn:sequenceFlow id="SF05_M6" sourceRef="TA05_SiapkanPaket" targetRef="TA05_KirimPaket" />
+    <bpmn:sequenceFlow id="SF05_M7" sourceRef="TA05_KirimPaket" targetRef="TA05_KirimKonfirmasi" />
+    <bpmn:sequenceFlow id="SF05_M8" sourceRef="TA05_KirimKonfirmasi" targetRef="EE05_MerchantSelesai" />
+
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="Dia_Case05">
+    <bpmndi:BPMNPlane id="Pla_Case05" bpmnElement="Collab_Case05">
+
+      <!-- Pool Customer -->
+      <bpmndi:BPMNShape id="Shp05_PartC" bpmnElement="Part05_Customer" isHorizontal="true">
+        <dc:Bounds x="60" y="60" width="1060" height="160" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp05_SE_CM" bpmnElement="SE05_CustomerMulai">
+        <dc:Bounds x="130" y="123" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="108" y="166" width="80" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp05_TA_BP" bpmnElement="TA05_BuatPesanan">
+        <dc:Bounds x="220" y="101" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp05_IE_IBD" bpmnElement="IE05_InstruksiBayarDiterima">
+        <dc:Bounds x="410" y="123" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="388" y="166" width="80" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp05_TA_LP" bpmnElement="TA05_LakukanPembayaran">
+        <dc:Bounds x="500" y="101" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp05_TA_KKB" bpmnElement="TA05_KirimKonfirmasiBayar">
+        <dc:Bounds x="690" y="101" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp05_IE_KD" bpmnElement="IE05_KonfirmasiDiterima">
+        <dc:Bounds x="880" y="123" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="858" y="166" width="80" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp05_EE_CS" bpmnElement="EE05_CustomerSelesai">
+        <dc:Bounds x="980" y="123" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="960" y="166" width="76" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Edg05_C1" bpmnElement="SF05_C1">
+        <di:waypoint x="166" y="141" /><di:waypoint x="220" y="141" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg05_C2" bpmnElement="SF05_C2">
+        <di:waypoint x="350" y="141" /><di:waypoint x="410" y="141" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg05_C3" bpmnElement="SF05_C3">
+        <di:waypoint x="446" y="141" /><di:waypoint x="500" y="141" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg05_C4" bpmnElement="SF05_C4">
+        <di:waypoint x="630" y="141" /><di:waypoint x="690" y="141" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg05_C5" bpmnElement="SF05_C5">
+        <di:waypoint x="820" y="141" /><di:waypoint x="880" y="141" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg05_C6" bpmnElement="SF05_C6">
+        <di:waypoint x="916" y="141" /><di:waypoint x="980" y="141" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Pool Merchant -->
+      <bpmndi:BPMNShape id="Shp05_PartM" bpmnElement="Part05_Merchant" isHorizontal="true">
+        <dc:Bounds x="60" y="270" width="1060" height="490" />
+      </bpmndi:BPMNShape>
+
+      <!-- Lane Tim CS -->
+      <bpmndi:BPMNShape id="Shp05_LaneCS" bpmnElement="Lane05_CS" isHorizontal="true">
+        <dc:Bounds x="90" y="270" width="1030" height="260" />
+      </bpmndi:BPMNShape>
+
+      <!-- Lane Tim Gudang -->
+      <bpmndi:BPMNShape id="Shp05_LaneGd" bpmnElement="Lane05_Gudang" isHorizontal="true">
+        <dc:Bounds x="90" y="530" width="1030" height="230" />
+      </bpmndi:BPMNShape>
+
+      <!-- Tim CS elements -->
+      <bpmndi:BPMNShape id="Shp05_SE_PD" bpmnElement="SE05_PesananDiterima">
+        <dc:Bounds x="130" y="363" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="105" y="406" width="86" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp05_TA_CP" bpmnElement="TA05_CatatPesanan">
+        <dc:Bounds x="220" y="341" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp05_TA_VD" bpmnElement="TA05_VerifikasiData">
+        <dc:Bounds x="410" y="341" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp05_GW_DV" bpmnElement="GW05_DataValid" isMarkerVisible="true">
+        <dc:Bounds x="600" y="356" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="578" y="413" width="94" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp05_EE_PD" bpmnElement="EE05_PesananDitolak">
+        <dc:Bounds x="800" y="363" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="778" y="406" width="80" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp05_TA_KIB" bpmnElement="TA05_KirimInstruksiBayar">
+        <dc:Bounds x="710" y="341" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp05_GW_TB" bpmnElement="GW05_TunggubBayar">
+        <dc:Bounds x="900" y="356" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="878" y="413" width="94" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp05_IE_KBD" bpmnElement="IE05_KonfirmasiBayarDiterima">
+        <dc:Bounds x="1010" y="363" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="988" y="406" width="80" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp05_IE_TH" bpmnElement="IE05_TimerHabis">
+        <dc:Bounds x="900" y="463" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="878" y="506" width="80" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp05_EE_BWH" bpmnElement="EE05_BatasWaktuHabis">
+        <dc:Bounds x="1010" y="463" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="990" y="506" width="80" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Text Annotation -->
+      <bpmndi:BPMNShape id="Shp05_Note1" bpmnElement="TA05_NoteTimer">
+        <dc:Bounds x="870" y="280" width="220" height="40" />
+      </bpmndi:BPMNShape>
+
+      <!-- Data Objects -->
+      <bpmndi:BPMNShape id="Shp05_DOR_Db" bpmnElement="DOR05_Dibuat">
+        <dc:Bounds x="248" y="455" width="36" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="220" y="512" width="90" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp05_DOR_Dv" bpmnElement="DOR05_Diverifikasi">
+        <dc:Bounds x="448" y="455" width="36" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="418" y="512" width="96" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Tim Gudang -->
+      <bpmndi:BPMNShape id="Shp05_TA_SP" bpmnElement="TA05_SiapkanPaket">
+        <dc:Bounds x="700" y="580" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp05_TA_KP" bpmnElement="TA05_KirimPaket">
+        <dc:Bounds x="860" y="580" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp05_TA_KK" bpmnElement="TA05_KirimKonfirmasi">
+        <dc:Bounds x="1010" y="580" width="80" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp05_EE_MS" bpmnElement="EE05_MerchantSelesai">
+        <dc:Bounds x="1102" y="602" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1082" y="645" width="76" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Sequence Flow edges — Merchant -->
+      <bpmndi:BPMNEdge id="Edg05_M1" bpmnElement="SF05_M1">
+        <di:waypoint x="166" y="381" /><di:waypoint x="220" y="381" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg05_M2" bpmnElement="SF05_M2">
+        <di:waypoint x="350" y="381" /><di:waypoint x="410" y="381" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg05_M3" bpmnElement="SF05_M3">
+        <di:waypoint x="540" y="381" /><di:waypoint x="600" y="381" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg05_M_Ya" bpmnElement="SF05_M_Ya">
+        <di:waypoint x="650" y="381" /><di:waypoint x="710" y="381" />
+        <bpmndi:BPMNLabel><dc:Bounds x="672" y="363" width="14" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg05_M_Tidak" bpmnElement="SF05_M_Tidak">
+        <di:waypoint x="625" y="356" /><di:waypoint x="625" y="320" /><di:waypoint x="800" y="320" /><di:waypoint x="800" y="363" />
+        <bpmndi:BPMNLabel><dc:Bounds x="703" y="302" width="30" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg05_M4" bpmnElement="SF05_M4">
+        <di:waypoint x="840" y="381" /><di:waypoint x="900" y="381" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg05_M_Bayar" bpmnElement="SF05_M_Bayar">
+        <di:waypoint x="950" y="381" /><di:waypoint x="1010" y="381" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg05_M_Timer" bpmnElement="SF05_M_Timer">
+        <di:waypoint x="925" y="406" /><di:waypoint x="925" y="463" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg05_M5" bpmnElement="SF05_M5">
+        <di:waypoint x="1028" y="399" /><di:waypoint x="1028" y="620" /><di:waypoint x="830" y="620" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg05_M_Cancel" bpmnElement="SF05_M_Cancel">
+        <di:waypoint x="936" y="481" /><di:waypoint x="1010" y="481" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg05_M6" bpmnElement="SF05_M6">
+        <di:waypoint x="830" y="620" /><di:waypoint x="860" y="620" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg05_M7" bpmnElement="SF05_M7">
+        <di:waypoint x="990" y="620" /><di:waypoint x="1010" y="620" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg05_M8" bpmnElement="SF05_M8">
+        <di:waypoint x="1090" y="620" /><di:waypoint x="1102" y="620" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Data Associations -->
+      <bpmndi:BPMNEdge id="Edg05_DA_Catat" bpmnElement="DA05_Catat">
+        <di:waypoint x="266" y="421" /><di:waypoint x="266" y="455" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg05_DA_VIn" bpmnElement="DA05_VerifIn">
+        <di:waypoint x="266" y="455" /><di:waypoint x="466" y="455" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg05_DA_VOut" bpmnElement="DA05_VerifOut">
+        <di:waypoint x="466" y="421" /><di:waypoint x="466" y="455" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg05_DA_SIn" bpmnElement="DA05_SiapIn">
+        <di:waypoint x="466" y="505" /><di:waypoint x="765" y="580" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Association (text annotation) -->
+      <bpmndi:BPMNEdge id="Edg05_Assoc1" bpmnElement="Assoc05_Timer">
+        <di:waypoint x="925" y="356" /><di:waypoint x="980" y="320" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Message Flows -->
+      <bpmndi:BPMNEdge id="Edg05_MF1" bpmnElement="MF05_PesananDikirim">
+        <di:waypoint x="285" y="181" /><di:waypoint x="148" y="363" />
+        <bpmndi:BPMNLabel><dc:Bounds x="185" y="260" width="80" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg05_MF2" bpmnElement="MF05_InstruksiBayar">
+        <di:waypoint x="775" y="341" /><di:waypoint x="428" y="159" />
+        <bpmndi:BPMNLabel><dc:Bounds x="565" y="230" width="80" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg05_MF3" bpmnElement="MF05_KonfirmasiBayar">
+        <di:waypoint x="755" y="141" /><di:waypoint x="1028" y="363" />
+        <bpmndi:BPMNLabel><dc:Bounds x="855" y="230" width="80" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg05_MF4" bpmnElement="MF05_KonfirmasiPesanan">
+        <di:waypoint x="1050" y="580" /><di:waypoint x="898" y="159" />
+        <bpmndi:BPMNLabel><dc:Bounds x="990" y="360" width="80" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>

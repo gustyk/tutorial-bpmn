@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "caseId": "case-05",
+  "criteria": [
+    {
+      "id": "C05-1",
+      "statement": "Batas waktu pembayaran diekspresikan sebagai event yang menunggu, bukan sebagai XOR atas data status pembayaran.",
+      "rationale": "Pada saat token tiba di titik menunggu pembayaran, status pembayaran belum menjadi data yang dapat dievaluasi. XOR mengevaluasi kondisi yang sudah ada; Event-Based Gateway atau Boundary Timer menunggu event di masa depan.",
+      "readIfFailed": ["/notasi/timer-event", "/notasi/event-based-gateway", "/notasi/exclusive-gateway"],
+      "check": {
+        "mode": "auto",
+        "anyOf": [
+          {
+            "rule": "element-exists",
+            "type": "bpmn:EventBasedGateway",
+            "min": 1
+          },
+          {
+            "rule": "boundary-attached-to",
+            "eventDefinition": "bpmn:TimerEventDefinition",
+            "interrupting": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "C05-2",
+      "statement": "Ada setidaknya satu Timer Event (Intermediate Catch atau Boundary) yang menyatakan batas waktu 24 jam.",
+      "rationale": "Timer Event adalah cara eksplisit BPMN untuk menyatakan bahwa proses menunggu selama durasi tertentu — lebih jelas daripada anotasi teks saja.",
+      "readIfFailed": ["/notasi/timer-event"],
+      "check": {
+        "mode": "auto",
+        "anyOf": [
+          { "rule": "element-exists", "type": "bpmn:IntermediateCatchEvent", "min": 1 },
+          { "rule": "boundary-attached-to", "eventDefinition": "bpmn:TimerEventDefinition" }
+        ]
+      }
+    },
+    {
+      "id": "C05-3",
+      "statement": "Jalur timeout benar-benar mengakhiri pesanan dengan End Event yang menyatakan pembatalan.",
+      "rationale": "Timer yang tidak berakhir di End Event dapat membuat proses menggantung tanpa resolusi — mahasiswa sering lupa menyelesaikan jalur timeout.",
+      "readIfFailed": ["/notasi/none-event"],
+      "check": {
+        "mode": "manual",
+        "question": "Ikuti jalur timeout pada model Anda. Apakah ia berakhir pada End Event yang menyatakan pesanan dibatalkan atau batas waktu habis?"
+      }
+    },
+    {
+      "id": "C05-4",
+      "statement": "Dua Pool dipertahankan: Customer dan Merchant sebagai entitas terpisah.",
+      "rationale": "Modul 5 mewarisi struktur Collaboration dari Modul 3-4; relasi Customer–Merchant tetap melalui Message Flow.",
+      "readIfFailed": ["/notasi/pool-participant", "/notasi/collaboration"],
+      "check": {
+        "mode": "auto",
+        "rule": "element-exists",
+        "type": "bpmn:Participant",
+        "min": 2
+      }
+    },
+    {
+      "id": "C05-5",
+      "statement": "Instruksi pembayaran dikirimkan ke Customer (ada Message Flow dari Merchant ke Customer) sebelum batas waktu mulai berjalan.",
+      "rationale": "Batas waktu dimulai setelah Merchant memberitahu Customer — menjalankan timer tanpa pemberitahuan adalah logika bisnis yang tidak masuk akal.",
+      "readIfFailed": ["/notasi/message-flow", "/notasi/timer-event"],
+      "check": {
+        "mode": "auto",
+        "rule": "message-flow-between-participants",
+        "min": 2
+      }
+    },
+    {
+      "id": "C05-6",
+      "statement": "Task atau event yang menunggu pembayaran diekspresikan secara eksplisit — proses tidak langsung melompat ke pengemasan.",
+      "rationale": "Tanpa titik tunggu eksplisit, model menyatakan bahwa pembayaran selalu berhasil seketika, yang tidak mencerminkan kebutuhan bisnis.",
+      "readIfFailed": ["/notasi/event-based-gateway", "/notasi/timer-event"],
+      "check": {
+        "mode": "manual",
+        "question": "Tunjukkan di model Anda: di mana proses Merchant menunggu konfirmasi pembayaran dari Customer? Apakah ada Event-Based Gateway atau Boundary Timer di sana?"
+      }
+    }
+  ]
+}

@@ -28,7 +28,9 @@ for (const file of files) {
     const hasDi = (type, modelElement) => planeElements.some((di) => di.$type === type && di.bpmnElement?.id === modelElement.id);
     for (const process of processes) {
       const flows = process.flowElements.filter((element) => element.$type === 'bpmn:SequenceFlow');
-      const nodes = process.flowElements.filter((element) => element.$type !== 'bpmn:SequenceFlow');
+      // DataObject is a definition element referenced by DataObjectReference — no DI shape needed
+      const NON_VISUAL = new Set(['bpmn:SequenceFlow', 'bpmn:DataObject']);
+      const nodes = process.flowElements.filter((element) => !NON_VISUAL.has(element.$type));
       const nodeIds = new Set(nodes.map((node) => node.id));
       for (const flow of flows) {
         if (!nodeIds.has(flow.sourceRef?.id) || !nodeIds.has(flow.targetRef?.id)) throw new Error(`Invalid sequence flow ${flow.id}.`);

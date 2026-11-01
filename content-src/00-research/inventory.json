@@ -277,7 +277,8 @@
       "slug": "lane",
       "introducedIn": "case-04",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/lane.mdx"
     },
     {
       "id": "C01",
@@ -336,7 +337,8 @@
       "slug": "association",
       "introducedIn": "case-04",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/association.mdx"
     },
     {
       "id": "F04",
@@ -350,7 +352,8 @@
       "slug": "data-association",
       "introducedIn": "case-04",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/data-association.mdx"
     },
     {
       "id": "A01",
@@ -625,7 +628,8 @@
       "slug": "parallel-gateway",
       "introducedIn": "case-06",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/parallel-gateway.mdx"
     },
     {
       "id": "G03",
@@ -639,7 +643,8 @@
       "slug": "inclusive-gateway",
       "introducedIn": "case-06",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/inclusive-gateway.mdx"
     },
     {
       "id": "G04",
@@ -653,7 +658,8 @@
       "slug": "event-based-gateway",
       "introducedIn": "case-05",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/event-based-gateway.mdx"
     },
     {
       "id": "G05",
@@ -681,7 +687,8 @@
       "slug": "data-object",
       "introducedIn": "case-04",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/data-object.mdx"
     },
     {
       "id": "D02",
@@ -723,7 +730,8 @@
       "slug": "data-store",
       "introducedIn": "case-06",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/data-store.mdx"
     },
     {
       "id": "R01",
@@ -737,7 +745,8 @@
       "slug": "text-annotation",
       "introducedIn": "case-04",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/text-annotation.mdx"
     },
     {
       "id": "R02",
@@ -795,7 +804,8 @@
       "slug": "timer-event",
       "introducedIn": "case-05",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/timer-event.mdx"
     },
     {
       "id": "E04",

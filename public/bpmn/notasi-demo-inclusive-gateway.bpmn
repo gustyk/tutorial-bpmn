@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  id="Def_DemoInclusiveGW"
+  targetNamespace="https://uisi.ac.id/bpmn-tutorial">
+
+  <!-- Demo: G03 (Inclusive Gateway / OR split + OR join) -->
+  <!-- Konteks: pesanan yang bisa minta pengiriman fisik, layanan digital, atau keduanya -->
+  <bpmn:process id="Proc_DemoOR" name="Proses dengan OR Gateway" isExecutable="false">
+
+    <bpmn:startEvent id="SE_OR" name="Pesanan diterima">
+      <bpmn:outgoing>SFO_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:task id="TA_OR_Analisis" name="Analisis jenis pesanan">
+      <bpmn:incoming>SFO_1</bpmn:incoming>
+      <bpmn:outgoing>SFO_2</bpmn:outgoing>
+    </bpmn:task>
+
+    <!-- OR Split: satu atau lebih jalur bisa aktif bersamaan -->
+    <bpmn:inclusiveGateway id="GW_OR_Split" name="Jenis pengiriman yang dipilih?">
+      <bpmn:incoming>SFO_2</bpmn:incoming>
+      <bpmn:outgoing>SFO_Fisik</bpmn:outgoing>
+      <bpmn:outgoing>SFO_Digital</bpmn:outgoing>
+    </bpmn:inclusiveGateway>
+
+    <bpmn:task id="TA_OR_Fisik" name="Siapkan pengiriman fisik">
+      <bpmn:incoming>SFO_Fisik</bpmn:incoming>
+      <bpmn:outgoing>SFO_FisikDone</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="TA_OR_Digital" name="Aktifkan layanan digital">
+      <bpmn:incoming>SFO_Digital</bpmn:incoming>
+      <bpmn:outgoing>SFO_DigitalDone</bpmn:outgoing>
+    </bpmn:task>
+
+    <!-- OR Join: tunggu semua jalur yang AKTIF -->
+    <bpmn:inclusiveGateway id="GW_OR_Join" name="">
+      <bpmn:incoming>SFO_FisikDone</bpmn:incoming>
+      <bpmn:incoming>SFO_DigitalDone</bpmn:incoming>
+      <bpmn:outgoing>SFO_3</bpmn:outgoing>
+    </bpmn:inclusiveGateway>
+
+    <bpmn:endEvent id="EE_OR" name="Pesanan selesai diproses">
+      <bpmn:incoming>SFO_3</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="SFO_1" sourceRef="SE_OR" targetRef="TA_OR_Analisis" />
+    <bpmn:sequenceFlow id="SFO_2" sourceRef="TA_OR_Analisis" targetRef="GW_OR_Split" />
+    <bpmn:sequenceFlow id="SFO_Fisik" name="fisik" sourceRef="GW_OR_Split" targetRef="TA_OR_Fisik">
+      <bpmn:conditionExpression>pesanan termasuk produk fisik</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="SFO_Digital" name="digital" sourceRef="GW_OR_Split" targetRef="TA_OR_Digital">
+      <bpmn:conditionExpression>pesanan termasuk layanan digital</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="SFO_FisikDone" sourceRef="TA_OR_Fisik" targetRef="GW_OR_Join" />
+    <bpmn:sequenceFlow id="SFO_DigitalDone" sourceRef="TA_OR_Digital" targetRef="GW_OR_Join" />
+    <bpmn:sequenceFlow id="SFO_3" sourceRef="GW_OR_Join" targetRef="EE_OR" />
+
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="Dia_DemoOR">
+    <bpmndi:BPMNPlane id="Pla_DemoOR" bpmnElement="Proc_DemoOR">
+      <bpmndi:BPMNShape id="Shp_SE_OR" bpmnElement="SE_OR">
+        <dc:Bounds x="80" y="200" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="60" y="243" width="76" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA_An" bpmnElement="TA_OR_Analisis">
+        <dc:Bounds x="170" y="178" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_GW_OS" bpmnElement="GW_OR_Split">
+        <dc:Bounds x="360" y="193" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="335" y="250" width="100" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA_Fs" bpmnElement="TA_OR_Fisik">
+        <dc:Bounds x="470" y="130" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA_Dg" bpmnElement="TA_OR_Digital">
+        <dc:Bounds x="470" y="260" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_GW_OJ" bpmnElement="GW_OR_Join">
+        <dc:Bounds x="660" y="193" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_EE_OR" bpmnElement="EE_OR">
+        <dc:Bounds x="770" y="200" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="748" y="243" width="80" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="EdgO_1" bpmnElement="SFO_1"><di:waypoint x="116" y="218" /><di:waypoint x="170" y="218" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="EdgO_2" bpmnElement="SFO_2"><di:waypoint x="300" y="218" /><di:waypoint x="360" y="218" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="EdgO_Fs" bpmnElement="SFO_Fisik">
+        <di:waypoint x="385" y="193" /><di:waypoint x="385" y="170" /><di:waypoint x="470" y="170" />
+        <bpmndi:BPMNLabel><dc:Bounds x="393" y="175" width="30" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="EdgO_Dg" bpmnElement="SFO_Digital">
+        <di:waypoint x="385" y="243" /><di:waypoint x="385" y="300" /><di:waypoint x="470" y="300" />
+        <bpmndi:BPMNLabel><dc:Bounds x="393" y="262" width="40" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="EdgO_FD" bpmnElement="SFO_FisikDone">
+        <di:waypoint x="600" y="170" /><di:waypoint x="685" y="170" /><di:waypoint x="685" y="193" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="EdgO_DD" bpmnElement="SFO_DigitalDone">
+        <di:waypoint x="600" y="300" /><di:waypoint x="685" y="300" /><di:waypoint x="685" y="243" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="EdgO_3" bpmnElement="SFO_3"><di:waypoint x="710" y="218" /><di:waypoint x="770" y="218" /></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>

@@ -1,0 +1,165 @@
+---
+title: "E03 — Timer Event"
+description: "Event yang ditrigger oleh waktu — menunggu durasi tertentu, tanggal/waktu tertentu, atau pola berulang."
+---
+
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | E03 |
+| **Nama BPMN** | Timer Event |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 5 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §10.4.4 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+<BpmnViewer src="/bpmn/case-05-order.bpmn" title="E03 — Timer Event: lingkaran dengan ikon jam di dalam, setelah Event-Based Gateway" />
+
+Lingkaran dengan ikon jam (clockface) di dalam. Sebagai Intermediate Catch Event, lingkaran memiliki tepi ganda. Sebagai Start Event, tepi tunggal.
+
+*Cara membuat di demo.bpmn.io:* Klik elemen → "Append Intermediate Catch Event" → ubah tipe menjadi "Timer Intermediate Catching Event". Atau klik ganda pada canvas untuk Start Event, ubah tipe menjadi Timer.
+
+---
+
+## 3. Apa artinya
+
+**Timer Event** menyatakan: *"Proses berhenti di sini dan menunggu sampai kondisi waktu terpenuhi, lalu melanjutkan."*
+
+Timer bisa dikonfigurasi sebagai:
+- **Duration** (`PT24H`): tunggu selama 24 jam.
+- **Date** (`2026-12-31T00:00:00`): tunggu sampai tanggal/waktu tertentu.
+- **Cycle** (`R3/PT1H`): berulang setiap jam, 3 kali.
+
+---
+
+## 4. Tujuan
+
+Mengekspresikan batas waktu, jadwal, atau kondisi temporal yang harus diterapkan oleh mesin proses — bukan hanya dicatat sebagai dokumentasi.
+
+---
+
+## 5. Semantik BPMN
+
+Token tiba di Timer Event dan *berhenti*. Mesin proses mencatat waktu tiba dan menghitung kapan timer habis. Saat timer habis, token kembali aktif dan mengalir ke outgoing Sequence Flow.
+
+[PEDAGOGICAL SIMPLIFICATION] Dalam konteks Event-Based Gateway, Timer Event adalah "pendengar waktu" — ia aktif sejak gateway dilewati dan bersaing dengan pendengar event lain. Mana yang pertama terpenuhi, itu yang memenangkan token.
+
+---
+
+## 6. Kapan digunakan
+
+Gunakan Timer Event ketika:
+- Ada batas waktu yang *harus ditegakkan* oleh proses.
+- Proses harus dijadwalkan mulai pada waktu tertentu (Timer Start Event).
+- Ada aktivitas yang perlu diulang secara berkala (Timer Start dengan Cycle).
+- Dikombinasikan dengan Event-Based Gateway untuk batas waktu tunggu.
+
+---
+
+## 7. Kapan jangan digunakan
+
+Jangan gunakan Timer Event hanya untuk mendokumentasikan SLA tanpa perlu ditegakkan — gunakan Text Annotation. Jangan gunakan Timer Event jika kondisi waktu tidak pernah berubah perilaku proses.
+
+---
+
+## 8. Contoh penggunaan
+
+Dalam Modul 5:
+- Setelah Event-Based Gateway "Tunggu hasil pembayaran", ada dua cabang:
+  - Cabang 1: Intermediate Message Catch Event "Bukti pembayaran diterima".
+  - Cabang 2: **Intermediate Timer Catch Event "24 jam berlalu"** (`PT24H`).
+- Mana yang lebih dulu terpenuhi, itu yang memenangkan token. Jika timer menang: pesanan dibatalkan.
+
+---
+
+## 9. Diagram contoh
+
+<BpmnViewer src="/bpmn/case-05-order.bpmn" title="Timer Event setelah Event-Based Gateway — batas waktu 24 jam pembayaran" />
+
+---
+
+## 10. Cara membaca diagram
+
+1. Temukan lingkaran dengan ikon jam.
+2. Cek posisi: Start Event (satu lingkaran) atau Intermediate (dua lingkaran konsentris)?
+3. Jika setelah Event-Based Gateway: ini adalah salah satu "kompetitor" dalam race condition.
+4. Baca label dan nilai timer (`PT24H`, dll.) untuk memahami kondisi waktunya.
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Text Annotation dengan 'batas waktu 24 jam' sudah cukup."**
+
+Tidak. Text Annotation hanya dokumentasi — mesin proses tidak membaca Text Annotation. Jika batas waktu harus *mempengaruhi alur* (misalnya membatalkan pesanan), Timer Event wajib digunakan.
+
+---
+
+## 12. Anti-pattern
+
+**Anti-pattern: Timer Event tanpa jalur pembatalan yang jelas.**
+
+Gejala: ada Timer Event, tapi setelah timer terpicu token mengalir ke task yang sama dengan jalur normal — seolah timer tidak berpengaruh.
+
+Timer Event yang tidak memiliki konsekuensi berbeda (jalur yang berbeda, End Event yang berbeda) adalah noise — ia tidak menambahkan informasi baru ke diagram.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Elemen | Bedanya |
+|--------|---------|
+| Timer Event (E03) | Menunggu kondisi waktu; aktif di runtime |
+| Text Annotation (R01) | Hanya dokumentasi; tidak dieksekusi |
+| Event-Based Gateway (G04) | Menunggu *salah satu* dari beberapa event (termasuk timer) |
+| Boundary Timer | Timer yang menempel pada task; menginterrupt atau non-interrupt task jika waktu habis |
+
+---
+
+## 14. Aturan pemilihan
+
+- Batas waktu yang mempengaruhi alur → Timer Event (sebagai Intermediate atau Boundary).
+- Batas waktu yang hanya perlu dicatat → Text Annotation.
+- Batas waktu bersaing dengan event lain → Event-Based Gateway + Timer Event.
+
+---
+
+## 15. Pertanyaan diagnostik
+
+- Apakah batas waktu ini harus *mengubah* perilaku proses? → Timer Event.
+- Apakah proses harus memilih antara "event terjadi" atau "waktu habis"? → Event-Based Gateway + Timer Event.
+- Apakah batas waktu harus memaksa task yang sedang berjalan berhenti? → Boundary Timer Interrupting.
+
+---
+
+## 16. Argumentasi pemodelan
+
+Mengapa menggunakan Timer Event sebagai cabang dari Event-Based Gateway, bukan Boundary Timer pada Receive Task?
+
+Keduanya valid. Event-Based Gateway lebih eksplisit dalam menyatakan bahwa ada dua event yang bersaing. Boundary Timer lebih ringkas. Model referensi Modul 5 memilih Event-Based Gateway karena lebih mudah dibaca oleh pemula — kedua kompetitor terlihat sejajar.
+
+---
+
+## 17. Validity check
+
+- Timer Event harus memiliki `timerEventDefinition` dalam XML.
+- Duration ditulis dalam format ISO 8601: `PT24H` (24 jam), `P1D` (1 hari), `PT30M` (30 menit).
+- Intermediate Timer Catch Event setelah Event-Based Gateway tidak boleh memiliki incoming Sequence Flow lain selain dari gateway itu.
+
+---
+
+## 18. Catatan Camunda
+
+Di Camunda, Timer Event dieksekusi oleh Job Executor. Duration dikonfigurasi sebagai `PT24H` atau ekspresi EL. Jika Job Executor tidak aktif, timer tidak terpicu — ini adalah hal yang perlu diverifikasi saat testing.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Timer Event adalah event yang menghentikan token dan menunggu kondisi waktu terpenuhi sebelum melanjutkan alur proses.

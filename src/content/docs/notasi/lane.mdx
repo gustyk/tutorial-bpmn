@@ -1,0 +1,162 @@
+---
+title: "P02 — Lane"
+description: "Subdivisi horizontal atau vertikal di dalam Pool yang menunjukkan siapa yang bertanggung jawab atas task di dalamnya."
+---
+
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | P02 |
+| **Nama BPMN** | Lane |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 4 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §10.4.1 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+<BpmnViewer src="/bpmn/case-04-order.bpmn" title="P02 — Lane: Pool Merchant dibagi menjadi Lane Tim CS dan Lane Tim Gudang" />
+
+Pool horizontal dibagi menjadi dua Lane: "Tim CS" (atas) dan "Tim Gudang" (bawah). Setiap Lane memiliki label di sisinya. Sequence Flow boleh melintasi batas Lane.
+
+*Cara membuat di demo.bpmn.io:* Klik Pool → klik ikon "Append Lane" yang muncul di batas bawah Pool. Lane bisa diubah ukurannya dengan menyeret batasnya.
+
+---
+
+## 3. Apa artinya
+
+**Lane** menyatakan: *"Semua task yang berada di area ini dieksekusi oleh aktor atau unit organisasi yang sama."*
+
+Lane adalah pembagian tanggung jawab di dalam satu Pool. Jika Pool adalah perusahaan, Lane adalah departemennya.
+
+---
+
+## 4. Tujuan
+
+Lane memvisualkan *siapa* mengerjakan *apa* di dalam satu proses. Tanpa Lane, kamu tahu urutannya tapi tidak tahu siapa pelaksananya.
+
+---
+
+## 5. Semantik BPMN
+
+Token tidak "tahu" bahwa dirinya berada di dalam Lane tertentu — Lane tidak mempengaruhi pergerakan token. Lane hanya merupakan elemen visual/organisatoris.
+
+[PEDAGOGICAL SIMPLIFICATION] Token melewati batas Lane dengan bebas melalui Sequence Flow — tidak ada mekanisme "hand-off" eksplisit di BPMN murni. Di Camunda, Lane bisa dipetakan ke user group untuk assignment otomatis.
+
+---
+
+## 6. Kapan digunakan
+
+Gunakan Lane ketika:
+- Satu Pool memiliki dua atau lebih aktor yang berbeda.
+- Kamu perlu menunjukkan tanggung jawab task tanpa memisahkan proses.
+- Komunikasi antar-aktor terjadi di dalam satu entitas organisasi yang sama (tidak memerlukan Message Flow).
+
+---
+
+## 7. Kapan jangan digunakan
+
+Jangan gunakan Lane ketika dua aktor adalah entitas organisasi yang **berbeda** dan berkomunikasi secara formal — gunakan dua Pool terpisah dengan Message Flow.
+
+Contoh salah: menempatkan "Customer" dan "Merchant" dalam dua Lane satu Pool. Customer adalah entitas eksternal; komunikasinya harus menggunakan Message Flow antar-Pool.
+
+---
+
+## 8. Contoh penggunaan
+
+Dalam Modul 4, Pool Merchant dibagi:
+- **Lane Tim CS**: mencatat pesanan, memverifikasi data, mengirim instruksi.
+- **Lane Tim Gudang**: mengemas paket, menyerahkan ke kurir.
+
+Tim CS dan Tim Gudang berada dalam satu perusahaan, sehingga Lane (bukan dua Pool) adalah pilihan yang tepat.
+
+---
+
+## 9. Diagram contoh
+
+<BpmnViewer src="/bpmn/case-04-order.bpmn" title="Lane dalam Pool Merchant — Tim CS dan Tim Gudang" />
+
+---
+
+## 10. Cara membaca diagram
+
+1. Temukan Pool terlebih dahulu.
+2. Baca label Lane di sisi kiri (atau atas) setiap subdivisi.
+3. Setiap task di dalam area Lane dieksekusi oleh aktor tersebut.
+4. Sequence Flow yang melintasi batas Lane merupakan penyerahan pekerjaan antar-aktor dalam organisasi yang sama.
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Lane adalah Pool yang lebih kecil."**
+
+Bukan. Pool memiliki proses sendiri dan berkomunikasi dengan Pool lain via Message Flow. Lane tidak memiliki proses sendiri — ia hanya membagi satu proses ke beberapa aktor.
+
+---
+
+## 12. Anti-pattern
+
+**Anti-pattern: Customer dimasukkan sebagai Lane.**
+
+Ini menyembunyikan fakta bahwa Customer adalah entitas eksternal. Ketika Customer dimasukkan sebagai Lane, tidak ada Message Flow — seolah komunikasi Customer–Merchant adalah internal. Ini menyesatkan.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Elemen | Bedanya |
+|--------|---------|
+| Pool | Memiliki proses sendiri; berkomunikasi via Message Flow |
+| Lane | Subdivisi Pool; tidak memiliki proses sendiri |
+| Black-box Pool | Pool tanpa isi, menyembunyikan detail proses pihak lain |
+
+---
+
+## 14. Aturan pemilihan
+
+Satu Pool vs. Lane vs. dua Pool:
+
+1. **Sama entitas, beda aktor internal** → satu Pool dengan Lane.
+2. **Berbeda entitas, komunikasi formal** → dua Pool dengan Message Flow.
+3. **Berbeda entitas, proses internal tersembunyi** → Black-box Pool.
+
+---
+
+## 15. Pertanyaan diagnostik
+
+- Apakah kedua pihak berada dalam satu organisasi yang sama? → Lane.
+- Apakah komunikasi di antara mereka terjadi secara internal, tanpa dokumen/pesan resmi antar-entitas? → Lane.
+- Apakah salah satu pihak adalah entitas eksternal (pelanggan, mitra, regulator)? → Pool terpisah.
+
+---
+
+## 16. Argumentasi pemodelan
+
+Mengapa model referensi Modul 4 menggunakan Lane untuk Tim CS dan Tim Gudang, bukan dua Pool?
+
+Karena Tim CS dan Tim Gudang adalah departemen dalam satu perusahaan yang sama. Mereka tidak mengirim "pesan" satu sama lain dalam arti BPMN — mereka menyerahkan pekerjaan secara internal. Jika menggunakan dua Pool, harus ada Message Flow, yang menyatakan komunikasi lintas organisasi — tidak sesuai realitas.
+
+---
+
+## 17. Validity check
+
+- Lane wajib berada di dalam Pool.
+- Sequence Flow yang menghubungkan task di Lane berbeda harus valid (hanya dalam satu Pool).
+- Message Flow tidak boleh berawal atau berakhir di dalam Lane — harus di level Pool.
+
+---
+
+## 18. Catatan Camunda
+
+Di Camunda Platform, Lane bisa dipetakan ke `candidateGroup` atau `assignee` untuk otomatisasi penugasan User Task. Label Lane langsung digunakan sebagai nama grup.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Lane adalah subdivisi Pool yang menunjukkan siapa yang bertanggung jawab atas task, tanpa mempengaruhi semantik eksekusi token.

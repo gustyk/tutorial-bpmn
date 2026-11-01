@@ -1,0 +1,157 @@
+---
+title: "D04 — Data Store"
+description: "Referensi ke penyimpanan data persisten yang diakses bersama oleh banyak proses instance — berbeda dari Data Object yang lokal satu instance."
+---
+
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | D04 |
+| **Nama BPMN** | Data Store Reference |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 6 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §10.3.2 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+<BpmnViewer src="/bpmn/case-06-order.bpmn" title="D04 — Data Store: ikon silinder (database) dengan nama di bawahnya" />
+
+Ikon **silinder** (*cylinder*) — bentuk umum untuk database. Label nama Data Store di bawahnya. Dihubungkan ke task via Data Association.
+
+*Cara membuat di demo.bpmn.io:* Seret "Data Store" dari palet. Atau klik task → "Append Data Store" jika tersedia.
+
+---
+
+## 3. Apa artinya
+
+**Data Store** menyatakan: *"Ada penyimpanan data yang persisten di sini — data ini ada sebelum proses dimulai, tetap ada setelah proses selesai, dan bisa diakses oleh banyak process instance secara bersamaan."*
+
+Data Store berbeda dari Data Object yang lokal pada satu instance. Data Store adalah representasi sistem eksternal yang persisten.
+
+---
+
+## 4. Tujuan
+
+Memvisualkan bahwa proses berinteraksi dengan sistem penyimpanan eksternal — database, file system, ERP — yang tidak dibuat atau dihancurkan oleh proses ini.
+
+---
+
+## 5. Semantik BPMN
+
+Data Store Reference (elemen visual dalam diagram) adalah referensi ke definisi Data Store yang bisa digunakan di banyak tempat dalam satu diagram atau lintas proses.
+
+Data Association yang menghubungkan task ke Data Store menyatakan bahwa task membaca dari atau menulis ke Data Store tersebut.
+
+---
+
+## 6. Kapan digunakan
+
+Gunakan Data Store ketika:
+- Data yang diakses task sudah ada sebelum proses dimulai (misalnya inventori, katalog produk).
+- Data diakses oleh banyak proses instance secara bersamaan.
+- Data harus tetap ada setelah proses selesai.
+- Kamu ingin menunjukkan ketergantungan pada sistem eksternal (ERP, CRM, database).
+
+---
+
+## 7. Kapan jangan digunakan
+
+Jangan gunakan Data Store untuk:
+- Data yang dibuat baru oleh proses ini dan hanya relevan dalam proses ini → Data Object.
+- Data yang ditransmisikan antara dua Pool → Message (dengan Message Flow).
+
+---
+
+## 8. Contoh penggunaan
+
+Dalam Modul 6, task "Verifikasi data dan ketersediaan stok" membaca dari Data Store "Sistem Inventori" (Data Input Association), dan task "Terbitkan invoice" menulis ke Data Store tersebut (Data Output Association).
+
+Sistem Inventori ada sebelum pesanan ini dibuat, dan tetap ada setelah pesanan selesai — ini adalah Data Store, bukan Data Object.
+
+---
+
+## 9. Diagram contoh
+
+<BpmnViewer src="/bpmn/case-06-order.bpmn" title="Data Store 'Sistem Inventori' dengan Data Association ke task verifikasi dan invoice" />
+
+---
+
+## 10. Cara membaca diagram
+
+1. Temukan ikon silinder dengan label nama.
+2. Ikuti Data Association (panah putus-putus) ke task yang menggunakannya.
+3. Arah panah: → task (task membaca data), dari task → (task menulis data).
+4. Data Store berada di luar lingkup process instance — ia tidak dibuat atau dihancurkan oleh proses ini.
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Data Store hanya untuk database SQL."**
+
+Tidak. Data Store adalah abstraksi — ia bisa mewakili database SQL, file system, ERP, API eksternal, atau sistem apapun yang menyimpan data persisten. BPMN tidak menentukan implementasi teknisnya.
+
+---
+
+## 12. Anti-pattern
+
+**Anti-pattern: Menggunakan Data Object untuk data inventori yang diakses bersama.**
+
+Gejala: "Stok Produk" dimodelkan sebagai Data Object yang dibuat di proses ini. Jika dua process instance berjalan bersamaan (dua pesanan berbeda), keduanya memiliki Data Object "Stok Produk" yang terpisah — tidak mencerminkan kenyataan bahwa stok adalah satu sistem bersama.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Elemen | Bedanya |
+|--------|---------|
+| Data Object (D01) | Lokal satu process instance; ada state; dibuat & dihancurkan bersama proses |
+| Data Store (D04) | Persisten; diakses bersama banyak instance; ada sebelum dan sesudah proses |
+
+---
+
+## 14. Aturan pemilihan
+
+- Data hanya untuk satu pesanan/transaksi ini → Data Object.
+- Data diakses banyak pesanan, ada sebelum proses dimulai → Data Store.
+
+---
+
+## 15. Pertanyaan diagnostik
+
+- Apakah data ini ada sebelum proses ini dimulai? → Data Store.
+- Apakah data ini dibuat selama proses ini berlangsung? → Data Object.
+- Apakah data ini perlu diakses oleh proses lain secara bersamaan? → Data Store.
+
+---
+
+## 16. Argumentasi pemodelan
+
+Mengapa inventori harus Data Store, bukan Data Object?
+
+Stok produk adalah state sistem yang diakses secara bersama oleh semua proses pesanan. Jika dimodelkan sebagai Data Object, setiap proses pesanan memiliki "stok" sendiri yang dibuat saat proses dimulai dan hilang saat selesai — ini tidak mencerminkan realitas. Data Store menyatakan bahwa stok adalah entitas tunggal yang persisten.
+
+---
+
+## 17. Validity check
+
+- Data Store Reference harus merujuk ke definisi Data Store.
+- Data Association yang menghubungkan task ke Data Store harus memiliki arah yang konsisten (input atau output).
+- Data Store boleh diakses dari beberapa proses dalam satu kolaborasi.
+
+---
+
+## 18. Catatan Camunda
+
+Di Camunda, Data Store biasanya dipetakan ke sistem eksternal seperti database atau API. Camunda tidak mengelola Data Store secara internal — implementasi akses data dilakukan di level kode service task atau connector.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Data Store mewakili penyimpanan data persisten yang diakses bersama oleh banyak proses instance — berbeda dari Data Object yang lokal pada satu instance.

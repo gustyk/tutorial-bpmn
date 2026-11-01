@@ -1,0 +1,174 @@
+---
+title: "G03 — Inclusive Gateway (OR)"
+description: "Gateway yang mengaktifkan satu atau lebih jalur berdasarkan kondisi — lebih fleksibel dari XOR, lebih terbatas dari AND."
+---
+
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | G03 |
+| **Nama BPMN** | Inclusive Gateway |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 6 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §13.3 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+<BpmnViewer src="/bpmn/notasi-demo-inclusive-gateway.bpmn" title="G03 — Inclusive Gateway: belah ketupat dengan lingkaran di dalam (OR split dan OR join)" />
+
+Belah ketupat dengan **lingkaran** (circle) di dalam. Outgoing flow memiliki kondisi; satu atau lebih bisa aktif.
+
+*Cara membuat di demo.bpmn.io:* Klik Gateway → ubah tipe menjadi "Inclusive Gateway" via context menu.
+
+---
+
+## 3. Apa artinya
+
+**OR split (Inclusive Gateway dengan banyak outgoing flow)** menyatakan: *"Evaluasi semua kondisi. Aktifkan semua jalur yang kondisinya terpenuhi — bisa satu, bisa dua, bisa semua."*
+
+**OR join (Inclusive Gateway dengan banyak incoming flow)** menyatakan: *"Tunggu semua jalur yang sedang aktif. Jika ada jalur yang tidak pernah diaktifkan, tidak perlu ditunggu."*
+
+---
+
+## 4. Tujuan
+
+Memodelkan situasi di mana beberapa kondisi bisa terpenuhi sekaligus, dan masing-masing perlu diproses. Lebih fleksibel dari XOR (yang hanya satu) dan lebih terkontrol dari AND (yang semua selalu aktif).
+
+---
+
+## 5. Semantik BPMN
+
+**OR split:**
+- Satu token masuk.
+- Evaluasi semua kondisi di outgoing flow.
+- Token dikirim ke *semua* jalur yang kondisinya benar — bisa satu atau lebih.
+- Jika tidak ada kondisi yang terpenuhi: perilaku tergantung implementasi (biasanya error atau default flow).
+
+**OR join:**
+- Menunggu semua token dari jalur yang *diaktifkan* oleh OR split pasangannya.
+- Tidak menunggu jalur yang tidak pernah diaktifkan.
+
+[PEDAGOGICAL SIMPLIFICATION] OR join lebih kompleks dari AND join karena ia harus "tahu" jalur mana yang aktif — ini membutuhkan komunikasi dengan OR split pasangannya atau tracking di engine.
+
+---
+
+## 6. Kapan digunakan
+
+Gunakan Inclusive Gateway ketika:
+- Satu customer bisa memesan produk fisik, layanan digital, atau keduanya.
+- Proses perlu memproses semua yang dipilih customer, lalu sinkronisasi.
+- Ada beberapa kondisi yang bisa terpenuhi bersamaan.
+
+---
+
+## 7. Kapan jangan digunakan
+
+Jangan gunakan Inclusive Gateway ketika:
+- Hanya satu kondisi yang bisa terpenuhi → XOR lebih tepat dan lebih sederhana.
+- Semua jalur selalu aktif tanpa kondisi → AND lebih tepat.
+- Kondisi sangat kompleks dan sulit dipahami → pertimbangkan memecah menjadi beberapa proses.
+
+---
+
+## 8. Contoh penggunaan
+
+Pesanan bisa berisi produk fisik, layanan digital, atau keduanya:
+- Kondisi A: "pesanan termasuk produk fisik" → aktifkan "Siapkan pengiriman fisik".
+- Kondisi B: "pesanan termasuk layanan digital" → aktifkan "Aktifkan layanan digital".
+
+Jika keduanya benar: dua jalur aktif. OR join menunggu keduanya selesai.
+Jika hanya A: satu jalur aktif. OR join langsung lanjut setelah A selesai.
+
+---
+
+## 9. Diagram contoh
+
+<BpmnViewer src="/bpmn/notasi-demo-inclusive-gateway.bpmn" title="OR split dengan dua kondisi — satu atau keduanya bisa aktif" />
+
+---
+
+## 10. Cara membaca diagram
+
+1. Temukan belah ketupat dengan lingkaran di dalam.
+2. Baca kondisi di setiap outgoing flow.
+3. Evaluasi semua kondisi: berapa yang bisa terpenuhi bersamaan?
+4. OR join akan menunggu tepat sebanyak jalur yang diaktifkan oleh OR split.
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"OR Gateway sama dengan XOR karena keduanya memiliki kondisi."**
+
+Berbeda. XOR memilih *tepat satu* jalur — bahkan jika lebih dari satu kondisi terpenuhi, XOR mengambil yang pertama dievaluasi benar. OR memilih *semua* yang kondisinya benar. Jika ada kemungkinan lebih dari satu kondisi terpenuhi bersamaan dan keduanya perlu diproses, XOR akan melewatkan yang lain.
+
+---
+
+## 12. Anti-pattern
+
+**Anti-pattern: Inclusive Gateway tanpa OR join yang berpasangan.**
+
+OR split membuat beberapa token aktif. Tanpa OR join yang berpasangan, proses tidak tahu kapan "selesai" — token-token berjalan bebas dan task hilir bisa dieksekusi beberapa kali.
+
+**Anti-pattern: Menggunakan OR ketika AND lebih tepat.**
+
+Jika semua jalur selalu aktif tanpa kondisi, OR split akan selalu mengaktifkan semua jalur — sama dengan AND. Tapi jika ada satu kondisi tidak terpenuhi, OR akan melewatinya tanpa error, sementara AND selalu mengaktifkan semua. Gunakan AND jika semua selalu aktif.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Elemen | Bedanya |
+|--------|---------|
+| Exclusive Gateway / XOR (G01) | Tepat satu jalur; kondisi saling eksklusif |
+| Parallel Gateway / AND (G02) | Semua jalur; tidak ada kondisi |
+| Inclusive Gateway / OR (G03) | Satu atau lebih jalur; kondisi dievaluasi, bisa lebih dari satu benar |
+
+---
+
+## 14. Aturan pemilihan
+
+- "Tepat satu jalur berdasarkan kondisi" → XOR.
+- "Semua jalur, tidak ada kondisi" → AND.
+- "Satu atau lebih jalur berdasarkan kondisi" → OR.
+
+---
+
+## 15. Pertanyaan diagnostik
+
+- Bisakah lebih dari satu kondisi terpenuhi sekaligus? → Jika ya, pertimbangkan OR atau AND.
+- Apakah semua jalur yang aktif perlu selesai sebelum proses lanjut? → OR join.
+- Apakah selalu semua jalur aktif (tanpa kondisi)? → AND, bukan OR.
+
+---
+
+## 16. Argumentasi pemodelan
+
+Mengapa Inclusive Gateway lebih jarang digunakan daripada XOR atau AND?
+
+Karena OR join membutuhkan engine untuk melacak jalur mana yang aktif — ini menambah kompleksitas. Dalam banyak kasus, model bisa disederhanakan menjadi AND (jika semua selalu aktif) atau XOR (jika hanya satu). OR digunakan hanya ketika benar-benar ada kombinasi yang valid dan tidak bisa disederhanakan.
+
+---
+
+## 17. Validity check
+
+- OR split: minimal dua outgoing flow dengan kondisi.
+- Sebaiknya ada default flow untuk menangani kasus di mana tidak ada kondisi yang terpenuhi.
+- OR join harus berpasangan dengan OR split untuk memastikan semantik yang benar.
+
+---
+
+## 18. Catatan Camunda
+
+Di Camunda, Inclusive Gateway didukung secara penuh. OR join secara internal melacak token yang diharapkan berdasarkan OR split pasangannya. Jika default flow tidak dikonfigurasi dan tidak ada kondisi yang terpenuhi, Camunda melempar exception.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Inclusive Gateway (OR) mengaktifkan satu atau lebih jalur berdasarkan kondisi, dan OR join menunggu tepat jalur-jalur yang aktif sebelum melanjutkan.

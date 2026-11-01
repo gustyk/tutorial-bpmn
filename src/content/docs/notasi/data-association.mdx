@@ -1,0 +1,159 @@
+---
+title: "F04 — Data Association"
+description: "Panah putus-putus yang menghubungkan Data Object atau Data Store ke task, menyatakan aliran data masuk (input) atau keluar (output)."
+---
+
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | F04 |
+| **Nama BPMN** | Data Association |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 4 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §10.3.3 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+<BpmnViewer src="/bpmn/case-04-order.bpmn" title="F04 — Data Association: panah putus-putus ke/dari Data Object" />
+
+Garis putus-putus dengan kepala panah terbuka (tidak terisi). Arah panah menunjukkan aliran data: menuju task (Data Input Association) atau dari task (Data Output Association).
+
+*Cara membuat di demo.bpmn.io:* Seret dari ikon Data Object ke task (atau sebaliknya). Arah panah mengikuti arah seret.
+
+---
+
+## 3. Apa artinya
+
+**Data Input Association** menyatakan: *"Task ini membaca atau menggunakan data dari Data Object/Store ini."*
+
+**Data Output Association** menyatakan: *"Task ini menghasilkan atau memperbarui Data Object/Store ini."*
+
+Data Association adalah spesialisasi Association yang memiliki semantik data.
+
+---
+
+## 4. Tujuan
+
+Memvisualkan aliran data secara eksplisit: task mana yang menghasilkan data apa, dan task mana yang membutuhkan data apa. Membantu analisis dependensi data antar-task.
+
+---
+
+## 5. Semantik BPMN
+
+Data Association tidak memindahkan token. Ia hanya menyatakan hubungan data. Dalam eksekusi, data yang diacu oleh Data Association biasanya dipetakan ke variabel proses (process variable) atau properti task.
+
+---
+
+## 6. Kapan digunakan
+
+Gunakan Data Association ketika:
+- Task membaca data dari Data Object atau Data Store.
+- Task menghasilkan data baru yang perlu divisualisasikan.
+- Kamu ingin menunjukkan dependensi data secara eksplisit.
+
+---
+
+## 7. Kapan jangan digunakan
+
+Jangan gunakan Data Association untuk menyatakan:
+- Dokumentasi teks → gunakan Association + Text Annotation (F03).
+- Aliran kontrol → gunakan Sequence Flow (F01).
+- Komunikasi antar-Pool → gunakan Message Flow (F02).
+
+---
+
+## 8. Contoh penggunaan
+
+Dalam Modul 4:
+- Task "Catat data pesanan" → Data Output Association → Data Object "Dokumen Pesanan [dibuat]".
+- Task "Verifikasi data pesanan" → Data Input Association ← Data Object "Dokumen Pesanan [dibuat]", lalu → Data Output Association → Data Object "Dokumen Pesanan [diverifikasi]".
+
+---
+
+## 9. Diagram contoh
+
+<BpmnViewer src="/bpmn/case-04-order.bpmn" title="Data Association antara task dan Data Object 'Dokumen Pesanan'" />
+
+---
+
+## 10. Cara membaca diagram
+
+1. Temukan garis putus-putus dengan kepala panah terbuka.
+2. Pastikan salah satu ujungnya adalah Data Object atau Data Store.
+3. Arah panah menunjukkan aliran data: → task (input) atau dari task → (output).
+4. Baca state Data Object (jika ada) untuk memahami kondisi data sebelum/sesudah task.
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Data Association dan Association adalah hal yang sama."**
+
+Hampir sama secara visual, tapi berbeda semantik. Data Association spesifik untuk data — ia harus menghubungkan Data Object atau Data Store ke task. Association lebih umum dan digunakan untuk artefak apa pun (termasuk Text Annotation).
+
+---
+
+## 12. Anti-pattern
+
+**Anti-pattern: Data Association ke gateway.**
+
+Data Association menghubungkan data ke task (Activity), bukan ke gateway. Kondisi evaluasi gateway dinyatakan di Sequence Flow, bukan melalui Data Association.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Elemen | Bedanya |
+|--------|---------|
+| Association (F03) | Menghubungkan artefak apapun; tidak ada semantik data |
+| Data Association (F04) | Khusus Data Object/Store ke task; memiliki arah input/output |
+| Sequence Flow (F01) | Memindahkan token; garis solid |
+
+---
+
+## 14. Aturan pemilihan
+
+- Data lokal proses ke task → Data Input/Output Association + Data Object.
+- Data persisten lintas proses ke task → Data Input/Output Association + Data Store.
+- Dokumentasi teks → Association biasa + Text Annotation.
+
+---
+
+## 15. Pertanyaan diagnostik
+
+- Apakah task ini menggunakan data yang dihasilkan task sebelumnya? → Data Input Association dari Data Object.
+- Apakah task ini menghasilkan data yang digunakan task berikutnya? → Data Output Association ke Data Object.
+- Apakah data itu persisten lintas proses? → Data Association ke Data Store.
+
+---
+
+## 16. Argumentasi pemodelan
+
+Mengapa memvisualkan Data Association jika data sudah "implisit" dalam alur?
+
+Diagram tanpa Data Association menyembunyikan dependensi data. Ketika proses dianalisis untuk optimasi atau audit, analis perlu tahu: task mana yang *tidak bisa* dijalankan sebelum task lain menghasilkan data tertentu. Data Association membuat dependensi itu eksplisit dan dapat diverifikasi.
+
+---
+
+## 17. Validity check
+
+- Data Association harus terhubung ke Data Object Reference atau Data Store Reference di salah satu ujung.
+- Data Association harus terhubung ke Activity (task atau subprocess) di ujung lainnya.
+- Data Association tidak boleh menghubungkan dua Data Object secara langsung.
+
+---
+
+## 18. Catatan Camunda
+
+Di Camunda, Data Association biasanya dipetakan melalui `dataInputAssociation` dan `dataOutputAssociation` dalam XML. Secara runtime, Camunda menggunakan variabel proses — Data Association menjadi referensi ke variabel tersebut.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Data Association adalah panah putus-putus yang menyatakan aliran data masuk atau keluar dari task, menghubungkan task ke Data Object atau Data Store.
