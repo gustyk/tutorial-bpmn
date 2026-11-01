@@ -2,7 +2,7 @@
 
 Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y — judul` → `- [x] T-x.y — judul · 2026-11-xx · catatan satu baris`.
 
-**Acuan:** [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) v1.1 · [SPEC.md](SPEC.md) v1.1 · **Status keseluruhan:** WP-5 selesai
+**Acuan:** [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) v1.1 · [SPEC.md](SPEC.md) v1.1 · **Status keseluruhan:** WP-6 selesai
 **Keputusan pemilik:** S-01…S-04 dan D-01…D-03 sudah dijawab 2026-11-01 · G1 disetujui 2026-11-02
 **Gerbang berikutnya:** tidak ada sampai G2 (setelah WP-7)
 
@@ -67,11 +67,11 @@ Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y
 
 ## WP-6 · Arsitektur informasi dan migrasi rute
 
-- [ ] T-6.1 — Pohon rute SPEC 11 v1.1 (termasuk `/referensi/token`, `/membaca-diagram`, `/validitas`) + sidebar baru
-- [ ] T-6.2 — Redirect seluruh rute lama
-- [ ] T-6.3 — Halaman 404 kustom
-- [ ] T-6.4 — `site: https://bpmn.kodingno.com` + sitemap + robots
-- [ ] T-6.5 — Verifikasi pencarian Pagefind
+- [x] T-6.1 — Pohon rute SPEC 11 v1.1 · 2026-11-02 · 24 stub baru (jalur/01–10, s1–s2, notasi, katalog, referensi, lampiran, tentang); sidebar lengkap 7 seksi
+- [x] T-6.2 — Redirect rute lama · 2026-11-02 · /about→/tentang, /events/catalog→/katalog/, /events/matrix→/katalog/matriks-event, /practice/review→/referensi/review, /advanced/→/referensi/anti-pattern; redirect content-migration (fondasi/, practice/) ditunda ke WP-7
+- [x] T-6.3 — Halaman 404 kustom · 2026-11-02 · 404.mdx di content collection (Starlight); robots.txt; link ke beranda + peta belajar
+- [x] T-6.4 — site + sitemap + robots · 2026-11-02 · site: 'https://bpmn.kodingno.com'; @astrojs/sitemap; dist/sitemap-index.xml memuat domain produksi
+- [x] T-6.5 — Pagefind · 2026-11-02 · 39 halaman terindeks bahasa id; dist/pagefind/index ada
 
 ## WP-7 · Modul 1–3 dan notasinya → GERBANG G2
 

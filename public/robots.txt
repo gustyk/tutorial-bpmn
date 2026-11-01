@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://bpmn.kodingno.com/sitemap-index.xml
