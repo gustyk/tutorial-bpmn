@@ -36,8 +36,7 @@ Task adalah aktivitas atomik pada level diagram: model menunjukkan pekerjaan, te
     { kind: 'task', variant: 'business-rule', label: 'Business Rule Task', description: 'Ikon tabel menandai evaluasi aturan bisnis.' },
     { kind: 'task', variant: 'send', label: 'Send Task', description: 'Amplop terisi menandai pekerjaan mengirim pesan.' },
     { kind: 'task', variant: 'receive', label: 'Receive Task', description: 'Amplop garis menandai pekerjaan menerima pesan.' },
-  ]}
-/>
+  ]}/>
 
 Nama task type BPMN tidak otomatis menentukan bagaimana implementasi dibuat. Contoh: User Task tidak berarti aktor harus berada dalam lane bernama “User”.
 
@@ -55,8 +54,7 @@ Nama task type BPMN tidak otomatis menentukan bagaimana implementasi dibuat. Con
     { kind: 'task', variant: 'none', marker: 'multi-instance-sequential', label: 'Multi-instance sequential', description: 'Tiga garis mendatar menandai instance yang dijalankan berurutan.' },
     { kind: 'task', variant: 'none', marker: 'multi-instance-parallel', label: 'Multi-instance parallel', description: 'Tiga garis tegak menandai instance paralel.' },
     { kind: 'task', variant: 'none', marker: 'compensation', label: 'Compensation marker', description: 'Dua segitiga menandai activity handler kompensasi.' },
-  ]}
-/>
+  ]}/>
 
 Marker tertentu dapat digabung sesuai aturan model. Lihat [Camunda BPMN Reference](https://camunda.com/bpmn/reference/) dan [coverage Camunda 8.9](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/); status executable tergantung versi.
 

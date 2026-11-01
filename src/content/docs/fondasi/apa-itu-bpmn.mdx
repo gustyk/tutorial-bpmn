@@ -23,8 +23,7 @@ Flowchart lazim menunjukkan urutan langkah. BPMN juga menunjukkan batas particip
     { kind: 'flow', variant: 'sequence', label: 'Sequence Flow', description: 'Panah penuh menunjukkan urutan kontrol token.' },
     { kind: 'event', trigger: 'none', position: 'end', label: 'End Event', description: 'Lingkaran tebal menandai berakhirnya alur.' },
     { kind: 'participant', variant: 'lanes', label: 'Pool dan Lane', description: 'Batas participant dan pembagian tanggung jawab.' },
-  ]}
-/>
+  ]}/>
 
 ## BPMN bukan Camunda
 
@@ -58,8 +57,7 @@ Diagram dapat lolos sintaksis, tetapi tetap salah secara semantik atau sulit dib
     eligible -->|Tidak| reject["Tolak pengajuan"]
     approve --> notify["Beri tahu pemohon"]
     reject --> notify
-    notify --> finish(["Selesai"])`}
-/>
+    notify --> finish(["Selesai"])`}/>
 
 Cabang **“Memenuhi syarat?”** adalah keputusan berdasarkan data (XOR). Jika data belum tersedia, proses menunggu pesan terlebih dahulu—bukan langsung memilih cabang. Flowchart ini merangkum logika contoh; ia bukan pengganti diagram BPMN atau notasi event BPMN.
 

@@ -17,8 +17,7 @@ Gateway bukan task yang melakukan pekerjaan. Ia mengendalikan divergensi (membuk
     { kind: 'gateway', variant: 'inclusive', label: 'Inclusive (OR)', description: 'Lingkaran menandai satu atau lebih jalur sesuai kondisi.' },
     { kind: 'gateway', variant: 'event-based', label: 'Event-Based', description: 'Pentagon menandai pilihan berdasarkan event yang lebih dahulu terjadi.' },
     { kind: 'gateway', variant: 'complex', label: 'Complex', description: 'Asterisk menandai aturan split atau join yang kompleks.' },
-  ]}
-/>
+  ]}/>
 
 <Quiz question="Pembayaran belum diketahui dan proses menunggu callback sukses atau batas waktu. Apa jenis kontrol yang paling tepat?" options={['XOR berdasarkan variabel status saat ini', 'Event-Based Gateway yang menunggu salah satu event', 'AND Gateway yang menjalankan keduanya']} answer={1} explanation="Status belum tersedia ketika proses mulai menunggu; jalur ditentukan oleh event pertama yang terjadi." />
 
@@ -39,8 +38,7 @@ Gateway bukan task yang melakukan pekerjaan. Ia mengendalikan divergensi (membuk
     data -->|Satu jalur| xor["Exclusive Gateway (XOR)"]
     data -->|Satu atau lebih jalur| or["Inclusive Gateway (OR)"]
     data -->|Semua jalur| and["Parallel Gateway (AND)"]
-    data -->|Aturan sinkronisasi khusus| complex["Pertimbangkan Complex Gateway"]`}/>
-/>
+    data -->|Aturan sinkronisasi khusus| complex["Pertimbangkan Complex Gateway"]`}/>/>
 
 Panduan ini menyederhanakan pemilihan berdasarkan kebutuhan. Periksa juga apakah gateway dipakai untuk **split** atau **join**; khususnya, XOR join bukan barrier yang menunggu semua cabang.
 

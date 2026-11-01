@@ -27,8 +27,7 @@ Event menyatakan sesuatu yang terjadi, bukan pekerjaan. Mulai dengan dua keputus
     { kind: 'event', trigger: 'message', position: 'event-subprocess', interrupting: true, label: 'Event Subprocess — interrupting', description: 'Start event menangani pemicu dan menginterupsi scope induk.' },
     { kind: 'event', trigger: 'timer', position: 'event-subprocess', interrupting: false, label: 'Event Subprocess — non-interrupting', description: 'Start event bergaris putus-putus menjalankan penanganan tambahan.' },
     { kind: 'event', trigger: 'message', position: 'end', label: 'End Event', description: 'Lingkaran tebal menandai akhir alur dengan hasil event.' },
-  ]}
-/>
+  ]}/>
 
 ## Pilih trigger
 
@@ -61,8 +60,7 @@ Event menyatakan sesuatu yang terjadi, bukan pekerjaan. Mulai dengan dua keputus
     { kind: 'event', trigger: 'terminate', position: 'end', label: 'Terminate', description: 'Menghentikan activity aktif dalam scope proses.' },
     { kind: 'event', trigger: 'multiple', position: 'intermediate-catch', label: 'Multiple', description: 'Salah satu trigger alternatif terjadi.' },
     { kind: 'event', trigger: 'parallel-multiple', position: 'intermediate-catch', label: 'Parallel Multiple', description: 'Semua trigger yang ditentukan perlu terjadi.' },
-  ]}
-/>
+  ]}/>
 
 <BpmnNotationGallery
   title="Visual varian event start, catch, throw, dan end"
@@ -81,8 +79,7 @@ Event menyatakan sesuatu yang terjadi, bukan pekerjaan. Mulai dengan dua keputus
     { kind: 'event', trigger: 'compensation', position: 'intermediate-throw', label: 'Compensation Throw', description: 'Meminta handler kompensasi yang telah terdaftar.' },
     { kind: 'event', trigger: 'multiple', position: 'intermediate-catch', label: 'Multiple Catch', description: 'Menunggu salah satu event definition yang dicantumkan.' },
     { kind: 'event', trigger: 'multiple', position: 'intermediate-throw', label: 'Multiple Throw', description: 'Melempar beberapa event definition sesuai model.' },
-  ]}
-/>
+  ]}/>
 
 ## Interrupting vs non-interrupting
 
