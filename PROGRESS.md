@@ -2,7 +2,7 @@
 
 Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y — judul` → `- [x] T-x.y — judul · 2026-11-xx · catatan satu baris`.
 
-**Acuan:** [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) v1.1 · [SPEC.md](SPEC.md) v1.1 · **Status keseluruhan:** WP-4 selesai
+**Acuan:** [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) v1.1 · [SPEC.md](SPEC.md) v1.1 · **Status keseluruhan:** WP-5 selesai
 **Keputusan pemilik:** S-01…S-04 dan D-01…D-03 sudah dijawab 2026-11-01 · G1 disetujui 2026-11-02
 **Gerbang berikutnya:** tidak ada sampai G2 (setelah WP-7)
 
@@ -61,9 +61,9 @@ Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y
 
 ## WP-5 · Alat mahasiswa
 
-- [ ] T-5.1 — `/alat/menggambar` (onboarding demo.bpmn.io, 8 topik)
-- [ ] T-5.2 — `/alat/periksa-model`
-- [ ] T-5.3 — Pernyataan privasi
+- [x] T-5.1 — `/alat/menggambar` · 2026-11-02 · 8 topik wajib SPEC 9.1; termasuk peringatan Boundary Event dan autosave; sidebar "Alat" ditambahkan
+- [x] T-5.2 — `/alat/periksa-model` · 2026-11-02 · `PeriksaModelApp.astro`: case picker + BpmnViewer referensi + CriteriaChecker berdampingan; daftar kasus kosong (WP-7+)
+- [x] T-5.3 — Pernyataan privasi · 2026-11-02 · Callout bestpractice di kedua halaman: "sepenuhnya di browser, statis, tanpa backend"
 
 ## WP-6 · Arsitektur informasi dan migrasi rute
 

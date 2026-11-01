@@ -26,6 +26,7 @@ export default defineConfig({
       { label: '3. Mengendalikan alur', items: [{ label: 'Memilih gateway', link: '/gateways/' }, { label: 'Memilih event', link: '/events/' }, { label: 'Data dan artifacts', link: '/data/' }] },
       { label: '4. Mendalami notasi', items: [{ label: 'Pola lanjutan', link: '/advanced/' }, { label: 'Matriks event', link: '/events/matrix' }, { label: 'Katalog varian event', link: '/events/catalog' }] },
       { label: '5. Latihan', items: [{ label: 'Dari narasi ke BPMN', link: '/practice/narrative' }, { label: 'Review model', link: '/practice/review' }, { label: 'Capstone', link: '/practice/capstone' }] },
+      { label: 'Alat', items: [{ label: 'Menggambar — demo.bpmn.io', link: '/alat/menggambar' }, { label: 'Periksa model', link: '/alat/periksa-model' }] },
       { label: 'Referensi', items: [{ label: 'Tentang dan lisensi', link: '/about' }] }
     ]
   })]

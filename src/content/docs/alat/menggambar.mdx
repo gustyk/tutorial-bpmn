@@ -1,0 +1,184 @@
+---
+title: Alat menggambar — demo.bpmn.io
+description: Panduan onboarding demo.bpmn.io untuk membuat, menyimpan, dan membuka kembali model BPMN.
+---
+
+import Callout from '../../../components/Callout.astro';
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
+<Callout type="bestpractice">
+Situs ini memproses seluruh file BPMN **di browser Anda** — tidak ada file yang dikirim ke server.
+Situs ini statis dan tidak punya backend.
+</Callout>
+
+Alat yang kita pakai adalah **[demo.bpmn.io](https://demo.bpmn.io)** — versi browser dari pustaka bpmn-js yang sama yang menampilkan diagram di situs ini.
+Tidak perlu instalasi, tidak perlu akun, tidak perlu biaya.
+
+---
+
+## Topik 1 · Membuat diagram baru
+
+Buka [demo.bpmn.io](https://demo.bpmn.io) di tab baru.
+Anda akan langsung melihat kanvas dengan satu **None Start Event** (lingkaran kosong) dan satu **None End Event** (lingkaran berlapis tebal).
+
+Ini adalah model paling sederhana yang sah. Mulailah dari sini.
+
+<Callout type="standard" source="OMG BPMN 2.0.2 §13.1">
+Sebuah proses minimal membutuhkan tepat satu Start Event yang dapat dicapai dan setidaknya satu End Event.
+</Callout>
+
+---
+
+## Topik 2 · Palet dan Context Pad
+
+**Palet** (kiri layar) adalah kotak alat utama. Klik dan seret elemen dari palet ke kanvas.
+Elemen yang paling sering digunakan:
+
+| Ikon | Elemen |
+|------|--------|
+| Lingkaran tipis | None Start Event |
+| Lingkaran tebal | None End Event |
+| Persegi panjang bersudut | Task |
+| Belah ketupat | Gateway |
+| Lingkaran berlapis dua | Intermediate Event |
+
+**Context Pad** muncul saat Anda mengklik elemen di kanvas.
+Ikon-ikon kecil di sekeliling elemen memungkinkan Anda:
+- Membuat koneksi (panah) ke elemen berikutnya
+- Mengubah tipe elemen (klik ikon kunci inggris)
+- Menghapus elemen (ikon tempat sampah)
+
+<Callout type="bestpractice">
+Cara tercepat membuat flow: klik elemen awal → klik ikon panah di Context Pad → seret ke posisi elemen berikutnya.
+demo.bpmn.io akan membuat elemen baru dan langsung menghubungkannya.
+</Callout>
+
+---
+
+## Topik 3 · Memasang Boundary Event
+
+Ini adalah titik yang **paling sering membuat pemula gagal**.
+
+Boundary Event adalah event yang menempel pada batas (boundary) sebuah Task atau Subprocess.
+Contoh umum: Timer Boundary Event (jika task melebihi batas waktu) dan Error Boundary Event (jika task gagal).
+
+**Cara memasang yang benar:**
+
+1. Klik Task yang ingin diberi Boundary Event.
+2. Di Context Pad, klik ikon **tambah event** (lingkaran kecil dengan tanda +).
+3. Pilih tipe event dari menu yang muncul (misal: Timer).
+4. Boundary Event akan muncul menempel di tepi Task — **bukan** sebagai elemen terpisah di kanvas.
+
+<Callout type="pedagogical">
+[PEDAGOGICAL SIMPLIFICATION] Tanda bahwa Boundary Event terpasang **dengan benar** adalah: posisinya berada tepat di tepi Task, sebagian di dalam dan sebagian di luar. Jika Boundary Event berdiri sendiri jauh dari Task, ia tidak terpasang — ini kesalahan umum.
+</Callout>
+
+**Cara salah yang sering terjadi:** menyeret Intermediate Event dari palet dan menaruhnya di dekat Task.
+Elemen ini akan berdiri sendiri di kanvas, bukan menempel sebagai Boundary Event.
+Validator dan mesin eksekusi akan menolaknya.
+
+Berikut contoh Boundary Event yang terpasang dengan benar:
+
+<BpmnViewer src="/bpmn/fondasi-token-demo.bpmn" title="Contoh: event menempel pada batas task (ilustrasi)" />
+
+---
+
+## Topik 4 · Menambah Pool dan Lane
+
+**Pool** merepresentasikan satu partisipan (organisasi, sistem, atau peran).
+**Lane** membagi Pool secara horizontal untuk menunjukkan sub-peran atau departemen.
+
+Cara membuat Pool:
+
+1. Dari palet, seret ikon **Pool** (persegi panjang dengan label di sisi kiri) ke kanvas kosong.
+2. Drag elemen Task yang sudah ada ke dalam Pool — demo.bpmn.io akan otomatis memasukkannya.
+
+Cara menambah Lane:
+
+1. Klik Pool.
+2. Di Context Pad, klik **ikon tambah lane** (persegi panjang kecil dengan tanda +).
+3. Lane baru akan muncul di bawah atau di atas lane yang ada.
+
+<Callout type="standard" source="OMG BPMN 2.0.2 §10.2.2">
+Sequence Flow tidak boleh melintas batas Pool. Komunikasi antar-Pool menggunakan Message Flow.
+</Callout>
+
+---
+
+## Topik 5 · Menambah Message Flow
+
+**Message Flow** adalah koneksi antar-Pool yang mewakili komunikasi (pesan, dokumen, sinyal).
+
+Cara membuat Message Flow:
+
+1. Pastikan ada **dua Pool atau lebih** di kanvas.
+2. Klik elemen sumber (misal: Send Task di Pool A).
+3. Di Context Pad, klik ikon **panah berputus-putus** (bukan panah penuh).
+4. Seret ke elemen tujuan di Pool B.
+
+<Callout type="camunda">
+demo.bpmn.io akan membuat Sequence Flow secara default saat Anda menyeret dari Context Pad ke elemen di Pool yang sama.
+Untuk Message Flow ke Pool lain, seret ke area kosong Pool tujuan, bukan ke elemen di dalamnya.
+</Callout>
+
+---
+
+## Topik 6 · Menyimpan file .bpmn ke komputer
+
+Model Anda **tidak tersimpan otomatis** di server demo.bpmn.io.
+Jika tab ditutup atau browser dimuat ulang, pekerjaan Anda hilang.
+
+Cara menyimpan:
+
+1. Klik ikon **Download** (ikon panah ke bawah) di toolbar kanan atas.
+2. Pilih **Download BPMN**.
+3. File `.bpmn` akan tersimpan di folder unduhan komputer Anda.
+
+<Callout type="standard">
+Simpan sesering mungkin — setidaknya setelah setiap bagian besar selesai.
+Gunakan nama file yang deskriptif: `pesanan-v1.bpmn`, `pesanan-v2-dengan-error.bpmn`.
+</Callout>
+
+---
+
+## Topik 7 · Membuka kembali file .bpmn
+
+Cara membuka file `.bpmn` yang sudah disimpan:
+
+1. Buka [demo.bpmn.io](https://demo.bpmn.io) — Anda akan melihat kanvas kosong.
+2. Klik ikon **Upload** (ikon folder/berkas) di toolbar kanan atas.
+3. Pilih file `.bpmn` dari komputer Anda.
+4. Model akan dimuat ulang persis seperti saat Anda menyimpannya.
+
+Alternatif: seret file `.bpmn` langsung ke jendela browser.
+
+---
+
+## Topik 8 · Peringatan: pekerjaan tidak tersimpan otomatis
+
+<Callout type="pedagogical">
+demo.bpmn.io adalah editor **stateless** — tidak ada akun, tidak ada cloud storage, tidak ada autosave.
+Setiap kali Anda menutup tab atau memuat ulang halaman, kanvas direset ke kondisi awal.
+
+Kebiasaan yang baik:
+- Simpan setiap 10–15 menit.
+- Sebelum menutup tab, selalu unduh file `.bpmn` terbaru.
+- Beri versi pada nama file jika membuat beberapa iterasi.
+</Callout>
+
+---
+
+## Ringkasan cepat
+
+| Aksi | Cara di demo.bpmn.io |
+|------|---------------------|
+| Elemen baru | Seret dari palet kiri |
+| Koneksi | Context Pad → ikon panah → seret |
+| Boundary Event | Context Pad → ikon tambah event (jangan dari palet) |
+| Pool baru | Palet → seret Pool ke kanvas |
+| Lane baru | Klik Pool → Context Pad → ikon tambah lane |
+| Message Flow | Context Pad → panah berputus-putus → Pool lain |
+| Simpan | Toolbar → Download → Download BPMN |
+| Buka ulang | Toolbar → Upload, atau seret file ke browser |
+
+Setelah model selesai, gunakan halaman [Periksa model](/alat/periksa-model) untuk memverifikasi apakah model Anda memenuhi kriteria kasus yang sedang dikerjakan.
