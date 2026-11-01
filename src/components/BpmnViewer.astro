@@ -1,49 +1,251 @@
 ---
-const { src, title = 'Diagram BPMN' } = Astro.props;
+/**
+ * BpmnViewer v2 — lazy-load via IntersectionObserver, highlight, compareWith, fullscreen, File API.
+ * Halaman tanpa viewer tidak memuat bpmn-js.
+ */
+interface Props {
+  src: string;
+  title?: string;
+  height?: string;
+  /** Array element id untuk disorot, mis. ["E03", "Gateway_Split"] */
+  highlight?: string[];
+  /** Path ke .bpmn kedua untuk mode berdampingan */
+  compareWith?: string;
+  compareTitle?: string;
+  /** Tampilkan tombol fullscreen */
+  fullscreen?: boolean;
+}
+
+const {
+  src,
+  title = 'Diagram BPMN',
+  height = 'clamp(22rem, 55vh, 38rem)',
+  highlight = [],
+  compareWith,
+  compareTitle = 'Pembanding',
+  fullscreen = false,
+} = Astro.props;
+
 const assetSrc = src.startsWith('/') ? `${import.meta.env.BASE_URL}${src.slice(1)}` : src;
+const compareSrc = compareWith
+  ? (compareWith.startsWith('/') ? `${import.meta.env.BASE_URL}${compareWith.slice(1)}` : compareWith)
+  : null;
 ---
-<section class="viewer" data-bpmn-viewer data-src={assetSrc} aria-label={title}>
-  <div class="viewer-toolbar"><strong>{title}</strong><button type="button" data-fit>Sesuaikan</button><a href={assetSrc} download>Unduh .bpmn</a></div>
-  <div class="canvas" role="img" aria-label={`${title}; diagram dapat dinavigasi dengan kontrol mouse`}></div>
+
+<section
+  class={`viewer${compareSrc ? ' viewer--compare' : ''}`}
+  data-bpmn-viewer
+  data-src={assetSrc}
+  data-compare-src={compareSrc ?? undefined}
+  data-highlight={JSON.stringify(highlight)}
+  aria-label={title}
+>
+  <div class="viewer-toolbar">
+    <strong>{title}</strong>
+    <div class="viewer-toolbar__actions">
+      <button type="button" class="viewer-btn" data-fit aria-label="Sesuaikan tampilan">Sesuaikan</button>
+      {fullscreen && (
+        <button type="button" class="viewer-btn" data-fullscreen aria-label="Layar penuh">⛶</button>
+      )}
+      <a href={assetSrc} download class="viewer-btn">Unduh .bpmn</a>
+      <label class="viewer-btn viewer-btn--file">
+        Buka file…
+        <input type="file" accept=".bpmn" class="viewer-file-input" aria-label="Buka file BPMN dari komputer" />
+      </label>
+    </div>
+  </div>
+  <div class="viewer-canvases">
+    <div class="canvas canvas--main" role="img" aria-label={`${title}; navigasi dengan scroll dan drag`}></div>
+    {compareSrc && (
+      <div class="canvas canvas--compare" role="img" aria-label={`${compareTitle}; navigasi dengan scroll dan drag`}></div>
+    )}
+  </div>
   <p class="viewer-status" aria-live="polite">Memuat diagram…</p>
 </section>
-<script>
-  import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer';
-  import 'bpmn-js/dist/assets/diagram-js.css';
-  import 'bpmn-js/dist/assets/bpmn-js.css';
-  import 'bpmn-js/dist/assets/bpmn-font/css/bpmn.css';
 
-  document.querySelectorAll<HTMLElement>('[data-bpmn-viewer]').forEach(async (root) => {
-    const canvas = root.querySelector<HTMLElement>('.canvas')!;
-    const status = root.querySelector<HTMLParagraphElement>('.viewer-status')!;
-    const viewer = new NavigatedViewer({ container: canvas });
-    try {
-      const response = await fetch(root.dataset.src!);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      await viewer.importXML(await response.text());
-      const bpmnCanvas = viewer.get('canvas') as { zoom: (value: 'fit-viewport') => void };
-      const fitDiagram = () => bpmnCanvas.zoom('fit-viewport');
-      fitDiagram();
-      const resizeObserver = new ResizeObserver(() => requestAnimationFrame(fitDiagram));
-      resizeObserver.observe(canvas);
-      (root as HTMLElement & { bpmnResizeObserver?: ResizeObserver }).bpmnResizeObserver = resizeObserver;
-      window.addEventListener('resize', () => requestAnimationFrame(fitDiagram));
-      status.textContent = 'Diagram siap. Gunakan scroll untuk zoom dan drag untuk menggeser.';
-      root.querySelector<HTMLButtonElement>('[data-fit]')!.addEventListener('click', () => {
-        fitDiagram();
-      });
-    } catch (error) {
-      status.textContent = `Diagram tidak dapat dimuat: ${error instanceof Error ? error.message : 'kesalahan tidak diketahui'}`;
+<script>
+import 'bpmn-js/dist/assets/diagram-js.css';
+import 'bpmn-js/dist/assets/bpmn-js.css';
+import 'bpmn-js/dist/assets/bpmn-font/css/bpmn.css';
+
+const viewers = [...document.querySelectorAll<HTMLElement>('[data-bpmn-viewer]')];
+if (viewers.length === 0) {
+  // Tidak ada viewer — bpmn-js tidak dimuat.
+} else {
+  let loaded = false;
+  const observer = new IntersectionObserver((entries) => {
+    if (entries.some((e) => e.isIntersecting) && !loaded) {
+      loaded = true;
+      observer.disconnect();
+      void initAll(viewers);
     }
-  });
+  }, { rootMargin: '300px' });
+  viewers.forEach((el) => observer.observe(el));
+}
+
+async function initAll(roots: HTMLElement[]) {
+  const { default: NavigatedViewer } = await import('bpmn-js/lib/NavigatedViewer');
+
+  for (const root of roots) {
+    const src = root.dataset.src!;
+    const compareSrc = root.dataset.compareSrc ?? null;
+    const highlight: string[] = JSON.parse(root.dataset.highlight ?? '[]');
+    const status = root.querySelector<HTMLElement>('.viewer-status')!;
+    const canvasMain = root.querySelector<HTMLElement>('.canvas--main')!;
+    const canvasCompare = root.querySelector<HTMLElement>('.canvas--compare');
+    const fitBtn = root.querySelector<HTMLButtonElement>('[data-fit]');
+    const fullBtn = root.querySelector<HTMLButtonElement>('[data-fullscreen]');
+    const fileInput = root.querySelector<HTMLInputElement>('.viewer-file-input');
+
+    const makeViewer = (container: HTMLElement) => {
+      const v = new NavigatedViewer({ container });
+      return v;
+    };
+
+    const fitViewer = (v: InstanceType<typeof NavigatedViewer>) => {
+      try {
+        (v.get('canvas') as { zoom(s: 'fit-viewport'): void }).zoom('fit-viewport');
+      } catch { /* ignore during init */ }
+    };
+
+    const applyHighlight = (v: InstanceType<typeof NavigatedViewer>, ids: string[]) => {
+      if (ids.length === 0) return;
+      try {
+        const canvas = v.get('canvas') as { addMarker(id: string, cls: string): void };
+        ids.forEach((id) => canvas.addMarker(id, 'highlight'));
+      } catch { /* id may not exist in this diagram */ }
+    };
+
+    const loadXML = async (v: InstanceType<typeof NavigatedViewer>, xml: string, ids: string[]) => {
+      await v.importXML(xml);
+      fitViewer(v);
+      applyHighlight(v, ids);
+    };
+
+    try {
+      const v1 = makeViewer(canvasMain);
+      const xml1 = await (await fetch(src)).text();
+      await loadXML(v1, xml1, highlight);
+
+      const resizeObs = new ResizeObserver(() => requestAnimationFrame(() => fitViewer(v1)));
+      resizeObs.observe(canvasMain);
+
+      let v2: InstanceType<typeof NavigatedViewer> | null = null;
+      if (canvasCompare && compareSrc) {
+        v2 = makeViewer(canvasCompare);
+        const xml2 = await (await fetch(compareSrc)).text();
+        await loadXML(v2, xml2, []);
+
+        // Sinkronisasi zoom
+        const eventBus1 = v1.get('eventBus') as { on(event: string, cb: Function): void };
+        const eventBus2 = v2.get('eventBus') as { on(event: string, cb: Function): void };
+        const canvas1 = v1.get('canvas') as { zoom(): number; scroll(dx: number, dy: number): void; zoom(v: number): void };
+        const canvas2 = v2.get('canvas') as { zoom(): number; scroll(dx: number, dy: number): void; zoom(v: number): void };
+        let syncing = false;
+        eventBus1.on('canvas.viewbox.changed', () => {
+          if (syncing) return; syncing = true;
+          canvas2.zoom(canvas1.zoom());
+          syncing = false;
+        });
+        eventBus2.on('canvas.viewbox.changed', () => {
+          if (syncing) return; syncing = true;
+          canvas1.zoom(canvas2.zoom());
+          syncing = false;
+        });
+      }
+
+      fitBtn?.addEventListener('click', () => { fitViewer(v1); if (v2) fitViewer(v2); });
+
+      fullBtn?.addEventListener('click', () => {
+        root.classList.toggle('viewer--fullscreen');
+        requestAnimationFrame(() => { fitViewer(v1); if (v2) fitViewer(v2); });
+      });
+
+      fileInput?.addEventListener('change', () => {
+        const file = fileInput.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const xml = e.target?.result as string;
+          try { await loadXML(v1, xml, []); } catch (err) {
+            status.textContent = `File tidak dapat dimuat: ${err instanceof Error ? err.message : String(err)}`;
+          }
+        };
+        reader.readAsText(file);
+      });
+
+      status.textContent = 'Diagram siap. Scroll untuk zoom, drag untuk menggeser.';
+    } catch (err) {
+      status.textContent = `Diagram tidak dapat dimuat: ${err instanceof Error ? err.message : 'kesalahan tidak diketahui'}`;
+    }
+  }
+}
 </script>
+
 <style>
-.viewer { border: 1px solid var(--sl-color-gray-5); border-radius: 4px; background: #fff; color: #202724; }
-.viewer-toolbar { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .75rem 1rem; border-bottom: 1px solid #ddd; flex-wrap: wrap; }
-.viewer-toolbar button { padding: .4rem .7rem; }
-.viewer-toolbar a { color: #17634f; }
-.viewer-toolbar a:hover { color: #123d32; }
-.canvas { width: 100%; height: clamp(22rem, 55vh, 38rem); }
+.viewer {
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 4px;
+  background: #fff;
+  color: #202724;
+}
+.viewer--fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+}
+.viewer-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .6rem .8rem;
+  border-bottom: 1px solid #ddd;
+  flex-wrap: wrap;
+}
+.viewer-toolbar__actions { display: flex; gap: .4rem; flex-wrap: wrap; align-items: center; }
+.viewer-btn {
+  padding: .3rem .6rem;
+  font-size: .8rem;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: #f5f5f5;
+  color: inherit;
+  cursor: pointer;
+  text-decoration: none;
+}
+.viewer-btn:focus-visible { outline: 2px solid #17634f; outline-offset: 2px; }
+.viewer-btn--file { position: relative; }
+.viewer-file-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+}
+.viewer-canvases {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+.viewer--compare .viewer-canvases {
+  grid-template-columns: 1fr 1fr;
+}
+@media (max-width: 480px) {
+  .viewer--compare .viewer-canvases { grid-template-columns: 1fr; }
+}
+.canvas {
+  width: 100%;
+  height: clamp(22rem, 55vh, 38rem);
+}
+.viewer--fullscreen .canvas { flex: 1; }
 .canvas :global(.djs-container > svg) { height: 100%; }
-.viewer-status { padding: 0 1rem; font-size: .9rem; }
+.canvas :global(.highlight .djs-shape .djs-visual > :is(rect, circle, polygon, ellipse)) {
+  fill: #fffbcc !important;
+  stroke: #e6a817 !important;
+  stroke-width: 2 !important;
+}
+.viewer-status { padding: 0 .8rem .4rem; font-size: .85rem; color: #4b5550; }
 </style>

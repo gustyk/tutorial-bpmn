@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+             id="Definitions_TokenDemo"
+             targetNamespace="http://bpmn.io/schema/bpmn">
+  <process id="Process_TokenDemo" isExecutable="false">
+    <startEvent id="Start_1" name="Mulai">
+      <outgoing>Flow_1</outgoing>
+    </startEvent>
+    <task id="Task_A" name="Task A">
+      <incoming>Flow_1</incoming>
+      <outgoing>Flow_2</outgoing>
+    </task>
+    <parallelGateway id="GW_Split" name="AND split">
+      <incoming>Flow_2</incoming>
+      <outgoing>Flow_3a</outgoing>
+      <outgoing>Flow_3b</outgoing>
+    </parallelGateway>
+    <task id="Task_B" name="Task B">
+      <incoming>Flow_3a</incoming>
+      <outgoing>Flow_4a</outgoing>
+    </task>
+    <task id="Task_C" name="Task C">
+      <incoming>Flow_3b</incoming>
+      <outgoing>Flow_4b</outgoing>
+    </task>
+    <parallelGateway id="GW_Join" name="AND join">
+      <incoming>Flow_4a</incoming>
+      <incoming>Flow_4b</incoming>
+      <outgoing>Flow_5</outgoing>
+    </parallelGateway>
+    <endEvent id="End_1" name="Selesai">
+      <incoming>Flow_5</incoming>
+    </endEvent>
+    <sequenceFlow id="Flow_1" sourceRef="Start_1" targetRef="Task_A"/>
+    <sequenceFlow id="Flow_2" sourceRef="Task_A" targetRef="GW_Split"/>
+    <sequenceFlow id="Flow_3a" sourceRef="GW_Split" targetRef="Task_B"/>
+    <sequenceFlow id="Flow_3b" sourceRef="GW_Split" targetRef="Task_C"/>
+    <sequenceFlow id="Flow_4a" sourceRef="Task_B" targetRef="GW_Join"/>
+    <sequenceFlow id="Flow_4b" sourceRef="Task_C" targetRef="GW_Join"/>
+    <sequenceFlow id="Flow_5" sourceRef="GW_Join" targetRef="End_1"/>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_TokenDemo">
+      <bpmndi:BPMNShape id="Shape_Start" bpmnElement="Start_1">
+        <dc:Bounds x="152" y="172" width="36" height="36"/>
+        <bpmndi:BPMNLabel><dc:Bounds x="155" y="215" width="30" height="14"/></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TaskA" bpmnElement="Task_A">
+        <dc:Bounds x="240" y="150" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_GWSplit" bpmnElement="GW_Split" isMarkerVisible="true">
+        <dc:Bounds x="415" y="165" width="50" height="50"/>
+        <bpmndi:BPMNLabel><dc:Bounds x="406" y="222" width="48" height="14"/></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TaskB" bpmnElement="Task_B">
+        <dc:Bounds x="520" y="80" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_TaskC" bpmnElement="Task_C">
+        <dc:Bounds x="520" y="230" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_GWJoin" bpmnElement="GW_Join" isMarkerVisible="true">
+        <dc:Bounds x="695" y="165" width="50" height="50"/>
+        <bpmndi:BPMNLabel><dc:Bounds x="688" y="222" width="44" height="14"/></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End" bpmnElement="End_1">
+        <dc:Bounds x="802" y="172" width="36" height="36"/>
+        <bpmndi:BPMNLabel><dc:Bounds x="800" y="215" width="40" height="14"/></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_1" bpmnElement="Flow_1">
+        <di:waypoint x="188" y="190"/><di:waypoint x="240" y="190"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_2" bpmnElement="Flow_2">
+        <di:waypoint x="360" y="190"/><di:waypoint x="415" y="190"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_3a" bpmnElement="Flow_3a">
+        <di:waypoint x="440" y="165"/><di:waypoint x="440" y="120"/><di:waypoint x="520" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_3b" bpmnElement="Flow_3b">
+        <di:waypoint x="440" y="215"/><di:waypoint x="440" y="270"/><di:waypoint x="520" y="270"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_4a" bpmnElement="Flow_4a">
+        <di:waypoint x="640" y="120"/><di:waypoint x="720" y="120"/><di:waypoint x="720" y="165"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_4b" bpmnElement="Flow_4b">
+        <di:waypoint x="640" y="270"/><di:waypoint x="720" y="270"/><di:waypoint x="720" y="215"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_5" bpmnElement="Flow_5">
+        <di:waypoint x="745" y="190"/><di:waypoint x="802" y="190"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

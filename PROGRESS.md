@@ -2,7 +2,7 @@
 
 Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y — judul` → `- [x] T-x.y — judul · 2026-11-xx · catatan satu baris`.
 
-**Acuan:** [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) v1.1 · [SPEC.md](SPEC.md) v1.1 · **Status keseluruhan:** WP-2 selesai
+**Acuan:** [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) v1.1 · [SPEC.md](SPEC.md) v1.1 · **Status keseluruhan:** WP-3 selesai
 **Keputusan pemilik:** S-01…S-04 dan D-01…D-03 sudah dijawab 2026-11-01 · G1 disetujui 2026-11-02
 **Gerbang berikutnya:** tidak ada sampai G2 (setelah WP-7)
 
@@ -46,11 +46,11 @@ Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y
 
 ## WP-3 · Viewer dan simulasi token
 
-- [ ] T-3.1 — `BpmnViewer` v2 (highlight, lazy-load, fullscreen)
-- [ ] T-3.2 — Mode berdampingan + zoom tersinkron
-- [ ] T-3.3 — Pemuatan file lokal (File API, tanpa unggah)
-- [ ] T-3.4 — `TokenSim` v2 digerakkan JSON langkah
-- [ ] T-3.5 — Hapus `TokenSim` lama
+- [x] T-3.1 — `BpmnViewer` v2 · 2026-11-02 · lazy IntersectionObserver; highlight prop; compareWith mode; fullscreen; File API
+- [x] T-3.2 — Mode berdampingan · 2026-11-02 · compareWith prop; zoom tersinkron; 360px grid-template-columns:1fr
+- [x] T-3.3 — Pemuatan file lokal · 2026-11-02 · File API input type=file; FileReader; tidak ada request jaringan keluar
+- [x] T-3.4 — `TokenSimV2.astro` · 2026-11-02 · data-driven JSON (kontrak 4.5); prediksi sebelum mulai; narasi+altText per langkah; highlight via bpmn-js
+- [x] T-3.5 — Hapus `TokenSim` lama · 2026-11-02 · fondasi/token.mdx migrasi ke TokenSimV2; TokenSim.astro dihapus; 0 referensi tersisa
 
 ## WP-4 · CriteriaChecker
 

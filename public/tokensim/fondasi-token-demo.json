@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "diagram": "/bpmn/fondasi-token-demo.bpmn",
+  "prediction": "Setelah AND split, berapa token yang aktif?",
+  "steps": [
+    {
+      "tokensAt": ["Start_1"],
+      "narrative": "Start membuat satu token dan mengaktifkan alur proses.",
+      "altText": "Token berada di Start Event."
+    },
+    {
+      "tokensAt": ["Task_A"],
+      "narrative": "Token menjalankan Task A.",
+      "altText": "Satu token aktif di Task A."
+    },
+    {
+      "tokensAt": ["GW_Split"],
+      "narrative": "Token tiba di AND split.",
+      "altText": "Token berada di Parallel Gateway split."
+    },
+    {
+      "tokensAt": ["Task_B", "Task_C"],
+      "narrative": "AND split menghasilkan dua token yang berjalan bersamaan di Task B dan Task C.",
+      "altText": "Dua token aktif: satu di Task B, satu di Task C."
+    },
+    {
+      "tokensAt": ["GW_Join", "Task_C"],
+      "narrative": "Token dari Task B tiba di AND join lebih dulu; join menunggu token dari Task C.",
+      "altText": "Satu token menunggu di AND join; satu token masih di Task C."
+    },
+    {
+      "tokensAt": ["GW_Join"],
+      "narrative": "Kedua token tiba di AND join.",
+      "altText": "Kedua token bergabung di AND join."
+    },
+    {
+      "tokensAt": ["End_1"],
+      "narrative": "AND join melepas satu token ke End. Proses selesai.",
+      "altText": "Satu token mencapai End Event. Proses selesai."
+    }
+  ]
+}

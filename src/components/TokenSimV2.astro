@@ -1,0 +1,242 @@
+---
+/**
+ * TokenSimV2 — simulasi token berbasis data JSON (kontrak 4.5).
+ * Memakai BpmnViewer (bpmn-js) untuk menampilkan diagram dan highlight
+ * per langkah. Digerakkan file tokensim JSON.
+ */
+interface Props {
+  /** Path ke file tokensim JSON, mis. "/tokensim/fondasi-token-demo.json" */
+  src: string;
+  title?: string;
+}
+
+const { src, title = 'Simulasi token' } = Astro.props;
+const jsonSrc = src.startsWith('/') ? `${import.meta.env.BASE_URL}${src.slice(1)}` : src;
+---
+
+<section class="tsim" data-tokensim data-json-src={jsonSrc} aria-label={title}>
+  <h3 class="tsim__title">{title}</h3>
+
+  <!-- Pertanyaan prediksi (tersembunyi sampai data dimuat) -->
+  <div class="tsim__prediction" data-prediction hidden>
+    <p class="tsim__pred-label">Sebelum mulai — pikirkan jawabanmu:</p>
+    <p class="tsim__pred-q" data-pred-q></p>
+    <button type="button" class="tsim__btn tsim__btn--start" data-start>Mulai simulasi →</button>
+  </div>
+
+  <!-- Viewer bpmn-js -->
+  <div class="tsim__canvas" role="img" aria-label={`${title}; diagram BPMN interaktif`}></div>
+
+  <!-- Narasi + alt text -->
+  <p class="tsim__narrative" aria-live="polite" data-narrative></p>
+  <p class="tsim__alttext sr-only" aria-live="polite" data-alttext></p>
+
+  <!-- Kontrol -->
+  <div class="tsim__controls" hidden>
+    <button type="button" class="tsim__btn" data-action="prev" aria-label="Langkah sebelumnya">← Sebelumnya</button>
+    <span class="tsim__counter" data-counter aria-live="polite"></span>
+    <button type="button" class="tsim__btn" data-action="next" aria-label="Langkah berikutnya">Berikutnya →</button>
+    <button type="button" class="tsim__btn tsim__btn--play" data-action="play" aria-pressed="false">Putar</button>
+    <button type="button" class="tsim__btn" data-action="reset">Ulangi</button>
+  </div>
+
+  <p class="tsim__status" aria-live="polite" data-status>Memuat…</p>
+</section>
+
+<script>
+import 'bpmn-js/dist/assets/diagram-js.css';
+import 'bpmn-js/dist/assets/bpmn-js.css';
+import 'bpmn-js/dist/assets/bpmn-font/css/bpmn.css';
+
+interface TokenSimStep {
+  tokensAt: string[];
+  narrative: string;
+  altText?: string;
+}
+
+interface TokenSimData {
+  schemaVersion: number;
+  diagram: string;
+  prediction: string;
+  steps: TokenSimStep[];
+}
+
+const sims = [...document.querySelectorAll<HTMLElement>('[data-tokensim]')];
+if (sims.length > 0) void initAll(sims);
+
+async function initAll(roots: HTMLElement[]) {
+  const { default: NavigatedViewer } = await import('bpmn-js/lib/NavigatedViewer');
+
+  for (const root of roots) {
+    const jsonSrc = root.dataset.jsonSrc!;
+    const statusEl = root.querySelector<HTMLElement>('[data-status]')!;
+    const predictionDiv = root.querySelector<HTMLElement>('[data-prediction]')!;
+    const predQ = root.querySelector<HTMLElement>('[data-pred-q]')!;
+    const startBtn = root.querySelector<HTMLButtonElement>('[data-start]')!;
+    const canvas = root.querySelector<HTMLElement>('.tsim__canvas')!;
+    const narrative = root.querySelector<HTMLElement>('[data-narrative]')!;
+    const alttext = root.querySelector<HTMLElement>('[data-alttext]')!;
+    const controls = root.querySelector<HTMLElement>('.tsim__controls')!;
+    const counter = root.querySelector<HTMLElement>('[data-counter]')!;
+    const prevBtn = root.querySelector<HTMLButtonElement>('[data-action="prev"]')!;
+    const nextBtn = root.querySelector<HTMLButtonElement>('[data-action="next"]')!;
+    const playBtn = root.querySelector<HTMLButtonElement>('[data-action="play"]')!;
+    const resetBtn = root.querySelector<HTMLButtonElement>('[data-action="reset"]')!;
+
+    try {
+      const data: TokenSimData = await (await fetch(jsonSrc)).json();
+      const bpmnSrc = data.diagram.startsWith('/') ? data.diagram : `/${data.diagram}`;
+      const xml = await (await fetch(bpmnSrc)).text();
+
+      const viewer = new NavigatedViewer({ container: canvas });
+      await viewer.importXML(xml);
+      const bpmnCanvas = viewer.get('canvas') as {
+        zoom(v: 'fit-viewport' | number): void;
+        addMarker(id: string, cls: string): void;
+        removeMarker(id: string, cls: string): void;
+      };
+      bpmnCanvas.zoom('fit-viewport');
+
+      const resizeObs = new ResizeObserver(() => requestAnimationFrame(() => bpmnCanvas.zoom('fit-viewport')));
+      resizeObs.observe(canvas);
+
+      // Tampilkan prediksi
+      predQ.textContent = data.prediction;
+      predictionDiv.hidden = false;
+      statusEl.textContent = '';
+
+      let current = 0;
+      let timer: number | undefined;
+      let isPlaying = false;
+      let prevHighlight: string[] = [];
+
+      const applyStep = (idx: number) => {
+        const step = data.steps[idx];
+        // Hapus highlight lama
+        prevHighlight.forEach((id) => {
+          try { bpmnCanvas.removeMarker(id, 'tsim-token'); } catch { /* ignore */ }
+        });
+        // Tambah highlight baru
+        step.tokensAt.forEach((id) => {
+          try { bpmnCanvas.addMarker(id, 'tsim-token'); } catch { /* ignore */ }
+        });
+        prevHighlight = [...step.tokensAt];
+
+        narrative.textContent = `Langkah ${idx + 1}: ${step.narrative}`;
+        alttext.textContent = step.altText ?? step.narrative;
+        counter.textContent = `${idx + 1} / ${data.steps.length}`;
+        prevBtn.disabled = idx === 0;
+        nextBtn.disabled = idx === data.steps.length - 1;
+        playBtn.setAttribute('aria-pressed', String(isPlaying));
+        playBtn.textContent = isPlaying ? 'Jeda' : idx === data.steps.length - 1 ? 'Putar ulang' : 'Putar';
+      };
+
+      const pause = () => {
+        if (timer !== undefined) { clearInterval(timer); timer = undefined; }
+        isPlaying = false;
+      };
+
+      startBtn.addEventListener('click', () => {
+        predictionDiv.hidden = true;
+        controls.hidden = false;
+        applyStep(0);
+      });
+
+      controls.addEventListener('click', (e) => {
+        const action = (e.target as HTMLElement).closest<HTMLButtonElement>('button')?.dataset.action;
+        if (!action) return;
+        if (action === 'play') {
+          if (isPlaying) { pause(); applyStep(current); return; }
+          if (current === data.steps.length - 1) current = 0;
+          isPlaying = true;
+          applyStep(current);
+          timer = window.setInterval(() => {
+            if (current < data.steps.length - 1) { current++; applyStep(current); }
+            if (current === data.steps.length - 1) { pause(); applyStep(current); }
+          }, 1600);
+        } else {
+          pause();
+          if (action === 'prev') current = Math.max(0, current - 1);
+          else if (action === 'next') current = Math.min(data.steps.length - 1, current + 1);
+          else if (action === 'reset') current = 0;
+          applyStep(current);
+        }
+      });
+
+    } catch (err) {
+      statusEl.textContent = `Simulasi tidak dapat dimuat: ${err instanceof Error ? err.message : String(err)}`;
+    }
+  }
+}
+</script>
+
+<style>
+.tsim {
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 6px;
+  background: var(--sl-color-bg-sidebar);
+  margin: 1.5rem 0;
+  padding: 1rem;
+}
+.tsim__title { margin: 0 0 .8rem; font-size: 1rem; }
+.tsim__prediction {
+  background: color-mix(in srgb, var(--sl-color-blue) 8%, transparent);
+  border: 1px solid var(--sl-color-blue);
+  border-radius: 4px;
+  padding: .6rem .8rem;
+  margin-bottom: .8rem;
+}
+.tsim__pred-label { font-size: .8rem; color: var(--sl-color-gray-3); margin: 0 0 .3rem; }
+.tsim__pred-q { font-weight: 600; margin: 0 0 .6rem; }
+.tsim__canvas {
+  width: 100%;
+  height: clamp(18rem, 45vh, 28rem);
+  background: #fff;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 4px;
+}
+.tsim__canvas :global(.djs-container > svg) { height: 100%; }
+/* highlight token */
+.tsim__canvas :global(.tsim-token .djs-shape .djs-visual > :is(rect, circle, polygon, ellipse)) {
+  fill: #fffbcc !important;
+  stroke: #e6a817 !important;
+  stroke-width: 2.5 !important;
+}
+.tsim__narrative {
+  min-height: 2.5em;
+  font-weight: 600;
+  margin: .6rem 0 .4rem;
+}
+.tsim__controls {
+  display: flex;
+  gap: .4rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: .4rem;
+}
+.tsim__counter {
+  font-size: .8rem;
+  color: var(--sl-color-gray-3);
+  min-width: 4rem;
+  text-align: center;
+}
+.tsim__btn {
+  padding: .35rem .7rem;
+  border: 1px solid var(--sl-color-gray-4);
+  border-radius: 4px;
+  background: var(--sl-color-bg);
+  color: var(--sl-color-text);
+  cursor: pointer;
+  font-size: .85rem;
+}
+.tsim__btn:focus-visible { outline: 2px solid var(--sl-color-text-accent); outline-offset: 2px; }
+.tsim__btn:disabled { opacity: .5; cursor: not-allowed; }
+.tsim__btn--start {
+  background: var(--sl-color-blue);
+  color: #fff;
+  border-color: var(--sl-color-blue);
+}
+.tsim__status { font-size: .85rem; color: var(--sl-color-gray-3); margin-top: .4rem; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+@media (prefers-reduced-motion: reduce) { .tsim__canvas :global(*) { transition: none !important; } }
+</style>

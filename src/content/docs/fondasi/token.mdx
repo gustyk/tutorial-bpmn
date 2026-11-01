@@ -3,28 +3,22 @@ title: Bagaimana Token Bergerak
 description: Pahami token creation, branching, waiting, join, dan completion.
 ---
 
-import TokenSim from '../../../components/TokenSim.astro';
+import TokenSimV2 from '../../../components/TokenSimV2.astro';
 
 Token adalah model mental untuk mengikuti kemajuan alur. Anggap token sebagai penanda yang bergerak melalui flow node. Token bukan objek fisik dan detail eksekusi engine dapat menambah perilaku teknis.
 
 ## AND split dan join
 
-<TokenSim
-  title="Ikuti token pada alur"
-  steps={[
-    'Start: satu token mengawali alur.',
-    'Task A: token menjalankan aktivitas.',
-    'AND split: satu token bercabang menjadi dua token aktif.',
-    'Task B dan Task C berjalan pada cabang paralel.',
-    'AND join: token dari Task B tiba lebih dulu; token lain masih di Task C, sehingga join menunggu.',
-    'Kedua token tiba; AND join meneruskan satu token ke End.',
-  ]}/>
+<TokenSimV2
+  src="/tokensim/fondasi-token-demo.json"
+  title="Ikuti token pada alur paralel"
+/>
 
-Diagram ini memperlihatkan dua cabang paralel yang bertemu kembali. Gunakan tombol **Putar animasi** untuk melihat seluruh perjalanan token atau maju per tahap. **Parallel Gateway** pada model BPMN yang sebenarnya memiliki simbol dan semantik formal; flowchart ini hanya ringkasan untuk mengikuti perilaku token.
+Diagram di atas memperlihatkan dua cabang paralel yang bertemu kembali. Gunakan tombol **Putar** untuk melihat seluruh perjalanan token atau maju per tahap. **Parallel Gateway** pada model BPMN yang sebenarnya memiliki simbol dan semantik formal; simulasi ini hanya memperlihatkan perilaku token.
 
 1. Start membuat satu token dan mengaktifkan alur proses.
 2. Token menjalankan Task A.
-3. AND split meneruskan kontrol ke kedua jalur; secara konseptual terbentuk token pada masing-masing cabang.
+3. AND split meneruskan kontrol ke kedua jalur; terbentuk token pada masing-masing cabang.
 4. Task B dan Task C berjalan paralel dan dapat selesai pada waktu berbeda.
 5. Jika satu token tiba lebih dulu, AND join menunggu token dari cabang aktif lainnya.
 6. Setelah kedua token tiba, AND join melepas satu token untuk melanjutkan alur ke End.
