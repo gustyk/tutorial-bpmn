@@ -25,16 +25,23 @@ for (const file of files) {
     const pageMap: Record<string, string> = {
       'case-01-order': '/practice/narrative/',
       'case-11-capstone': '/practice/capstone/',
+      'fondasi-token-demo': '/fondasi/token/',
     };
-    const url = pageMap[slug] ?? `/practice/narrative/`;
+    const url = pageMap[slug];
+    if (!url) {
+      // BPMN file belum dipetakan ke halaman — lewati
+      return;
+    }
     await page.goto(url);
 
-    // Wait for viewer status to indicate loaded or error
-    const status = page.locator('.viewer-status').first();
+    // Coba viewer-status (BpmnViewer) atau tsim__status (TokenSimV2)
+    const status = page.locator('.viewer-status, .tsim__status').first();
     await status.waitFor({ timeout: 15_000 });
+    // Scroll agar IntersectionObserver (lazy-load) terpicu
+    await status.scrollIntoViewIfNeeded();
     await page.waitForFunction(
       () => {
-        const el = document.querySelector('.viewer-status');
+        const el = document.querySelector('.viewer-status, .tsim__status');
         return el && !el.textContent?.includes('Memuat');
       },
       { timeout: 15_000 }

@@ -2,7 +2,7 @@
 
 Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y — judul` → `- [x] T-x.y — judul · 2026-11-xx · catatan satu baris`.
 
-**Acuan:** [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) v1.1 · [SPEC.md](SPEC.md) v1.1 · **Status keseluruhan:** WP-3 selesai
+**Acuan:** [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) v1.1 · [SPEC.md](SPEC.md) v1.1 · **Status keseluruhan:** WP-4 selesai
 **Keputusan pemilik:** S-01…S-04 dan D-01…D-03 sudah dijawab 2026-11-01 · G1 disetujui 2026-11-02
 **Gerbang berikutnya:** tidak ada sampai G2 (setelah WP-7)
 
@@ -29,7 +29,7 @@ Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y
 - [x] T-1.4 — Tulis ulang `audit-coverage.mjs` (aturan A1–A9, exit non-zero) · 2026-11-02 · semua 9 aturan; WARN untuk rules yang butuh konten WP-7+; FAIL untuk violations nyata; --release dan --report flag
 - [x] T-1.5 — Perluas `content.config.ts` (frontmatter notasi + modul) · 2026-11-02 · z.object opsional untuk moduleSchema + notationSchema; `npm run check` 0 errors
 - [x] T-1.6 — `src/lib/inventory.ts` · 2026-11-02 · reader + types; getInventory(), getElementsByTier(), getElementById(), getElementBySlug(), getElementsIntroducedIn()
-- [ ] **G1** — Gerbang pemilik: tabel Tier + ringkasan matriks event — **MENUNGGU PERSETUJUAN PEMILIK**
+- [x] **G1** — Gerbang pemilik: tabel Tier + ringkasan matriks event — **DISETUJUI 2026-11-02**
 
 ## WP-2 · Sistem desain dan komponen dasar
 
@@ -54,10 +54,10 @@ Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y
 
 ## WP-4 · CriteriaChecker
 
-- [ ] T-4.1 — `schemas/criteria.schema.json`
-- [ ] T-4.2 — Mesin 11 aturan + kombinator + 3 mode
-- [ ] T-4.3 — UI pelaporan tanpa skor
-- [ ] T-4.4 — `tests/rules.spec.ts` dengan fixture lolos dan gagal
+- [x] T-4.1 — `schemas/criteria.schema.json` · 2026-11-02 · draft-07; validasi mode auto/manual/assisted; min 4 criteria, min 2 auto; A6 pakai schema ini
+- [x] T-4.2 — Mesin 11 aturan + kombinator + 3 mode · 2026-11-02 · `src/lib/rules/engine.ts` + `types.ts`; anyOf/allOf/not; evaluateCriterion + parseBpmnElements
+- [x] T-4.3 — UI pelaporan tanpa skor · 2026-11-02 · `CriteriaChecker.astro`; File API upload; terpenuhi/belum/dugaan/manual; tanpa skor/persen/lulus-gagal
+- [x] T-4.4 — `tests/rules.test.mjs` dengan fixture lolos dan gagal · 2026-11-02 · 22 test (11 aturan × 2); `node --test`; 22/22 hijau; `test:rules` masuk `verify`
 
 ## WP-5 · Alat mahasiswa
 

@@ -1,0 +1,192 @@
+---
+/**
+ * CriteriaChecker — upload lokal → jalankan rules → laporkan hasil.
+ * Tanpa skor, tanpa persentase, tanpa putusan lulus-gagal (SPEC §9.3).
+ * Hasil mode assisted disampaikan sebagai dugaan.
+ */
+interface Props {
+  /** Path ke criteria.json, mis. "/criteria/case-05.json" */
+  criteriaSrc: string;
+  title?: string;
+}
+
+const { criteriaSrc, title = 'Periksa model BPMN-mu' } = Astro.props;
+const jsonSrc = criteriaSrc.startsWith('/') ? `${import.meta.env.BASE_URL}${criteriaSrc.slice(1)}` : criteriaSrc;
+---
+
+<section class="cc" data-criteria-checker data-criteria-src={jsonSrc} aria-label={title}>
+  <h3 class="cc__title">{title}</h3>
+
+  <div class="cc__upload">
+    <label class="cc__file-label">
+      <svg aria-hidden="true" width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <path d="M9 2v10M5 6l4-4 4 4M3 14h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Pilih file .bpmn
+      <input type="file" accept=".bpmn" class="cc__file-input" aria-label="Pilih file BPMN dari komputer" />
+    </label>
+    <span class="cc__filename" data-filename aria-live="polite">Belum ada file dipilih</span>
+  </div>
+
+  <button type="button" class="cc__run-btn" data-run disabled>Periksa model</button>
+
+  <div class="cc__results" data-results hidden aria-live="polite">
+    <p class="cc__disclaimer">
+      Hasil di bawah adalah pemeriksaan struktural, bukan penilaian nilai.
+      Mode <em>dugaan</em> memakai heuristik nama; periksa sendiri hasilnya.
+    </p>
+    <ul class="cc__list" data-list></ul>
+  </div>
+
+  <p class="cc__status" data-status aria-live="polite"></p>
+</section>
+
+<script>
+import type { CriterionResult, CriteriaFile } from '../lib/rules/types';
+import { parseBpmnElements, evaluateCriterion } from '../lib/rules/engine';
+
+document.querySelectorAll<HTMLElement>('[data-criteria-checker]').forEach(async (root) => {
+  const criteriaSrc = root.dataset.criteriaSrc!;
+  const fileInput = root.querySelector<HTMLInputElement>('.cc__file-input')!;
+  const filenameEl = root.querySelector<HTMLElement>('[data-filename]')!;
+  const runBtn = root.querySelector<HTMLButtonElement>('[data-run]')!;
+  const resultsDiv = root.querySelector<HTMLElement>('[data-results]')!;
+  const listEl = root.querySelector<HTMLElement>('[data-list]')!;
+  const statusEl = root.querySelector<HTMLElement>('[data-status]')!;
+
+  let criteriaData: CriteriaFile | null = null;
+  let xmlContent = '';
+
+  try {
+    criteriaData = await (await fetch(criteriaSrc)).json() as CriteriaFile;
+  } catch (err) {
+    statusEl.textContent = `Kriteria tidak dapat dimuat: ${err instanceof Error ? err.message : String(err)}`;
+    return;
+  }
+
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files?.[0];
+    if (!file) return;
+    filenameEl.textContent = file.name;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      xmlContent = e.target?.result as string ?? '';
+      runBtn.disabled = !xmlContent;
+    };
+    reader.readAsText(file);
+  });
+
+  runBtn.addEventListener('click', async () => {
+    if (!xmlContent || !criteriaData) return;
+    statusEl.textContent = 'Memeriksa…';
+    runBtn.disabled = true;
+    listEl.innerHTML = '';
+
+    try {
+      const elements = await parseBpmnElements(xmlContent);
+      const results: CriterionResult[] = criteriaData.criteria.map((c) => evaluateCriterion(elements, c));
+      renderResults(results);
+      statusEl.textContent = `Pemeriksaan selesai (${results.length} kriteria).`;
+    } catch (err) {
+      statusEl.textContent = `Pemeriksaan gagal: ${err instanceof Error ? err.message : String(err)}`;
+    } finally {
+      runBtn.disabled = false;
+    }
+  });
+
+  function renderResults(results: CriterionResult[]) {
+    listEl.innerHTML = '';
+    for (const r of results) {
+      const li = document.createElement('li');
+      li.className = `cc__item cc__item--${r.status}`;
+
+      const icon = r.status === 'pass' ? '✓' : r.status === 'fail' ? '✗' : r.status === 'assisted' ? '?' : '—';
+      const label = r.status === 'pass' ? 'Terpenuhi' : r.status === 'fail' ? 'Belum terpenuhi' : r.status === 'assisted' ? 'Dugaan terpenuhi' : 'Perlu diperiksa sendiri';
+
+      li.innerHTML = `
+        <span class="cc__icon" aria-hidden="true">${icon}</span>
+        <div class="cc__item-body">
+          <span class="cc__status-label">${label}</span>
+          <p class="cc__statement">${r.statement}</p>
+          ${r.status === 'fail' && r.message ? `<p class="cc__msg">${r.message}</p>` : ''}
+          ${r.status === 'manual' ? `<p class="cc__question">${r.message}</p>` : ''}
+          ${r.status === 'assisted' && r.note ? `<p class="cc__note">Catatan: ${r.note}</p>` : ''}
+          ${r.readIfFailed && r.status !== 'pass' ? `<p class="cc__read">Baca ulang: ${r.readIfFailed.map((p) => `<a href="${p}">${p.split('/').pop()}</a>`).join(', ')}</p>` : ''}
+        </div>
+      `;
+      listEl.appendChild(li);
+    }
+    resultsDiv.hidden = false;
+  }
+});
+</script>
+
+<style>
+.cc {
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 6px;
+  margin: 1.5rem 0;
+  padding: 1rem;
+}
+.cc__title { margin: 0 0 .8rem; font-size: 1rem; }
+.cc__upload { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin-bottom: .6rem; }
+.cc__file-label {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .35rem .7rem;
+  border: 1px solid var(--sl-color-gray-4);
+  border-radius: 4px;
+  background: var(--sl-color-bg);
+  cursor: pointer;
+  font-size: .85rem;
+  position: relative;
+}
+.cc__file-label:focus-within { outline: 2px solid var(--sl-color-text-accent); outline-offset: 2px; }
+.cc__file-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+}
+.cc__filename { font-size: .8rem; color: var(--sl-color-gray-3); }
+.cc__run-btn {
+  padding: .4rem .9rem;
+  border: none;
+  border-radius: 4px;
+  background: var(--sl-color-text-accent);
+  color: #fff;
+  cursor: pointer;
+  font-size: .875rem;
+  font-weight: 600;
+  margin-bottom: .8rem;
+}
+.cc__run-btn:disabled { opacity: .5; cursor: not-allowed; }
+.cc__run-btn:focus-visible { outline: 2px solid var(--sl-color-text-accent); outline-offset: 3px; }
+.cc__disclaimer { font-size: .8rem; color: var(--sl-color-gray-3); margin: 0 0 .6rem; }
+.cc__list { list-style: none; padding: 0; margin: 0; display: grid; gap: .5rem; }
+.cc__item {
+  display: flex;
+  gap: .6rem;
+  padding: .5rem .6rem;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  font-size: .875rem;
+}
+.cc__item--pass { background: color-mix(in srgb, var(--sl-color-green) 8%, transparent); border-color: var(--sl-color-green); }
+.cc__item--fail { background: color-mix(in srgb, var(--sl-color-red) 8%, transparent); border-color: var(--sl-color-red); }
+.cc__item--assisted { background: color-mix(in srgb, var(--sl-color-orange, #e67c00) 8%, transparent); border-color: var(--sl-color-orange, #e67c00); }
+.cc__item--manual { background: var(--sl-color-gray-6); border-color: var(--sl-color-gray-4); }
+.cc__icon { font-size: 1rem; flex-shrink: 0; font-weight: 700; margin-top: .05rem; }
+.cc__item--pass .cc__icon { color: var(--sl-color-green); }
+.cc__item--fail .cc__icon { color: var(--sl-color-red); }
+.cc__item--assisted .cc__icon { color: var(--sl-color-orange, #e67c00); }
+.cc__item-body { display: grid; gap: .2rem; }
+.cc__status-label { font-weight: 700; font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; }
+.cc__statement { margin: 0; }
+.cc__msg, .cc__question, .cc__note, .cc__read { margin: .2rem 0 0; font-size: .8rem; }
+.cc__note { font-style: italic; }
+.cc__read a { color: var(--sl-color-text-accent); }
+.cc__status { font-size: .85rem; color: var(--sl-color-gray-3); margin-top: .4rem; }
+</style>

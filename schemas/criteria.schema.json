@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "criteria.schema.json",
+  "title": "Case Criteria",
+  "description": "Kunci jawaban lapis B untuk satu kasus (IMPLEMENTATION-PLAN §4.3)",
+  "type": "object",
+  "required": ["schemaVersion", "caseId", "criteria"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "caseId": { "type": "string" },
+    "criteria": {
+      "type": "array",
+      "minItems": 4,
+      "items": {
+        "type": "object",
+        "required": ["id", "statement", "check"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^C[0-9]{2}-[0-9]+$" },
+          "statement": { "type": "string", "minLength": 10 },
+          "rationale": { "type": "string" },
+          "readIfFailed": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "check": {
+            "oneOf": [
+              { "$ref": "#/definitions/checkAuto" },
+              { "$ref": "#/definitions/checkManual" },
+              { "$ref": "#/definitions/checkAssisted" }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ruleClause": {
+      "type": "object",
+      "required": ["rule"],
+      "properties": {
+        "rule": {
+          "type": "string",
+          "enum": [
+            "element-exists",
+            "boundary-attached-to",
+            "no-sequence-flow-across-participants",
+            "message-flow-between-participants",
+            "gateway-split-labeled",
+            "gateway-join-type",
+            "marker-on-activity",
+            "compensation-has-handler",
+            "all-tokens-reach-end",
+            "subprocess-start-event",
+            "event-position-valid"
+          ]
+        },
+        "type": { "type": "string" },
+        "min": { "type": "integer" },
+        "max": { "type": "integer" },
+        "eventDefinition": { "type": "string" },
+        "interrupting": { "type": "boolean" },
+        "activityMatch": {
+          "type": "object",
+          "properties": {
+            "nameMatches": { "type": "string" }
+          }
+        },
+        "splitType": { "type": "string" },
+        "joinType": { "type": "string" },
+        "marker": { "type": "string", "enum": ["multiInstance", "compensation", "loop"] }
+      }
+    },
+    "combinator": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "anyOf": { "type": "array", "items": { "$ref": "#/definitions/ruleClause" } },
+        "allOf": { "type": "array", "items": { "$ref": "#/definitions/ruleClause" } },
+        "not": { "$ref": "#/definitions/ruleClause" }
+      }
+    },
+    "checkAuto": {
+      "type": "object",
+      "required": ["mode"],
+      "additionalProperties": true,
+      "properties": {
+        "mode": { "type": "string", "const": "auto" },
+        "rule": { "type": "string" },
+        "anyOf": { "type": "array" },
+        "allOf": { "type": "array" },
+        "not": { "type": "object" }
+      }
+    },
+    "checkManual": {
+      "type": "object",
+      "required": ["mode", "question"],
+      "additionalProperties": false,
+      "properties": {
+        "mode": { "type": "string", "const": "manual" },
+        "question": { "type": "string", "minLength": 10 }
+      }
+    },
+    "checkAssisted": {
+      "type": "object",
+      "required": ["mode", "rule", "assistedNote"],
+      "additionalProperties": true,
+      "properties": {
+        "mode": { "type": "string", "const": "assisted" },
+        "rule": { "type": "string" },
+        "assistedNote": { "type": "string", "minLength": 10 },
+        "activityMatch": { "type": "object" },
+        "eventDefinition": { "type": "string" }
+      }
+    }
+  }
+}

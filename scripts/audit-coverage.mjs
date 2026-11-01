@@ -130,6 +130,12 @@ for (const el of elements) {
 // ─── A6: setiap kasus punya criteria.json yang sah ───────────────────────────
 // Hanya cek kasus yang ada di content-src/cases/
 let criteriaTotal = 0;
+const criteriaSchemaPath = new URL('schemas/criteria.schema.json', root);
+let validateCriteria = null;
+if (existsSync(fileURLToPath(criteriaSchemaPath))) {
+  const criteriaSchema = JSON.parse(await readFile(criteriaSchemaPath, 'utf8'));
+  validateCriteria = ajv.compile(criteriaSchema);
+}
 try {
   const casesDir = fileURLToPath(new URL('content-src/cases', root));
   const caseDirs = await readdir(casesDir, { withFileTypes: true });
@@ -141,6 +147,9 @@ try {
       continue;
     }
     const criteria = JSON.parse(await readFile(criteriaPath, 'utf8'));
+    if (validateCriteria && !validateCriteria(criteria)) {
+      for (const e of validateCriteria.errors ?? []) fail('A6', `${d.name} criteria.json ${e.instancePath} ${e.message}`);
+    }
     const items = criteria.criteria ?? [];
     criteriaTotal += items.length;
     if (items.length < 4) fail('A6', `${d.name} hanya ${items.length} kriteria (minimum 4)`);
