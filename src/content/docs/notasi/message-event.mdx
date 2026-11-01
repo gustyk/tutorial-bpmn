@@ -1,0 +1,196 @@
+---
+title: "E02 — Message Event"
+description: "Event yang dipicu oleh atau menghasilkan pesan: Message Start, Message Intermediate Catch/Throw, Message End."
+---
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | E02 |
+| **Nama BPMN** | Message Event (Start / Intermediate / End) |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 3 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §10.4.2, §10.4.3, §10.4.5 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+Ikon **amplop** di dalam lingkaran event. Tiga varian:
+
+| Varian | Visual | Makna |
+|--------|--------|-------|
+| Message **Start Event** | Lingkaran tipis + amplop kosong (outline) | Proses dimulai oleh pesan masuk |
+| Message **Intermediate Catch Event** | Lingkaran ganda + amplop kosong | Proses menunggu pesan masuk |
+| Message **Intermediate Throw Event** | Lingkaran ganda + amplop terisi | Proses mengirim pesan |
+| Message **End Event** | Lingkaran tebal + amplop terisi | Proses berakhir dengan mengirim pesan |
+
+*Pola umum: amplop kosong (outline) = menerima pesan; amplop terisi = mengirim pesan.*
+
+---
+
+## 3. Apa artinya
+
+**Message Start Event:** *"Proses ini dimulai ketika pesan tertentu diterima dari pihak luar."*
+
+**Message Intermediate Catch:** *"Proses menunggu di sini sampai pesan tertentu tiba."*
+
+**Message Intermediate Throw:** *"Proses mengirim pesan ke pihak lain, lalu langsung melanjutkan."*
+
+**Message End Event:** *"Proses berakhir dengan mengirim pesan ke pihak lain."*
+
+---
+
+## 4. Tujuan
+
+Message Event membuat **titik komunikasi antar-Pool menjadi eksplisit** dalam diagram proses masing-masing Pool. Tanpa Message Event, diagram hanya menunjukkan alur internal — tidak ada yang menyatakan bahwa ada komunikasi eksternal yang terjadi.
+
+---
+
+## 5. Semantik BPMN
+
+**Message Start Event:**
+- Ketika pesan tiba dan cocok dengan event ini, proses diinstansiasi.
+- Satu token lahir dan bergerak ke outgoing Sequence Flow.
+- Berbeda dari None Start Event yang diinstansiasi secara langsung.
+
+**Message Intermediate Catch Event:**
+- Token tiba di event ini dan **menunggu** sampai pesan yang cocok tiba.
+- Ketika pesan tiba, token bergerak ke outgoing Sequence Flow.
+- Ini adalah mekanisme sinkronisasi: proses "menjeda" sambil menunggu pesan.
+
+**Message Intermediate Throw Event:**
+- Token tiba, pesan dikirim ke target yang ditentukan.
+- Token **langsung bergerak** ke outgoing Sequence Flow tanpa menunggu respons.
+- Ini adalah *fire-and-forget*: kirim pesan, tidak tunggu balasan.
+
+**Message End Event:**
+- Token tiba, pesan dikirim.
+- Token dimusnahkan — proses selesai.
+
+---
+
+## 6. Kapan digunakan
+
+- Message Start: ketika proses dimulai oleh pesan dari Pool lain (bukan secara manual atau terjadwal).
+- Message Intermediate Catch: ketika proses perlu menunggu konfirmasi atau balasan dari Pool lain sebelum melanjutkan.
+- Message Intermediate Throw: ketika proses mengirim notifikasi atau permintaan ke Pool lain tanpa menunggu respons.
+- Message End: ketika akhir proses menghasilkan pesan (notifikasi selesai, laporan, konfirmasi akhir).
+
+---
+
+## 7. Kapan jangan digunakan
+
+- Jika proses dimulai oleh manusia secara manual (bukan dari pesan sistem) → None Start Event atau User Task.
+- Jika perlu mengirim DAN menunggu respons dalam satu langkah → gunakan Send Task diikuti Intermediate Catch Event, atau pertimbangkan Receive Task.
+
+---
+
+## 8. Contoh penggunaan
+
+```
+Pool Customer:
+  [Start] → [Send Task "Kirim pesanan"] → [Intermediate Catch "Tunggu konfirmasi"] → [End]
+
+Pool Merchant:
+  [Message Start "Pesanan diterima"] → ... → [Message End / Send Task "Kirim konfirmasi"] → [End]
+```
+
+---
+
+## 9. Diagram contoh
+
+Lihat [Modul 3](/jalur/03/) — Pool Merchant menggunakan Message Start Event; Pool Customer menggunakan Intermediate Message Catch Event.
+
+---
+
+## 10. Cara membaca diagram
+
+Ikon amplop di lingkaran event:
+- Amplop kosong + lingkaran tipis = proses dimulai oleh pesan masuk.
+- Amplop kosong + lingkaran ganda = proses menunggu pesan masuk.
+- Amplop terisi + lingkaran ganda = proses mengirim pesan.
+- Amplop terisi + lingkaran tebal = proses berakhir dengan mengirim pesan.
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Message Intermediate Throw = Message Intermediate Catch"**
+
+Salah. Throw = kirim (amplop terisi, aktif). Catch = terima/tunggu (amplop kosong, pasif). Ini berbeda arah dan semantik.
+
+**"Message End Event menunggu balasan"**
+
+Tidak. Message End Event hanya mengirim pesan dan memusnahkan token. Tidak ada menunggu. Jika perlu menunggu setelah mengirim, gunakan Send Task + Intermediate Catch Event.
+
+---
+
+## 12. Anti-pattern
+
+**Message Catch Event tanpa Message Flow masuk**
+
+Gejala: ada Intermediate Catch Message Event di Pool, tapi tidak ada Message Flow yang mengarah ke sana.
+
+Diagnosis: token akan menunggu selamanya di event ini — tidak ada pesan yang bisa datang karena tidak ada Message Flow yang menghubungkannya ke pengirim.
+
+Perbaikan: tambahkan Message Flow dari elemen pengirim di Pool lain ke event ini.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Tertukar dengan | Perbedaan kunci |
+|----------------|----------------|
+| **None Start/End Event** (E01) | None Event tidak melibatkan pesan |
+| **Send Task** (A08) | Send Task adalah aktivitas aktif; Message Throw Event adalah penanda komunikasi |
+| **Receive Task** (A09) | Receive Task adalah aktivitas menunggu; Message Catch Event adalah penanda menunggu |
+| **Timer Intermediate Event** (E03) | Timer menunggu waktu; Message menunggu pesan |
+
+---
+
+## 14. Aturan pemilihan
+
+```
+Proses dimulai oleh pesan masuk → Message Start Event
+Proses menunggu pesan → Intermediate Message Catch Event
+Proses mengirim pesan, tidak menunggu balasan → Intermediate Message Throw Event / Send Task
+Proses berakhir dengan mengirim pesan → Message End Event
+```
+
+---
+
+## 15. Pertanyaan diagnostik
+
+1. Apakah ini pengirim atau penerima pesan?
+2. Apakah proses menunggu setelah pesan dikirim?
+3. Di titik mana dalam proses komunikasi ini terjadi?
+
+---
+
+## 16. Argumentasi pemodelan
+
+*"Mengapa Merchant menggunakan Message Start Event, bukan None Start Event?"*
+
+Di Modul 1 dan 2, diagram hanya menampilkan proses Merchant — perspektifnya adalah internal. Dari perspektif itu, proses "dimulai" tanpa perlu menjelaskan pemicunya. Di Modul 3, ketika Customer ditambahkan sebagai Pool, kita menggambar **kontrak komunikasi** yang eksplisit: proses Merchant dimulai karena ada pesan dari Customer. Message Start Event menyatakan kontrak ini. None Start Event di sini akan menyembunyikan informasi penting: bahwa proses Merchant bukan proses yang bisa dijalankan kapan saja — ia harus menunggu pesan dari Customer.
+
+---
+
+## 17. Validity check
+
+- [ ] Message Catch Event (Start atau Intermediate) memiliki Message Flow masuk dari Pool lain.
+- [ ] Message Throw Event (Intermediate atau End) memiliki Message Flow keluar ke Pool lain.
+- [ ] Nama event menyatakan pesan atau kondisi, bukan "Start" atau "End".
+
+---
+
+## 18. Catatan Camunda
+
+Di Camunda 8, Message Event dikonfigurasi dengan nama pesan (`messageName`) dan correlation key. Correlation key menentukan instance proses mana yang menerima pesan. Tanpa correlation key yang tepat, pesan bisa diterima oleh instance yang salah atau tidak diterima sama sekali.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Message Event membuat titik pengiriman atau penerimaan pesan menjadi eksplisit dalam diagram — ikon amplop kosong untuk menunggu/menerima, amplop terisi untuk mengirim.

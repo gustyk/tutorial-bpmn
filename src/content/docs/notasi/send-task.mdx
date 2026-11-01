@@ -1,0 +1,159 @@
+---
+title: "A08 — Send Task"
+description: "Task yang aktif mengirim pesan ke partisipan lain — Task dengan semantik pengiriman pesan."
+---
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | A08 |
+| **Nama BPMN** | Send Task |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 3 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §10.2.1 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+Persegi panjang dengan sudut melengkung + ikon **amplop terisi (gelap)** di pojok kiri atas.
+
+*Bedakan dengan Message End Event: Send Task adalah aktivitas (kotak); Message End Event adalah event (lingkaran).*
+
+---
+
+## 3. Apa artinya
+
+Send Task menyatakan: *"Proses secara aktif mengirim pesan kepada partisipan lain sebagai bagian dari pekerjaan yang harus diselesaikan."*
+
+Ini berbeda dari Message Throw Event yang hanya menandai titik pengiriman pesan tanpa menjadi task tersendiri. Send Task adalah **unit kerja** yang outputnya adalah pesan terkirim.
+
+---
+
+## 4. Tujuan
+
+Send Task membuat **pengiriman pesan sebagai aktivitas bisnis yang eksplisit**. Ini berguna ketika pengiriman pesan adalah pekerjaan yang bermakna bisnis — bukan hanya implementasi teknis — dan ketika kamu ingin menampilkannya dalam diagram proses.
+
+---
+
+## 5. Semantik BPMN
+
+Dari perspektif token: sama dengan Task abstrak. Token masuk, task selesai (pesan terkirim), token keluar.
+
+Dari perspektif komunikasi: Send Task mengirim pesan ke partisipan lain. Di Pool penerima, ada elemen yang menunggu atau merespons pesan ini (biasanya Message Start Event, Intermediate Catch Event, atau Receive Task).
+
+Send Task adalah **Task yang mengimplementasikan pengiriman pesan**. Ia tidak menunggu balasan — setelah pesan terkirim, token langsung melanjutkan.
+
+---
+
+## 6. Kapan digunakan
+
+- Pengiriman pesanan, konfirmasi, notifikasi yang merupakan pekerjaan bermakna bisnis.
+- Ketika ingin menyatakan bahwa pengiriman pesan adalah aktivitas yang dilakukan proses (bukan hanya side effect).
+- Berpasangan dengan Message Flow ke Pool penerima.
+
+---
+
+## 7. Kapan jangan digunakan
+
+- Jika pengiriman pesan hanya "penanda akhir proses" → gunakan **Message End Event** (E02).
+- Jika pengiriman pesan hanya "titik tengah kecil" → pertimbangkan **Message Intermediate Throw Event** (E02).
+- Untuk komunikasi dalam satu Pool → tidak perlu Send Task, gunakan Sequence Flow dan Task biasa.
+
+---
+
+## 8. Contoh penggunaan
+
+```
+Pool Customer:
+  [Start] → [Send Task "Buat dan kirim pesanan"]
+              (membuat data pesanan, mengirim ke Merchant)
+              ---Message Flow "Pesanan"--→ [Pool Merchant: Message Start]
+```
+
+---
+
+## 9. Diagram contoh
+
+Lihat [Modul 3](/jalur/03/) — Pool Customer menggunakan Send Task.
+
+---
+
+## 10. Cara membaca diagram
+
+Ikon amplop terisi di pojok kiri atas kotak = Send Task. Cari Message Flow keluar dari task ini ke Pool lain.
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Send Task = Service Task yang kebetulan kirim pesan"**
+
+Tidak. Send Task memiliki semantik spesifik: pengiriman pesan ke partisipan lain. Service Task untuk otomasi umum. Gunakan Send Task ketika pengiriman pesan adalah inti dari aktivitas bisnis itu.
+
+---
+
+## 12. Anti-pattern
+
+**Send Task tanpa Message Flow**
+
+Gejala: ada Send Task tapi tidak ada Message Flow keluar darinya.
+
+Diagnosis: diagram menyatakan bahwa ada pengiriman pesan, tapi ke mana? Model tidak konsisten — pengirim ada, penerima tidak jelas.
+
+Perbaikan: tambahkan Message Flow dari Send Task ke elemen penerima di Pool lain.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Tertukar dengan | Perbedaan kunci |
+|----------------|----------------|
+| **Message Intermediate Throw Event** (E02) | Throw Event adalah titik penanda; Send Task adalah unit kerja penuh |
+| **Message End Event** (E02) | End Event mengakhiri proses; Send Task tidak mengakhiri proses |
+| **Service Task** (A05) | Service Task untuk otomasi umum; Send Task spesifik untuk kirim pesan ke partisipan |
+
+---
+
+## 14. Aturan pemilihan
+
+```
+Pengiriman pesan adalah unit kerja utama aktivitas ini → Send Task
+Pengiriman pesan adalah titik penanda di tengah proses → Intermediate Throw Event
+Pengiriman pesan adalah penutup proses → Message End Event
+```
+
+---
+
+## 15. Pertanyaan diagnostik
+
+1. Apakah pengiriman pesan ini adalah "pekerjaan" bermakna atau hanya side effect?
+2. Apakah proses melanjutkan setelah mengirim pesan? (Jika ya → Send Task atau Intermediate Throw)
+3. Apakah ini mengakhiri proses? (Jika ya → Message End Event)
+
+---
+
+## 16. Argumentasi pemodelan
+
+Dalam konteks Customer yang "membuat dan mengirim pesanan": ini bukan hanya "menekan tombol kirim" — dari perspektif bisnis Customer, ini adalah aktivitas yang melibatkan memilih item, mengisi data, dan mengirimkan pesanan. Send Task adalah representasi yang tepat karena menyatakan bahwa Customer **secara aktif melakukan pekerjaan** untuk mengirim pesan, bukan sekadar "sistem otomatis mengirim notifikasi."
+
+---
+
+## 17. Validity check
+
+- [ ] Nama mengikuti pola "kata kerja + objek".
+- [ ] Ada Message Flow keluar dari Send Task ke elemen di Pool lain.
+- [ ] Pool penerima memiliki elemen yang sesuai untuk menerima pesan (Message Start, Catch Event, atau Receive Task).
+
+---
+
+## 18. Catatan Camunda
+
+Di Camunda 8, Send Task dikonfigurasi untuk mengirim message ke proses lain menggunakan *publish message* API. Mirip dengan Intermediate Throw Message Event dalam konfigurasi.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Send Task adalah unit kerja yang outputnya adalah pesan terkirim ke partisipan lain — ia tidak menunggu balasan, token langsung melanjutkan setelah pesan terkirim.

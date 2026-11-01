@@ -1,0 +1,175 @@
+---
+title: "F01 — Sequence Flow"
+description: "Panah yang menghubungkan elemen dalam satu proses. Membawa token dari satu elemen ke elemen berikutnya."
+---
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | F01 |
+| **Nama BPMN** | Sequence Flow |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 1 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §10.2.2 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+Garis utuh dengan kepala panah tertutup (segitiga) di ujungnya. Bisa berlabel (untuk conditional flow dari Gateway) atau tanpa label.
+
+*Cara membuat di demo.bpmn.io:* Klik elemen sumber dan seret kepala panah yang muncul ke elemen target. Atau klik elemen, lalu pilih ikon panah dari context menu.
+
+---
+
+## 3. Apa artinya
+
+Sequence Flow menyatakan **urutan**: "setelah A selesai, lanjutkan ke B."
+
+Lebih tepatnya dalam semantik token: Sequence Flow adalah jalur yang dilalui token. Token bergerak dari sumber ke target ketika sumber selesai.
+
+---
+
+## 4. Tujuan
+
+Sequence Flow adalah koneksi fundamental dalam BPMN — ia mendefinisikan urutan eksekusi di dalam satu proses. Tanpa Sequence Flow, elemen-elemen di proses tidak terhubung dan tidak dapat dieksekusi.
+
+---
+
+## 5. Semantik BPMN
+
+**Pergerakan token:**
+
+Token bergerak melalui Sequence Flow seperti bola yang menggelinding di atas pipa. Ketika elemen sumber selesai:
+1. Token "keluar" dari elemen sumber.
+2. Token bergerak melalui Sequence Flow.
+3. Token "masuk" ke elemen target.
+
+**Conditional flow:**
+
+Sequence Flow yang keluar dari XOR atau OR Gateway bisa memiliki *condition expression*. Token hanya bergerak melalui flow ini jika kondisinya terpenuhi.
+
+**Default flow:**
+
+Satu outgoing Sequence Flow dari XOR Gateway bisa ditandai sebagai *default* (dengan tanda slash kecil di pangkalnya). Default flow aktif ketika tidak ada kondisi lain yang terpenuhi.
+
+---
+
+## 6. Kapan digunakan
+
+- Untuk menghubungkan semua elemen dalam **satu proses** (dalam satu Pool atau satu diagram tanpa Pool).
+- Untuk menyatakan urutan: Task A dikerjakan sebelum Task B.
+
+---
+
+## 7. Kapan jangan digunakan
+
+**Jangan gunakan Sequence Flow untuk menghubungkan elemen di Pool yang berbeda.**
+
+Ini adalah salah satu kesalahan paling umum di Modul 3. Sequence Flow hanya boleh berjalan di dalam satu Pool. Untuk komunikasi antar-Pool, gunakan **Message Flow** (F02).
+
+---
+
+## 8. Contoh penggunaan
+
+```
+[Start Event] →(SF)→ [Task A] →(SF)→ [XOR Gateway]
+                                          → (SF, kondisi "ya") → [Task B]
+                                          → (SF, kondisi "tidak") → [End Event]
+```
+
+---
+
+## 9. Diagram contoh
+
+Lihat [Modul 1](/jalur/01/) untuk Sequence Flow tanpa kondisi, dan [Modul 2](/jalur/02/) untuk conditional flow dari XOR Gateway.
+
+---
+
+## 10. Cara membaca diagram
+
+Ikuti arah panah: itu urutan eksekusi proses. Jika ada label pada Sequence Flow (setelah Gateway), label itu adalah kondisi yang harus terpenuhi.
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Sequence Flow = perpindahan data"**
+
+Tidak. Sequence Flow membawa token, bukan data. Untuk memodelkan perpindahan data, gunakan Data Association (F03) bersama Data Object (D01). Sequence Flow hanya menyatakan "lanjutkan ke sini setelah selesai".
+
+**"Sequence Flow bisa melintasi Pool"**
+
+Tidak. Sequence Flow adalah urutan dalam satu proses. Dua Pool adalah dua proses berbeda — mereka tidak berbagi token, sehingga tidak bisa dihubungkan dengan Sequence Flow.
+
+---
+
+## 12. Anti-pattern
+
+**Sequence Flow melintasi batas Pool**
+
+Gejala: garis dengan kepala panah tertutup terlihat melewati batas antara dua Pool.
+
+Diagnosis semantik: ini menyatakan bahwa token yang sama berpindah dari satu proses ke proses lain — yang tidak mungkin dalam BPMN. Bahkan jika alat gambar membiarkan ini, model menjadi tidak valid secara semantik.
+
+Perbaikan: gunakan Message Flow + event yang sesuai di setiap Pool.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Tertukar dengan | Perbedaan kunci |
+|----------------|----------------|
+| **Message Flow** (F02) | Message Flow untuk komunikasi antar-Pool; garis putus-putus dengan kepala panah terbuka |
+| **Data Association** (F03) | Data Association untuk perpindahan data antara Task dan Data Object; garis putus-putus tanpa kepala panah segitiga |
+| **Association** (F05) | Association untuk menghubungkan Text Annotation ke elemen; tidak membawa token |
+
+---
+
+## 14. Aturan pemilihan
+
+```
+Menghubungkan dua elemen dalam satu Pool → Sequence Flow
+Menghubungkan elemen di Pool berbeda → Message Flow
+Menghubungkan Task dengan Data Object → Data Association
+```
+
+---
+
+## 15. Pertanyaan diagnostik
+
+1. Apakah kedua elemen yang dihubungkan berada dalam Pool yang sama?
+2. Apakah flow ini perlu kondisi? (Jika keluar dari XOR Gateway → ya)
+3. Apakah ada flow default yang perlu ditandai?
+
+---
+
+## 16. Argumentasi pemodelan
+
+*"Mengapa Sequence Flow tidak bisa melintasi Pool?"*
+
+Pool merepresentasikan **entitas yang memiliki proses sendiri** — mereka tidak berbagi memori atau kontrol eksekusi. Customer dan Merchant adalah dua entitas terpisah: Customer tidak bisa "langsung meneruskan" kontrol ke Merchant. Yang bisa mereka lakukan adalah *mengirim pesan*. Sequence Flow yang melintasi Pool menyatakan kontrol langsung, yang kontradiktif dengan makna Pool.
+
+Ini juga alasan praktis: dalam sistem yang dieksekusi, token di proses Customer dan token di proses Merchant adalah objek berbeda di memori berbeda. Tidak ada mekanisme untuk "memindahkan" token melintasi batas proses.
+
+---
+
+## 17. Validity check
+
+- [ ] Setiap elemen dalam proses (kecuali Start Event) memiliki minimal satu incoming Sequence Flow.
+- [ ] Setiap elemen dalam proses (kecuali End Event) memiliki minimal satu outgoing Sequence Flow.
+- [ ] Tidak ada Sequence Flow yang melintasi batas Pool.
+- [ ] Conditional flow dari XOR Gateway memiliki kondisi atau salah satunya ditandai sebagai default.
+
+---
+
+## 18. Catatan Camunda
+
+Di Camunda 8, Sequence Flow dengan `conditionExpression` menggunakan FEEL (Friendly Enough Expression Language). Conditional flow tanpa ekspresi yang valid akan menyebabkan error saat proses dieksekusi — mesin tidak tahu kapan harus memilih jalur tersebut.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Sequence Flow adalah jalur yang dilalui token untuk berpindah dari satu elemen ke elemen berikutnya dalam satu proses — bukan data, bukan pesan, hanya urutan kontrol eksekusi.

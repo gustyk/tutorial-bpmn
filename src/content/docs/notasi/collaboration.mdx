@@ -1,0 +1,158 @@
+---
+title: "C01 — Collaboration"
+description: "Diagram yang menampilkan dua atau lebih Pool yang berinteraksi melalui Message Flow."
+---
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | C01 |
+| **Nama BPMN** | Collaboration |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 3 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §10.2.3 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+Bukan simbol tunggal — Collaboration adalah **tipe diagram**: diagram yang berisi dua atau lebih Pool yang dihubungkan dengan Message Flow. Di BPMN XML, dinyatakan dengan elemen `<collaboration>`.
+
+---
+
+## 3. Apa artinya
+
+Collaboration menyatakan: *"Ini adalah diagram yang menunjukkan bagaimana beberapa partisipan yang berbeda berinteraksi satu sama lain."*
+
+Berbeda dengan diagram proses biasa (satu Pool atau tanpa Pool) yang hanya menunjukkan satu alur internal, Collaboration menunjukkan **kontrak komunikasi** — siapa mengirim apa kepada siapa, dan bagaimana setiap pihak merespons.
+
+---
+
+## 4. Tujuan
+
+Collaboration memungkinkan pemodelan **interaksi lintas organisasi** secara eksplisit. Ini penting ketika:
+- Ada pertukaran pesan yang harus dikontrak secara formal.
+- Ingin menunjukkan perspektif setiap pihak, tidak hanya satu.
+- Model digunakan untuk negosiasi antarmuka sistem antar-organisasi.
+
+---
+
+## 5. Semantik BPMN
+
+Dalam Collaboration:
+- Setiap Pool menjalankan **instansi prosesnya sendiri** secara independen.
+- Message Flow membawa *pesan* dari satu Pool ke Pool lain — bukan token.
+- Ketika pesan tiba di Pool tujuan, ia memicu event di sana (Start, Intermediate, atau End Message Event).
+- Proses di setiap Pool dapat dimulai dan berakhir secara asinkron.
+
+---
+
+## 6. Kapan digunakan
+
+- Ketika dua atau lebih entitas berbeda terlibat dan kamu ingin menunjukkan proses keduanya.
+- Ketika kontrak komunikasi (pesan apa yang dikirim dan diterima) penting untuk didokumentasikan.
+- Dalam pemodelan integrasi sistem antar-perusahaan atau antar-departemen dengan otonomi berbeda.
+
+---
+
+## 7. Kapan jangan digunakan
+
+- Jika semua pihak adalah bagian dari satu organisasi yang sama → gunakan Lane dalam satu Pool.
+- Jika hanya ingin menunjukkan proses satu pihak dengan menyebut bahwa ada pihak lain → gunakan Black-box Pool (tidak perlu menggambar prosesnya).
+
+---
+
+## 8. Contoh penggunaan
+
+Lihat [Modul 3](/jalur/03/) untuk contoh Collaboration Customer–Merchant.
+
+---
+
+## 9. Diagram contoh
+
+Lihat [Modul 3](/jalur/03/).
+
+---
+
+## 10. Cara membaca diagram
+
+Ketika melihat diagram Collaboration:
+1. Identifikasi setiap Pool (kotak besar berlabel di kiri) — setiap Pool adalah satu entitas.
+2. Baca alur di dalam setiap Pool secara terpisah.
+3. Perhatikan Message Flow (garis putus-putus) yang menghubungkan Pool — itulah komunikasi antar-entitas.
+4. Baca urutan: "A mengirim X → B menerima X → B merespons Y → A menerima Y."
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Collaboration = proses gabungan"**
+
+Tidak. Collaboration bukan satu proses tunggal yang dibagi-bagi. Setiap Pool tetap merupakan proses independen. Yang ditampilkan adalah *koordinasi* antar proses, bukan satu proses yang dipecah.
+
+**"Urutan dalam Collaboration adalah satu alur linear"**
+
+Tidak. Proses di Pool Customer dan proses di Pool Merchant berjalan secara **asinkron**. Merchant tidak "menunggu" sampai Customer selesai melakukan sesuatu — mereka berkomunikasi lewat pesan, dan masing-masing merespons saat pesan diterima.
+
+---
+
+## 12. Anti-pattern
+
+**Collaboration dengan Sequence Flow lintas Pool**
+
+Ini adalah anti-pattern fatal. Sequence Flow hanya untuk koneksi dalam satu Pool. Jika ada Sequence Flow yang terlihat melewati batas Pool, model tidak valid secara BPMN.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Tertukar dengan | Perbedaan kunci |
+|----------------|----------------|
+| **Pool tunggal** | Pool tunggal = satu proses; Collaboration = multiple proses berinteraksi |
+| **Choreography** | Choreography menggambarkan pertukaran pesan tanpa proses internal; Collaboration menggambarkan proses internal setiap pihak |
+
+---
+
+## 14. Aturan pemilihan
+
+```
+Satu entitas, proses internal → Pool tunggal (atau tanpa Pool)
+Beberapa entitas, ingin tampilkan semua proses → Collaboration
+Beberapa entitas, hanya pertukaran pesan yang penting → Choreography (Tier C)
+```
+
+---
+
+## 15. Pertanyaan diagnostik
+
+1. Berapa entitas yang berbeda terlibat?
+2. Apakah proses internal setiap entitas penting untuk ditampilkan?
+3. Apakah ada pertukaran pesan yang perlu dikontrak?
+
+---
+
+## 16. Argumentasi pemodelan
+
+Collaboration adalah salah satu kekuatan unik BPMN. Diagram Collaboration bisa digunakan sebagai **kontrak antarmuka** antara dua organisasi atau dua sistem: "Kita setuju bahwa Customer akan mengirim pesan X dengan format Y, dan Merchant akan merespons dengan pesan Z dalam waktu W." Ini adalah level abstraksi yang tepat untuk negosiasi antarmuka.
+
+---
+
+## 17. Validity check
+
+- [ ] Ada minimal dua Pool dalam diagram Collaboration.
+- [ ] Semua komunikasi antar-Pool menggunakan Message Flow.
+- [ ] Tidak ada Sequence Flow yang melintasi batas Pool.
+- [ ] Setiap Pool white-box memiliki proses yang valid (Start dan End Event).
+
+---
+
+## 18. Catatan Camunda
+
+Camunda tidak men-deploy Collaboration sebagai satu unit. Setiap Pool di-deploy sebagai process definition terpisah. Message Flow diimplementasikan melalui *message correlation* atau *signal*. Pastikan pesan memiliki nama yang unik untuk menghindari korelasi yang salah.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Collaboration adalah diagram yang menunjukkan bagaimana beberapa entitas berinteraksi melalui pertukaran pesan — bukan satu proses gabungan, melainkan kontrak komunikasi antar-proses yang independen.

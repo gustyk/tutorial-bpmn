@@ -1,6 +1,185 @@
 ---
-title: "Modul 1 — Pesanan toko daring"
-description: "Kasus pertama: dari deskripsi narasi ke model BPMN sederhana."
+title: "Modul 1: Pesanan Diterima sampai Dikirim"
+description: "Alur linear pertama: Start Event, Task, End Event, Sequence Flow. Dasar semua model BPMN."
 ---
 
-Halaman ini akan diisi saat modul terkait diterbitkan.
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+import CriteriaChecker from '../../../components/CriteriaChecker.astro';
+
+## 1. Apa yang berubah
+
+**Ini modul pertama** — belum ada model sebelumnya untuk dibandingkan.
+
+**Notasi baru yang diperkenalkan:**
+
+| Kode | Nama | Peran dalam modul ini |
+|------|------|----------------------|
+| E01 | None Start Event / None End Event | Titik masuk dan keluar proses |
+| A01 | Task (abstrak) | Satu unit kerja bermakna |
+| A02 | None / Undefined Task | Task tanpa penanda tipe — default di alat gambar |
+| F01 | Sequence Flow | Urutan antar-elemen dalam satu proses |
+
+**Delta requirement:** belum ada modul sebelumnya. Mulai dari nol.
+
+---
+
+:::note[Diagram yang akan kamu buat]
+Di akhir modul ini, kamu akan membuat model yang mirip dengan ini. **Jangan buka dulu sebelum mencoba sendiri.**
+:::
+
+<BpmnViewer src="/bpmn/case-01-order.bpmn" title="Kasus 1 — gambaran akhir" />
+
+---
+
+## 2. Kasus bisnis
+
+Seorang manajer operasional toko daring mendatangi kamu dan berkata:
+
+> "Kami sudah jalan bertahun-tahun, tapi tidak ada yang pernah menggambar cara kerja kami. Kalau ada karyawan baru, kami ceritakan sambil jalan. Bisakah kamu gambarkan alur pesanan kami — dari customer menaruh pesanan sampai barang sampai ke tangannya?"
+
+Manajer itu tidak menyebut notasi, tidak menyebut software. Ia hanya ingin **gambaran apa yang terjadi**, dalam urutan yang benar.
+
+---
+
+## 3. Requirement
+
+Berikut yang berhasil kamu gali dari wawancara lanjutan:
+
+1. Proses dimulai ketika sebuah pesanan diterima dari customer.
+2. Pertama, staf memeriksa data pesanan: nama, alamat, dan item yang dipesan.
+3. Setelah data terverifikasi, staf gudang menyiapkan paket.
+4. Setelah paket siap, staf pengiriman mengirimkan paket.
+5. Proses selesai ketika paket sudah dikirim.
+
+*(Untuk saat ini: asumsikan semua pesanan lolos verifikasi. Keputusan ditangani di modul berikutnya.)*
+
+---
+
+## 4. Panduan analisis
+
+Sebelum membuka alat gambar, jawab pertanyaan-pertanyaan ini. Tulis jawabanmu di kertas atau teks editor, lalu bandingkan dengan kunci jawaban di Bagian 7.
+
+**Participant (siapa yang terlibat?):**
+- Siapa atau apa yang mengerjakan sesuatu dalam proses ini?
+- Apakah mereka semua berada dalam satu organisasi?
+
+**Trigger (apa yang memulai proses?):**
+- Kejadian apa yang membuat proses ini dimulai?
+- Apakah kejadian itu aktif dilakukan seseorang, atau datang dari luar?
+
+**Pekerjaan (apa yang dilakukan?):**
+- Daftarkan semua aktivitas yang disebutkan. Apakah setiap aktivitas adalah satu unit kerja bermakna, atau ada yang terlalu kecil/besar?
+- Berapa banyak task minimal yang kamu butuhkan?
+
+**Outcome (bagaimana proses berakhir?):**
+- Apa keadaan akhir yang diinginkan?
+- Apakah ada lebih dari satu kemungkinan akhir?
+
+**Koneksi (dalam urutan apa pekerjaan dilakukan?):**
+- Apakah satu pekerjaan harus selesai sebelum yang lain mulai?
+- Apakah ada pekerjaan yang bisa dilakukan bersamaan?
+
+---
+
+## 5. Tugas
+
+Gambarkan proses di atas sebagai diagram BPMN 2.0.
+
+**Langkah yang disarankan:**
+1. Buka [bpmn.io/modeler](https://demo.bpmn.io/) di browser (atau unduh dan buka file starter di bawah).
+2. Gambar satu Start Event. Beri nama: kondisi/pemicu yang terjadi.
+3. Tambahkan Task untuk setiap langkah kerja yang kamu identifikasi.
+4. Hubungkan semuanya dengan Sequence Flow dari kiri ke kanan.
+5. Akhiri dengan End Event. Beri nama: keadaan akhir.
+6. Simpan file `.bpmn`-mu.
+
+**Konvensi penamaan (diajarkan di modul ini, ditegakkan di semua modul berikutnya):**
+
+| Elemen | Pola | Contoh benar | Contoh salah |
+|--------|------|-------------|--------------|
+| Task | kata kerja + objek | "Verifikasi data pesanan" | "Verifikasi", "Data pesanan" |
+| Start Event | kondisi/pemicu yang terjadi | "Pesanan diterima" | "Mulai", "Start" |
+| End Event | keadaan akhir | "Pesanan terkirim" | "Selesai", "End" |
+
+:::note[File starter tersedia]
+Unduh [`case-01-order.bpmn`](/bpmn/case-01-order.bpmn) sebagai titik awal, atau gambar dari awal sendiri. Jika menggunakan file starter, pastikan kamu benar-benar memahami setiap elemennya sebelum lanjut.
+:::
+
+---
+
+## 6. Pemeriksa kriteria
+
+Setelah selesai menggambar, unggah file `.bpmn`-mu ke bawah untuk diperiksa.
+
+<CriteriaChecker
+  criteriaSrc="/cases/case-01/criteria.json"
+  title="Periksa model Kasus 1"
+/>
+
+---
+
+## 7. Kunci jawaban
+
+:::caution[Coba kerjakan dulu]
+Bagian ini berisi jawaban. Buka hanya setelah kamu selesai mengerjakan tugas dan memeriksa modelmu dengan alat di atas.
+:::
+
+<details>
+<summary>**Lihat kunci jawaban Modul 1**</summary>
+
+### Lapis A — Model referensi
+
+<BpmnViewer src="/bpmn/case-01-order.bpmn" title="Kasus 1 — Pesanan diterima sampai dikirim" />
+
+**Walkthrough token:**
+
+1. Token lahir di **Start Event "Pesanan diterima"** ketika pesanan masuk ke sistem.
+2. Token bergerak melalui Sequence Flow ke **Task "Verifikasi data pesanan"** — staf memeriksa kelengkapan.
+3. Setelah selesai, token bergerak ke **Task "Siapkan paket"** — staf gudang mengemas.
+4. Token bergerak ke **Task "Kirim paket"** — staf pengiriman mengirimkan paket.
+5. Token tiba di **End Event "Pesanan terkirim"** dan dimusnahkan — proses selesai.
+
+**Satu jalur, satu token, lima elemen.** Tidak ada percabangan, tidak ada event perantara.
+
+### Lapis B — Kriteria wajib
+
+Model yang berbeda dari referensi tetap dianggap benar jika memenuhi semua kriteria ini:
+
+1. **Tepat satu None Start Event** — proses memiliki titik masuk tunggal.
+2. **Minimal satu None End Event** — proses memiliki titik keluar yang eksplisit.
+3. **Minimal tiga Task** — verifikasi, persiapan, dan pengiriman adalah tiga unit kerja yang berbeda.
+4. **Nama Task mengikuti pola "kata kerja + objek"** — bukan kata benda tunggal, bukan kalimat panjang.
+5. **Token dapat mencapai End Event** — tidak ada jalur yang buntu (*dead-end*).
+
+*(Kamu bisa menambahkan task tambahan selama granularitasnya sesuai: satu unit kerja bermakna bisnis.)*
+
+### Lapis C — Variasi yang juga diterima
+
+**Variasi 1: Task "Terima pesanan" sebagai langkah pertama**
+Menambahkan task eksplisit sebelum verifikasi juga sah, asalkan granularitasnya berbeda dari verifikasi. Trade-off: diagram lebih panjang, tapi menggambarkan bahwa pencatatan pesanan adalah aktivitas tersendiri.
+
+**Variasi 2: Empat atau lebih task**
+Misalnya memisahkan "Cetak label pengiriman" dari "Siapkan paket". Sah jika keduanya memang dikerjakan oleh peran atau waktu yang berbeda.
+
+### Lapis D — Kesalahan umum
+
+**Kesalahan 1: Task diberi nama benda, bukan aktivitas**
+- *Contoh:* Task bernama "Data pesanan" atau "Paket".
+- *Gejala:* Pembaca tidak tahu apa yang dikerjakan.
+- *Perbaikan:* Ganti dengan "Verifikasi data pesanan" atau "Siapkan paket".
+
+**Kesalahan 2: Start Event atau End Event tanpa nama**
+- *Contoh:* Start Event dibiarkan tanpa label, atau diberi nama "Start".
+- *Gejala:* Diagram tidak menyatakan apa yang memicunya atau apa keadaan akhirnya.
+- *Perbaikan:* Gunakan nama kondisi/kejadian: "Pesanan diterima" / "Pesanan terkirim".
+
+**Kesalahan 3: Task terlalu granular (level klik antarmuka)**
+- *Contoh:* "Klik tombol simpan", "Isi field nama", "Buka halaman pesanan".
+- *Gejala:* Diagram berisi 15+ task untuk satu proses sederhana.
+- *Perbaikan:* Gabungkan ke dalam unit kerja bermakna bisnis: "Verifikasi data pesanan" mencakup semua interaksi antarmuka untuk menyelesaikan verifikasi itu.
+
+</details>
+
+---
+
+**Selanjutnya → [Modul 2: Order Perlu Divalidasi](/jalur/02/)** — pesanan bisa ditolak; kamu perlu keputusan.

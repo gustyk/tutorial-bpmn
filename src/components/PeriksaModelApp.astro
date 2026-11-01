@@ -9,7 +9,26 @@
  * Tambah entri di sini saat WP-7+ membuat criteria.json:
  * { id: 'case-01', label: 'Kasus 1 — Pesanan toko daring', bpmnSrc: '/bpmn/case-01-order.bpmn', criteriaSrc: '/criteria/case-01/criteria.json' }
  */
-const KASUS_TERSEDIA: Array<{ id: string; label: string; bpmnSrc: string; criteriaSrc: string }> = [];
+const KASUS_TERSEDIA: Array<{ id: string; label: string; bpmnSrc: string; criteriaSrc: string }> = [
+  {
+    id: 'case-01',
+    label: 'Kasus 1 — Pesanan diterima sampai dikirim',
+    bpmnSrc: '/bpmn/case-01-order.bpmn',
+    criteriaSrc: '/cases/case-01/criteria.json',
+  },
+  {
+    id: 'case-02',
+    label: 'Kasus 2 — Order perlu divalidasi',
+    bpmnSrc: '/bpmn/case-02-order.bpmn',
+    criteriaSrc: '/cases/case-02/criteria.json',
+  },
+  {
+    id: 'case-03',
+    label: 'Kasus 3 — Customer adalah pihak luar',
+    bpmnSrc: '/bpmn/case-03-order.bpmn',
+    criteriaSrc: '/cases/case-03/criteria.json',
+  },
+];
 ---
 
 <div class="pma" data-periksa-app>

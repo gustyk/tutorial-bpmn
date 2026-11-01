@@ -1,0 +1,140 @@
+---
+title: "A04 — User Task"
+description: "Task yang dikerjakan manusia melalui antarmuka sistem — form, aplikasi web, atau antarmuka lain yang dikelola oleh mesin proses."
+---
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | A04 |
+| **Nama BPMN** | User Task |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 2 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §10.2.1 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+Persegi panjang dengan sudut melengkung + ikon **orang kecil (siluet manusia)** di pojok kiri atas.
+
+---
+
+## 3. Apa artinya
+
+User Task menyatakan: *"Pekerjaan ini dikerjakan oleh manusia yang berinteraksi dengan sistem — biasanya melalui form atau antarmuka yang disediakan oleh mesin proses (BPMS)."*
+
+Kata kunci: ada **manusia** yang mengerjakan, dan ada **sistem** yang memfasilitasi.
+
+---
+
+## 4. Tujuan
+
+Menyatakan bahwa task ini memerlukan intervensi manusia yang terkelola oleh sistem. Dalam BPMS (Business Process Management System) seperti Camunda, User Task akan muncul dalam *task list* untuk di-assign ke pengguna tertentu dan diselesaikan lewat antarmuka yang disediakan.
+
+---
+
+## 5. Semantik BPMN
+
+Dari perspektif token: sama dengan Task abstrak. Namun di level eksekusi, User Task membuat proses *menunggu* sampai seseorang menyelesaikannya lewat sistem. Proses tidak otomatis lanjut — butuh aksi manusia.
+
+---
+
+## 6. Kapan digunakan
+
+- Verifikasi data oleh staf lewat form aplikasi.
+- Persetujuan (*approval*) yang harus diklik seseorang.
+- Pengisian data yang membutuhkan pertimbangan manusia.
+
+---
+
+## 7. Kapan jangan digunakan
+
+- Jika pekerjaan dilakukan tanpa sistem → gunakan **Manual Task** (A03).
+- Jika pekerjaan sepenuhnya otomatis → gunakan **Service Task** (A05).
+- Jika pekerjaan mengeksekusi aturan bisnis → gunakan **Business Rule Task** (A07).
+
+---
+
+## 8. Contoh penggunaan
+
+```
+[User Task "Verifikasi data pesanan"]
+  (staf membuka form di aplikasi, memeriksa, dan mengklik "Setujui" atau "Tolak")
+  → [XOR Gateway "Data valid?"]
+```
+
+---
+
+## 9. Diagram contoh
+
+Lihat [Modul 2](/jalur/02/) — `TA_VerifikasiData` adalah User Task.
+
+---
+
+## 10. Cara membaca diagram
+
+Ikon siluet manusia = manusia + sistem. Tanya: *"Siapa yang mengerjakan ini? Lewat antarmuka apa?"*
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Setiap task yang dikerjakan manusia adalah User Task"**
+
+Tidak. Jika manusia mengerjakan sesuatu *tanpa sistem* (mengemas barang, menandatangani kertas), itu Manual Task. User Task spesifik untuk pekerjaan yang melewati antarmuka yang dikelola oleh mesin proses.
+
+---
+
+## 12. Anti-pattern
+
+Menggunakan User Task untuk pekerjaan yang sebenarnya bisa diotomasi penuh. Jika tidak ada pertimbangan manusia yang diperlukan, gunakan Service Task — ini memudahkan analisis kandidat otomasi.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Tertukar dengan | Perbedaan kunci |
+|----------------|----------------|
+| **Manual Task** (A03) | Manual Task = tanpa sistem sama sekali |
+| **Service Task** (A05) | Service Task = sistem, tanpa manusia |
+| **Task abstrak** (A01) | Abstrak tidak menyatakan siapa yang mengerjakan |
+
+---
+
+## 14. Aturan pemilihan
+
+Lihat [A03 — Aturan pemilihan](/notasi/manual-task/#14-aturan-pemilihan).
+
+---
+
+## 15. Pertanyaan diagnostik
+
+1. Apakah pekerjaan ini membutuhkan keputusan atau penilaian manusia?
+2. Apakah ada sistem (form, aplikasi) yang memfasilitasi pekerjaan ini?
+
+---
+
+## 16. Argumentasi pemodelan
+
+User Task adalah notasi yang paling sering digunakan dalam model *to-be* untuk menggambarkan pekerjaan manusia yang terkelola. Dalam implementasi BPMS, User Task adalah fondasi *workflow* — mesin proses akan mengantrekan task ini ke pengguna yang tepat dan menunggu konfirmasi penyelesaian.
+
+---
+
+## 17. Validity check
+
+- [ ] Nama mengikuti pola "kata kerja + objek".
+- [ ] Pekerjaan memang melibatkan manusia yang berinteraksi dengan sistem.
+
+---
+
+## 18. Catatan Camunda
+
+Di Camunda 8, User Task dapat dikonfigurasi dengan assignee, candidate groups, due date, dan form definition. Task ini akan muncul di Camunda Tasklist dan tidak lanjut otomatis sampai diselesaikan oleh pengguna.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+User Task menyatakan pekerjaan yang dikerjakan manusia melalui antarmuka sistem — proses menunggu aksi manusia sebelum token bisa melanjutkan perjalanannya.

@@ -1,0 +1,180 @@
+---
+title: "A01 — Task (Abstrak)"
+description: "Unit kerja paling dasar dalam BPMN. Digunakan ketika tipe task belum atau tidak perlu ditentukan."
+---
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | A01 |
+| **Nama BPMN** | Task |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 1 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §10.2.1 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+Persegi panjang dengan sudut melengkung, tanpa ikon di pojok kiri atas.
+
+*Cara membuat di demo.bpmn.io:* Seret "Task" dari palet, atau klik elemen yang ada dan pilih ikon kotak untuk mengubah tipe.
+
+---
+
+## 3. Apa artinya
+
+Task adalah **unit kerja atomis** — pekerjaan yang tidak dibagi lebih jauh dalam level abstraksi ini. Ia menyatakan bahwa *sesuatu harus dikerjakan*, tanpa menyebutkan siapa yang mengerjakannya atau bagaimana caranya.
+
+"Abstrak" berarti tidak ada tipe yang ditentukan. Ketika tipe ditentukan (User Task, Service Task, dll.), notasi-notasi itu adalah *spesialisasi* dari Task abstrak.
+
+---
+
+## 4. Tujuan
+
+Task digunakan untuk merepresentasikan aktivitas bisnis yang nyata: sebuah langkah dalam proses yang menghasilkan output, mengubah keadaan, atau mengkonsumsi sumber daya.
+
+Dalam pemodelan awal, Task abstrak membantu fokus pada *apa yang dikerjakan* tanpa terbebani pertanyaan *bagaimana* dan *oleh siapa* — yang bisa diselesaikan di iterasi berikutnya.
+
+---
+
+## 5. Semantik BPMN
+
+**Pergerakan token:**
+
+1. Token tiba di Task dari incoming Sequence Flow.
+2. Task "dikerjakan" — dalam pemodelan, ini berarti ada waktu yang berlalu.
+3. Setelah selesai, token bergerak ke outgoing Sequence Flow.
+
+Token **tidak pernah tiba di lebih dari satu Task sekaligus** melalui jalur yang sama — Task adalah unit atomis, bukan kontainer untuk aktivitas paralel.
+
+---
+
+## 6. Kapan digunakan
+
+- Di tahap analisis awal ketika tipe belum diketahui.
+- Ketika tipe tidak relevan untuk audiens diagram (manajemen, bukan tim IT).
+- Ketika pekerjaan dikerjakan secara manual tapi tidak ada perbedaan signifikan antara Manual Task dan User Task untuk konteks ini.
+
+---
+
+## 7. Kapan jangan digunakan
+
+- Jika ada yang harus tahu bahwa pekerjaan dikerjakan manusia lewat sistem → gunakan **User Task** (A04).
+- Jika pekerjaan dilakukan sistem secara otomatis → gunakan **Service Task** (A05).
+- Jika pekerjaan dikerjakan manusia tanpa sistem → gunakan **Manual Task** (A03).
+- Jika pekerjaan harus diulang untuk setiap item dalam koleksi → gunakan **Multi-Instance Task** (A11).
+- Jika pekerjaan terlalu kompleks untuk satu kotak → gunakan **Sub-Process** (A13).
+
+---
+
+## 8. Contoh penggunaan
+
+```
+[Start Event "Pesanan diterima"]
+  → [Task "Verifikasi data pesanan"]   ← siapa yang verifikasi? pakai Modul 4
+  → [Task "Siapkan paket"]
+  → [Task "Kirim paket"]
+  → [End Event "Pesanan terkirim"]
+```
+
+---
+
+## 9. Diagram contoh
+
+Lihat [Modul 1](/jalur/01/) untuk contoh Task dalam alur linear.
+
+---
+
+## 10. Cara membaca diagram
+
+Ketika melihat kotak berlabel, tanya: *"Apa yang dikerjakan dalam langkah ini? Siapa yang mengerjakannya? Apa outputnya?"*
+
+Jika tidak ada ikon di pojok kiri atas → Task abstrak (tipe tidak dinyatakan).
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Task adalah satu klik atau satu interaksi antarmuka"**
+
+Tidak. Granularitas task ditentukan oleh makna bisnis, bukan oleh antarmuka sistem. "Verifikasi data pesanan" adalah satu Task meskipun secara teknis melibatkan membuka form, membaca data, dan mengklik tombol simpan. Semua interaksi UI itu adalah detail implementasi di dalam satu Task bisnis.
+
+**"Task dengan satu outgoing flow = keputusan"**
+
+Tidak. Task dengan satu outgoing flow hanya berarti setelah selesai, alur dilanjutkan ke satu tempat. Untuk menyatakan keputusan, gunakan Gateway.
+
+---
+
+## 12. Anti-pattern
+
+**Task terlalu granular (level UI)**
+
+Contoh yang salah: "Klik tombol simpan", "Isi field nama", "Buka halaman pesanan". Akibat: diagram berisi puluhan Task untuk satu proses yang sebenarnya sederhana, dan pembaca kehilangan gambaran besar.
+
+**Task terlalu besar (level proses)**
+
+Contoh yang salah: "Proses pesanan" sebagai satu Task. Akibat: diagram tidak menunjukkan langkah-langkah yang sebenarnya terjadi. Jika sebuah Task membutuhkan diagram sendiri untuk dijelaskan → pertimbangkan Sub-Process.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Tertukar dengan | Perbedaan kunci |
+|----------------|----------------|
+| **User Task** (A04) | User Task secara eksplisit menyatakan dikerjakan manusia lewat antarmuka |
+| **Manual Task** (A03) | Manual Task menyatakan dikerjakan manusia tanpa sistem |
+| **Service Task** (A05) | Service Task menyatakan dikerjakan sistem secara otomatis |
+| **Sub-Process** (A13) | Sub-Process adalah Task yang bisa dibuka dan berisi proses tersendiri |
+
+---
+
+## 14. Aturan pemilihan
+
+```
+Tipe tidak diketahui atau tidak relevan → Task abstrak
+Dikerjakan manusia, lewat sistem → User Task
+Dikerjakan manusia, tanpa sistem → Manual Task
+Dikerjakan sistem otomatis → Service Task
+Perlu menerapkan aturan bisnis → Business Rule Task
+```
+
+---
+
+## 15. Pertanyaan diagnostik
+
+1. Apakah ini satu unit kerja bermakna bagi bisnis, yang dikerjakan oleh satu peran dalam satu rentang waktu?
+2. Jika dijalankan ulang, apakah hasilnya konsisten (deterministik)?
+3. Apakah ada sub-langkah yang penting untuk ditampilkan? (Jika ya → pertimbangkan Sub-Process)
+
+---
+
+## 16. Argumentasi pemodelan
+
+*"Mengapa Modul 1 menggunakan Task abstrak padahal kita tahu 'Verifikasi data pesanan' dilakukan manusia?"*
+
+Modul 1 adalah diagram **tingkat proses bisnis** — audiens utamanya adalah manajemen dan analis, bukan tim IT yang perlu tahu mekanisme eksekusi. Di tingkat ini, perbedaan antara User Task dan Manual Task tidak relevan. Task abstrak memungkinkan pembaca fokus pada alur bisnis tanpa terdistraksi oleh detail teknis.
+
+Di Modul 4, ketika pertanyaan "siapa mengerjakan apa" menjadi relevan, Task abstrak ini bisa diperbarui ke tipe spesifik.
+
+---
+
+## 17. Validity check
+
+- [ ] Nama Task mengikuti pola "kata kerja + objek" (bukan kata benda tunggal).
+- [ ] Granularitas sesuai: satu unit kerja bermakna bisnis.
+- [ ] Task memiliki tepat satu outgoing Sequence Flow (kecuali intentional — tapi itu anti-pattern, gunakan Gateway).
+- [ ] Task tidak berfungsi sebagai keputusan (percabangan melalui Gateway, bukan Task).
+
+---
+
+## 18. Catatan Camunda
+
+Camunda memerlukan tipe Task untuk eksekusi: minimal `serviceTask` dengan implementasi, atau `userTask` dengan assignee. Task abstrak diterima di Camunda Modeler sebagai *underspesifikasi* — diagram akan deploy tapi task tidak bisa dieksekusi tanpa konfigurasi tambahan.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Task adalah unit kerja atomis dalam proses — token masuk, pekerjaan terjadi, token keluar — tanpa menyatakan siapa yang mengerjakannya atau bagaimana caranya.

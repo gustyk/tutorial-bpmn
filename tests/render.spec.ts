@@ -23,7 +23,7 @@ for (const file of files) {
     // Navigate to a page that uses this BPMN file
     const slug = file.replace('.bpmn', '');
     const pageMap: Record<string, string> = {
-      'case-01-order': '/practice/narrative/',
+      'case-01-order': '/jalur/01/',
       'case-11-capstone': '/practice/capstone/',
       'fondasi-token-demo': '/fondasi/token/',
     };

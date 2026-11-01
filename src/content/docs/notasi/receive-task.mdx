@@ -1,0 +1,157 @@
+---
+title: "A09 — Receive Task"
+description: "Task yang menunggu pesan dari partisipan lain sebelum melanjutkan."
+---
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | A09 |
+| **Nama BPMN** | Receive Task |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 3 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §10.2.1 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+Persegi panjang dengan sudut melengkung + ikon **amplop kosong (outline)** di pojok kiri atas.
+
+*Bedakan dengan Message Intermediate Catch Event: Receive Task adalah kotak (aktivitas); Catch Event adalah lingkaran (event).*
+
+---
+
+## 3. Apa artinya
+
+Receive Task menyatakan: *"Proses menunggu di sini sampai pesan tertentu diterima dari partisipan lain. Penerimaan pesan ini adalah pekerjaan yang bermakna bisnis."*
+
+Token tiba di Receive Task dan **menunggu** — tidak melanjutkan sampai pesan yang ditunggu tiba.
+
+---
+
+## 4. Tujuan
+
+Membuat **penerimaan pesan sebagai aktivitas bisnis yang eksplisit**. Berguna ketika "menunggu dan memproses pesan" adalah langkah yang ingin kamu tampilkan sebagai unit kerja, bukan hanya penanda event.
+
+---
+
+## 5. Semantik BPMN
+
+Token tiba di Receive Task dan **menunggu**. Proses tidak melanjutkan sampai pesan yang cocok tiba. Ketika pesan tiba, Receive Task selesai dan token bergerak ke outgoing Sequence Flow.
+
+Ini adalah mekanisme **sinkronisasi asinkron**: proses A mengirim pesan, proses B menunggu di Receive Task, ketika pesan tiba, proses B melanjutkan.
+
+---
+
+## 6. Kapan digunakan
+
+- Menunggu konfirmasi pembayaran, persetujuan, atau notifikasi dari sistem lain.
+- Ketika "menerima dan memproses pesan" adalah unit kerja yang bermakna bisnis.
+- Berpasangan dengan Message Flow masuk dari Pool pengirim.
+
+---
+
+## 7. Kapan jangan digunakan
+
+- Jika menunggu pesan adalah hanya penanda titik tengah → gunakan **Message Intermediate Catch Event** (E02).
+- Untuk penerimaan event waktu → gunakan **Timer Intermediate Catch Event** (E03).
+
+---
+
+## 8. Contoh penggunaan
+
+```
+Pool Customer:
+  [Send Task "Kirim pesanan"]
+    → [Receive Task "Terima konfirmasi pesanan"]
+         (menunggu konfirmasi dari Merchant)
+    → [End]
+
+Pool Merchant: ←--Message Flow "Konfirmasi"--- [Send Task "Kirim konfirmasi"]
+```
+
+---
+
+## 9. Diagram contoh
+
+Lihat [Modul 3](/jalur/03/) — Pool Customer menggunakan Intermediate Catch Event (alternatif yang sering digunakan alih-alih Receive Task).
+
+---
+
+## 10. Cara membaca diagram
+
+Ikon amplop kosong di pojok kiri atas kotak = Receive Task. Task ini menunggu pesan sebelum melanjutkan. Cari Message Flow yang mengarah ke sini dari Pool lain.
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Receive Task = Task yang hanya menerima data"**
+
+Tidak. Receive Task spesifik untuk menerima **pesan dari partisipan lain** (lintas Pool). Untuk menerima data di dalam satu proses, gunakan Data Object dan Data Association.
+
+---
+
+## 12. Anti-pattern
+
+**Receive Task tanpa Message Flow masuk**
+
+Gejala: ada Receive Task tapi tidak ada Message Flow yang mengarah ke sana.
+
+Diagnosis: token akan menunggu selamanya — tidak ada pesan yang bisa datang.
+
+Perbaikan: tambahkan Message Flow dari elemen pengirim di Pool lain.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Tertukar dengan | Perbedaan kunci |
+|----------------|----------------|
+| **Message Intermediate Catch Event** (E02) | Catch Event adalah penanda titik tunggu; Receive Task adalah unit kerja penuh |
+| **Send Task** (A08) | Send Task mengirim; Receive Task menerima |
+| **User Task** (A04) | User Task menunggu aksi manusia; Receive Task menunggu pesan dari sistem lain |
+
+---
+
+## 14. Aturan pemilihan
+
+```
+Menunggu pesan adalah unit kerja utama → Receive Task
+Menunggu pesan adalah titik penanda saja → Intermediate Message Catch Event
+Menunggu konfirmasi manusia → User Task
+```
+
+---
+
+## 15. Pertanyaan diagnostik
+
+1. Apakah ini menunggu pesan dari partisipan lain (lintas Pool)?
+2. Apakah "menunggu dan memproses pesan" ini adalah pekerjaan bermakna bisnis?
+
+---
+
+## 16. Argumentasi pemodelan
+
+Receive Task vs. Message Intermediate Catch Event adalah pilihan gaya yang sering digunakan secara bergantian. Perbedaannya: Receive Task secara eksplisit menyatakan bahwa penerimaan pesan adalah **aktivitas** yang dikerjakan — ada yang "mengerjakan" penerimaan itu. Intermediate Catch Event lebih abstrak: proses "berhenti dan menunggu." Untuk konteks bisnis di mana penerimaan pesan melibatkan pemrosesan (misal: customer memeriksa email konfirmasi, memverifikasi isinya), Receive Task lebih ekspresif.
+
+---
+
+## 17. Validity check
+
+- [ ] Nama mengikuti pola "kata kerja + objek" (mis. "Terima konfirmasi pesanan").
+- [ ] Ada Message Flow masuk dari elemen pengirim di Pool lain.
+
+---
+
+## 18. Catatan Camunda
+
+Di Camunda 8, Receive Task dikonfigurasi untuk menunggu message dengan nama tertentu. Mirip dengan Intermediate Message Catch Event dalam konfigurasi. Keduanya bisa digunakan bergantian di Camunda.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Receive Task menunggu pesan dari partisipan lain sebelum melanjutkan — token "diblokir" di sini sampai pesan yang cocok tiba, menjadikan penerimaan pesan sebagai unit kerja yang eksplisit.

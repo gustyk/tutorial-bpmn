@@ -22,6 +22,8 @@ export default defineConfig({
     '/events/matrix': '/katalog/matriks-event',
     '/practice/review': '/referensi/review',
     '/advanced/': '/referensi/anti-pattern',
+    // T-7.0: practice/narrative kontennya sudah dipindahkan ke jalur/01-03
+    '/practice/narrative': '/jalur/01',
   },
   integrations: [sitemap(), starlight({
     title: 'Tutorial BPMN by Pak Tik',
@@ -36,9 +38,9 @@ export default defineConfig({
         { label: 'Peta belajar', link: '/jalur-belajar' },
       ]},
       { label: 'Jalur belajar', items: [
-        { label: 'Modul 1 — Pesanan toko daring', link: '/jalur/01' },
-        { label: 'Modul 2 — Pembayaran dan pengiriman', link: '/jalur/02' },
-        { label: 'Modul 3 — Penanganan retur', link: '/jalur/03' },
+        { label: 'Modul 1 — Pesanan diterima sampai dikirim', link: '/jalur/01' },
+        { label: 'Modul 2 — Order perlu divalidasi', link: '/jalur/02' },
+        { label: 'Modul 3 — Customer adalah pihak luar', link: '/jalur/03' },
         { label: 'Modul 4 — Pemesanan multi-pemasok', link: '/jalur/04' },
         { label: 'Modul 5 — Proses persetujuan', link: '/jalur/05' },
         { label: 'Modul 6 — Koordinasi paralel', link: '/jalur/06' },
@@ -51,6 +53,21 @@ export default defineConfig({
       ]},
       { label: 'Notasi', items: [
         { label: 'Katalog notasi Tier A', link: '/notasi/' },
+        { label: 'E01 — None Start/End Event', link: '/notasi/none-event' },
+        { label: 'A01 — Task', link: '/notasi/task' },
+        { label: 'A02 — None Task', link: '/notasi/none-task' },
+        { label: 'F01 — Sequence Flow', link: '/notasi/sequence-flow' },
+        { label: 'G01 — Exclusive Gateway (XOR)', link: '/notasi/exclusive-gateway' },
+        { label: 'A03 — Manual Task', link: '/notasi/manual-task' },
+        { label: 'A04 — User Task', link: '/notasi/user-task' },
+        { label: 'A05 — Service Task', link: '/notasi/service-task' },
+        { label: 'A07 — Business Rule Task', link: '/notasi/business-rule-task' },
+        { label: 'P01 — Pool / Participant', link: '/notasi/pool-participant' },
+        { label: 'C01 — Collaboration', link: '/notasi/collaboration' },
+        { label: 'F02 — Message Flow', link: '/notasi/message-flow' },
+        { label: 'E02 — Message Event', link: '/notasi/message-event' },
+        { label: 'A08 — Send Task', link: '/notasi/send-task' },
+        { label: 'A09 — Receive Task', link: '/notasi/receive-task' },
       ]},
       { label: 'Katalog referensi', items: [
         { label: 'Indeks katalog', link: '/katalog/' },

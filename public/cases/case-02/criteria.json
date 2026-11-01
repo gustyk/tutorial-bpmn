@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "caseId": "case-02",
+  "criteria": [
+    {
+      "id": "C02-1",
+      "statement": "Model memiliki Exclusive Gateway (XOR) untuk memisahkan jalur berdasarkan validitas data pesanan.",
+      "rationale": "Kasus 2 memperkenalkan keputusan: pesanan bisa diterima atau ditolak tergantung data.",
+      "check": {
+        "mode": "auto",
+        "rule": "element-exists",
+        "type": "bpmn:ExclusiveGateway",
+        "min": 1
+      }
+    },
+    {
+      "id": "C02-2",
+      "statement": "Setiap outgoing flow dari XOR split memiliki kondisi atau ditandai sebagai default flow.",
+      "rationale": "XOR gateway tanpa kondisi pada outgoing flow adalah model yang ambigu (OMG BPMN 2.0.2 §13.3.1 TODO-VERIFY).",
+      "readIfFailed": ["/notasi/exclusive-gateway"],
+      "check": {
+        "mode": "auto",
+        "rule": "gateway-split-labeled",
+        "type": "bpmn:ExclusiveGateway"
+      }
+    },
+    {
+      "id": "C02-3",
+      "statement": "Model memiliki minimal dua End Event: satu untuk pesanan diterima, satu untuk pesanan ditolak.",
+      "rationale": "Kedua hasil akhir proses harus dinyatakan eksplisit sebagai End Event dengan nama yang menggambarkan keadaan akhir.",
+      "check": {
+        "mode": "auto",
+        "rule": "element-exists",
+        "type": "bpmn:EndEvent",
+        "min": 2
+      }
+    },
+    {
+      "id": "C02-4",
+      "statement": "Tidak ada Task yang bercabang langsung ke dua jalur tanpa gateway.",
+      "rationale": "Reuse negatif: membuat cabang langsung dari Task adalah anti-pattern — hanya Gateway yang boleh membagi alur berdasarkan keputusan (OMG BPMN 2.0.2 §13.2.1 TODO-VERIFY).",
+      "readIfFailed": ["/notasi/exclusive-gateway", "/referensi/anti-pattern"],
+      "check": {
+        "mode": "manual",
+        "question": "Apakah ada Task yang memiliki lebih dari satu outgoing Sequence Flow? Jika ya, pindahkan cabang itu ke sebuah Exclusive Gateway di sesudah task tersebut."
+      }
+    },
+    {
+      "id": "C02-5",
+      "statement": "Model Kasus 1 (alur linear tanpa cabang) teridentifikasi sebagai titik referensi pembanding.",
+      "rationale": "Setiap modul membangun di atas modul sebelumnya. Mahasiswa harus bisa melihat delta dari Kasus 1.",
+      "check": {
+        "mode": "manual",
+        "question": "Apakah kamu dapat menunjuk bagian mana dari modelmu yang sudah ada di Kasus 1, dan bagian mana yang baru? (Elemen baru di Kasus 2: XOR Gateway, kondisi pada flow, kemungkinan End Event kedua.)"
+      }
+    },
+    {
+      "id": "C02-6",
+      "statement": "Semua token dapat mencapai salah satu End Event — tidak ada jalur yang buntu.",
+      "rationale": "Model yang memiliki dead-end tidak merepresentasikan proses yang dapat diselesaikan.",
+      "check": {
+        "mode": "auto",
+        "rule": "all-tokens-reach-end"
+      }
+    }
+  ]
+}

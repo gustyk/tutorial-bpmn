@@ -262,7 +262,8 @@
       "slug": "pool-participant",
       "introducedIn": "case-03",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/pool-participant.mdx"
     },
     {
       "id": "P02",
@@ -290,7 +291,8 @@
       "slug": "collaboration",
       "introducedIn": "case-03",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/collaboration.mdx"
     },
     {
       "id": "F01",
@@ -304,7 +306,8 @@
       "slug": "sequence-flow",
       "introducedIn": "case-01",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/sequence-flow.mdx"
     },
     {
       "id": "F02",
@@ -318,7 +321,8 @@
       "slug": "message-flow",
       "introducedIn": "case-03",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/message-flow.mdx"
     },
     {
       "id": "F03",
@@ -360,7 +364,8 @@
       "slug": "task",
       "introducedIn": "case-01",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/task.mdx"
     },
     {
       "id": "A02",
@@ -374,7 +379,8 @@
       "slug": "none-task",
       "introducedIn": "case-01",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/none-task.mdx"
     },
     {
       "id": "A03",
@@ -388,7 +394,8 @@
       "slug": "manual-task",
       "introducedIn": "case-02",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/manual-task.mdx"
     },
     {
       "id": "A04",
@@ -402,7 +409,8 @@
       "slug": "user-task",
       "introducedIn": "case-02",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/user-task.mdx"
     },
     {
       "id": "A05",
@@ -416,7 +424,8 @@
       "slug": "service-task",
       "introducedIn": "case-02",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/service-task.mdx"
     },
     {
       "id": "A06",
@@ -444,7 +453,8 @@
       "slug": "business-rule-task",
       "introducedIn": "case-02",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/business-rule-task.mdx"
     },
     {
       "id": "A08",
@@ -458,7 +468,8 @@
       "slug": "send-task",
       "introducedIn": "case-03",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/send-task.mdx"
     },
     {
       "id": "A09",
@@ -472,7 +483,8 @@
       "slug": "receive-task",
       "introducedIn": "case-03",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/receive-task.mdx"
     },
     {
       "id": "A10",
@@ -598,7 +610,8 @@
       "slug": "exclusive-gateway",
       "introducedIn": "case-02",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/exclusive-gateway.mdx"
     },
     {
       "id": "G02",
@@ -752,7 +765,8 @@
       "slug": "none-event",
       "introducedIn": "case-01",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/none-event.mdx"
     },
     {
       "id": "E02",
@@ -766,7 +780,8 @@
       "slug": "message-event",
       "introducedIn": "case-03",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/message-event.mdx"
     },
     {
       "id": "E03",

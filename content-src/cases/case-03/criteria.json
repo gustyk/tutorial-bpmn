@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "caseId": "case-03",
+  "criteria": [
+    {
+      "id": "C03-1",
+      "statement": "Model memiliki minimal dua Pool yang merepresentasikan partisipan berbeda (mis. Customer dan Merchant).",
+      "rationale": "Kasus 3 memperkenalkan kolaborasi: Customer dan Merchant adalah entitas terpisah yang berkomunikasi lewat pesan.",
+      "check": {
+        "mode": "auto",
+        "rule": "element-exists",
+        "type": "bpmn:Participant",
+        "min": 2
+      }
+    },
+    {
+      "id": "C03-2",
+      "statement": "Komunikasi antar-Pool menggunakan Message Flow, bukan Sequence Flow.",
+      "rationale": "Reuse negatif: Sequence Flow tidak boleh melintasi batas Pool. Komunikasi lintas organisasi menggunakan Message Flow (OMG BPMN 2.0.2 §10.2.2 TODO-VERIFY).",
+      "readIfFailed": ["/notasi/message-flow", "/referensi/anti-pattern"],
+      "check": {
+        "mode": "auto",
+        "rule": "no-sequence-flow-across-participants"
+      }
+    },
+    {
+      "id": "C03-3",
+      "statement": "Ada minimal satu Message Flow antara kedua Pool.",
+      "rationale": "Tanpa Message Flow, dua Pool tidak berinteraksi — kolaborasi tidak tergambar.",
+      "check": {
+        "mode": "auto",
+        "rule": "message-flow-between-participants",
+        "min": 1
+      }
+    },
+    {
+      "id": "C03-4",
+      "statement": "Model memiliki minimal satu Send Task yang mewakili pengiriman pesan dari satu partisipan ke partisipan lain.",
+      "rationale": "Send Task adalah cara eksplisit menyatakan bahwa sebuah aktivitas mengirim pesan — lebih jelas dari task biasa untuk konteks kolaborasi.",
+      "readIfFailed": ["/notasi/send-task"],
+      "check": {
+        "mode": "auto",
+        "rule": "element-exists",
+        "type": "bpmn:SendTask",
+        "min": 1
+      }
+    },
+    {
+      "id": "C03-5",
+      "statement": "Model tidak menggunakan Message Flow sebagai pengganti Sequence Flow untuk menghubungkan task dalam Pool yang sama.",
+      "rationale": "Reuse negatif: Message Flow hanya untuk komunikasi lintas Pool. Alur internal dalam satu Pool menggunakan Sequence Flow.",
+      "check": {
+        "mode": "manual",
+        "question": "Periksa setiap Message Flow di modelmu. Apakah semua Message Flow menghubungkan elemen dari POOL BERBEDA? Jika ada Message Flow dalam satu Pool, ganti dengan Sequence Flow."
+      }
+    }
+  ]
+}

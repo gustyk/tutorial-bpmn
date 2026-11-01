@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "caseId": "case-01",
+  "criteria": [
+    {
+      "id": "C01-1",
+      "statement": "Model memiliki tepat satu None Start Event.",
+      "rationale": "Setiap proses tunggal wajib dimulai dengan tepat satu None Start Event yang dapat dicapai (OMG BPMN 2.0.2 §10.4.1 TODO-VERIFY).",
+      "check": {
+        "mode": "auto",
+        "rule": "element-exists",
+        "type": "bpmn:StartEvent",
+        "min": 1,
+        "max": 1
+      }
+    },
+    {
+      "id": "C01-2",
+      "statement": "Model memiliki minimal satu None End Event.",
+      "rationale": "Proses yang tidak berakhir dengan End Event tidak memiliki keadaan akhir yang dinyatakan secara eksplisit.",
+      "check": {
+        "mode": "auto",
+        "rule": "element-exists",
+        "type": "bpmn:EndEvent",
+        "min": 1
+      }
+    },
+    {
+      "id": "C01-3",
+      "statement": "Model memiliki minimal tiga Task.",
+      "rationale": "Kasus 1 menuntut setidaknya tiga langkah: verifikasi, persiapan, dan pengiriman.",
+      "check": {
+        "mode": "auto",
+        "rule": "element-exists",
+        "type": "bpmn:Task",
+        "min": 3
+      }
+    },
+    {
+      "id": "C01-4",
+      "statement": "Setiap Task memiliki nama yang mengikuti pola 'kata kerja + objek' (mis. 'Verifikasi data pesanan', bukan 'Verifikasi').",
+      "rationale": "Konvensi penamaan SPEC 7.4: nama task harus menyatakan tindakan dan objek kerjanya.",
+      "readIfFailed": ["/notasi/task"],
+      "check": {
+        "mode": "manual",
+        "question": "Periksa nama setiap Task di modelmu. Apakah setiap nama mengandung kata kerja DAN objek? (Contoh benar: 'Verifikasi data pesanan'. Contoh salah: 'Verifikasi', 'Data pesanan'.)"
+      }
+    },
+    {
+      "id": "C01-5",
+      "statement": "Semua token dapat mencapai End Event tanpa jalur yang terhenti.",
+      "rationale": "Model yang memiliki dead-end tidak merepresentasikan proses yang dapat diselesaikan.",
+      "check": {
+        "mode": "auto",
+        "rule": "all-tokens-reach-end"
+      }
+    },
+    {
+      "id": "C01-6",
+      "statement": "Granularitas task sesuai: satu task mewakili satu unit kerja bermakna, bukan satu klik antarmuka.",
+      "rationale": "SPEC 7.4: granularitas task = satu unit kerja bermakna bagi bisnis yang dikerjakan oleh satu peran dalam satu rentang waktu.",
+      "check": {
+        "mode": "manual",
+        "question": "Apakah ada task yang mewakili interaksi antarmuka seperti 'Klik tombol simpan' atau 'Isi form'? Jika ya, gabungkan dengan task bermakna bisnis yang memuatnya."
+      }
+    }
+  ]
+}

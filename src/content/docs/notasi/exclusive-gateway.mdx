@@ -1,0 +1,194 @@
+---
+title: "G01 — Exclusive Gateway (XOR)"
+description: "Gateway keputusan: dari semua outgoing flow, tepat satu yang dipilih berdasarkan kondisi."
+---
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | G01 |
+| **Nama BPMN** | Exclusive Gateway (XOR Gateway) |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 2 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §13.3 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+Belah ketupat (*diamond*) dengan tanda **X** di tengah (opsional — belah ketupat polos juga valid untuk XOR). Tanda X membedakannya secara visual dari gateway lain.
+
+*Cara membuat di demo.bpmn.io:* Seret "Gateway" dari palet. Default adalah Exclusive Gateway. Atau ubah tipe gateway via context menu.
+
+---
+
+## 3. Apa artinya
+
+**Exclusive Gateway** menyatakan: *"Dari semua outgoing Sequence Flow, tepat satu yang akan dilalui token — berdasarkan kondisi yang dievaluasi saat token tiba."*
+
+"Exclusive" berarti jalur-jalur itu saling eksklusif: tidak bisa lebih dari satu dipilih sekaligus.
+
+Dalam bahasa sehari-hari: ini adalah **titik keputusan** (decision point).
+
+---
+
+## 4. Tujuan
+
+XOR Gateway memungkinkan proses merespons kondisi berbeda secara berbeda. Tanpa gateway, semua token harus mengikuti satu jalur yang sama — tidak ada cara menyatakan "jika A maka ini, jika B maka itu."
+
+---
+
+## 5. Semantik BPMN
+
+**XOR split (satu incoming, banyak outgoing):**
+
+1. Token tiba di gateway.
+2. Kondisi pada setiap outgoing flow dievaluasi.
+3. Token bergerak melalui tepat satu outgoing flow yang kondisinya terpenuhi.
+4. Jika lebih dari satu kondisi terpenuhi: flow dengan kondisi pertama yang terpenuhi dipilih (urutan tergantung implementasi — hindari situasi ini).
+5. Jika tidak ada kondisi yang terpenuhi dan ada default flow: token mengikuti default flow.
+6. Jika tidak ada kondisi dan tidak ada default: **error eksekusi**.
+
+**XOR join (banyak incoming, satu outgoing):**
+
+1. Token tiba dari salah satu incoming flow.
+2. Token langsung diteruskan ke outgoing flow.
+3. Gateway **tidak menunggu** token lain — setiap token yang tiba langsung lewat.
+
+Ini penting: XOR join bukan "penghalang" (*barrier*). Jika dua token datang dari dua jalur berbeda, dua token akan keluar. Ini berbeda dari AND join (Modul 6) yang menunggu.
+
+---
+
+## 6. Kapan digunakan
+
+- Ketika ada **keputusan** berdasarkan data yang sudah tersedia saat token tiba.
+- Ketika hasil proses bisa berbeda berdasarkan kondisi bisnis.
+- Untuk menggabungkan dua jalur yang sebelumnya dipisahkan oleh XOR split (XOR join).
+
+---
+
+## 7. Kapan jangan digunakan
+
+**Jangan gunakan XOR untuk menunggu hasil yang belum ada.**
+
+Contoh: setelah mengirim instruksi pembayaran, apakah pembayaran diterima atau tidak *belum diketahui* — datanya belum ada. Menggunakan XOR di sini menyatakan bahwa keputusan bisa dibuat sekarang, yang salah. Gunakan **Event-Based Gateway** (G04, Modul 5) untuk menunggu salah satu dari beberapa event.
+
+**Jangan gunakan sebagai AND gateway.**
+
+XOR hanya memilih satu jalur. Jika semua jalur harus diambil secara bersamaan, gunakan **Parallel Gateway** (G02, Modul 6).
+
+---
+
+## 8. Contoh penggunaan
+
+```
+[Task "Verifikasi data pesanan"]
+  → [XOR Gateway "Data pesanan valid?"]
+      → (ya) → [Task "Konfirmasi pesanan"]
+      → (tidak) → [End Event "Pesanan ditolak"]
+```
+
+---
+
+## 9. Diagram contoh
+
+Lihat [Modul 2](/jalur/02/) untuk contoh XOR split dan jalur ganda.
+
+---
+
+## 10. Cara membaca diagram
+
+Ketika melihat belah ketupat dengan X:
+1. Baca labelnya — biasanya berupa pertanyaan.
+2. Baca label setiap outgoing flow — biasanya berupa jawaban atau kondisi.
+3. Ikuti jalur yang kondisinya terpenuhi.
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"XOR join menunggu semua token"**
+
+Tidak. XOR join meneruskan token segera saat tiba — ia tidak menunggu. Jika dua token masuk dari dua jalur berbeda (misal: kesalahan dalam pemodelan), dua token akan keluar.
+
+**"Belah ketupat polos = XOR"**
+
+Dalam BPMN 2.0, belah ketupat tanpa marker juga merupakan Exclusive Gateway (tipe default). Namun, untuk keterbacaan, lebih baik selalu gunakan tanda X.
+
+---
+
+## 12. Anti-pattern
+
+**Task bercabang langsung tanpa gateway**
+
+Gejala: sebuah Task memiliki dua outgoing Sequence Flow.
+
+Diagnosis semantik: dalam BPMN, Task dengan beberapa outgoing flow berperilaku seperti **implicit AND split** — token digandakan ke semua jalur. Ini bukan keputusan, ini pemisahan paralel yang tidak disengaja.
+
+Perbaikan: tambahkan XOR Gateway setelah Task, pindahkan semua outgoing flow ke gateway.
+
+**XOR outgoing flow tanpa kondisi**
+
+Gejala: salah satu outgoing flow dari XOR tidak memiliki kondisi dan tidak ditandai sebagai default.
+
+Diagnosis: BPMN membutuhkan kondisi atau penanda default agar mesin tahu kapan memilih jalur itu.
+
+Perbaikan: tambahkan kondisi atau tandai sebagai default flow.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Tertukar dengan | Perbedaan kunci |
+|----------------|----------------|
+| **Parallel Gateway / AND** (G02) | AND split mengambil **semua** jalur sekaligus; XOR hanya satu |
+| **Inclusive Gateway / OR** (G03) | OR split bisa mengambil satu atau lebih jalur; XOR hanya satu |
+| **Event-Based Gateway** (G04) | Event-Based menunggu event yang belum terjadi; XOR mengevaluasi data yang sudah ada |
+
+---
+
+## 14. Aturan pemilihan
+
+```
+Ada keputusan berdasarkan data yang sudah ada → XOR Gateway
+Semua jalur harus diambil bersamaan → AND Gateway (G02)
+Satu atau lebih jalur bisa diambil → OR Gateway (G03)
+Menunggu salah satu dari beberapa event → Event-Based Gateway (G04)
+```
+
+---
+
+## 15. Pertanyaan diagnostik
+
+1. Apakah data untuk membuat keputusan sudah tersedia saat token tiba di gateway?
+2. Apakah hanya satu jalur yang akan diambil, atau mungkin lebih dari satu?
+3. Apakah ini titik keputusan atau titik menunggu?
+
+---
+
+## 16. Argumentasi pemodelan
+
+*"Mengapa tidak bisa menggunakan XOR di titik di mana kita menunggu pembayaran?"*
+
+Ketika token tiba di titik menunggu pembayaran, data "apakah pembayaran sudah diterima" **belum ada** — proses sedang menunggu event di masa depan. XOR mengevaluasi kondisi berdasarkan data yang sudah ada; jika data belum ada, kondisi tidak bisa dievaluasi. Ini bukan masalah teknis — ini masalah semantik: kita menyatakan keputusan di titik di mana tidak ada keputusan yang bisa dibuat. Event-Based Gateway adalah solusinya: ia menyatakan "tunggu salah satu dari event ini terjadi."
+
+---
+
+## 17. Validity check
+
+- [ ] Setiap outgoing flow dari XOR split memiliki kondisi atau salah satunya ditandai sebagai default.
+- [ ] Kondisi-kondisi bersifat mutually exclusive (tidak ada dua kondisi yang bisa terpenuhi bersamaan) — atau ada mekanisme untuk menangani kasus itu.
+- [ ] Label gateway berupa pertanyaan yang bisa dijawab oleh kondisi pada outgoing flow.
+
+---
+
+## 18. Catatan Camunda
+
+Di Camunda 8, kondisi pada outgoing flow XOR ditulis dalam FEEL. Jika dua kondisi terpenuhi sekaligus, Camunda mengambil flow pertama dalam urutan definisi XML. Untuk menghindari ambiguitas, pastikan kondisi saling eksklusif atau gunakan default flow sebagai fallback.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Exclusive Gateway adalah titik keputusan yang memilih tepat satu dari beberapa jalur berdasarkan kondisi yang sudah dapat dievaluasi saat token tiba.

@@ -1,0 +1,172 @@
+---
+title: "P01 — Pool / Participant"
+description: "Kotak yang membungkus satu partisipan dalam kolaborasi — satu Pool = satu proses milik satu entitas."
+---
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | P01 |
+| **Nama BPMN** | Pool / Participant |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 3 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §10.2.3 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+Persegi panjang besar dengan **label di sisi kiri** (vertikal, rotasi 90°). Pool membungkus seluruh elemen proses satu partisipan. Bisa berisi Lane (jalur/swim-lane) untuk membagi peran internal.
+
+*Cara membuat di demo.bpmn.io:* Seret "Pool" dari palet. Diagram otomatis menjadi Collaboration diagram.
+
+---
+
+## 3. Apa artinya
+
+Pool menyatakan: *"Semua elemen di dalam kotak ini adalah milik satu entitas (organisasi, sistem, atau peran) yang mengontrol prosesnya sendiri."*
+
+Pool adalah **batas kepemilikan proses**. Customer memiliki prosesnya sendiri; Merchant memiliki prosesnya sendiri. Keduanya tidak berbagi token atau kontrol eksekusi.
+
+---
+
+## 4. Tujuan
+
+Pool memungkinkan representasi **kolaborasi antar-entitas** dalam satu diagram. Tanpa Pool, semua elemen dianggap milik satu proses yang sama. Dengan Pool, kamu bisa menunjukkan bagaimana dua atau lebih entitas yang terpisah berinteraksi.
+
+---
+
+## 5. Semantik BPMN
+
+**Batas Pool = batas proses:**
+- Token di dalam Pool tidak bisa berpindah ke Pool lain.
+- Komunikasi antar-Pool terjadi melalui Message Flow — yang membawa *pesan*, bukan token.
+- Ketika Pool A mengirim pesan ke Pool B, ini memicu event di Pool B yang membuat token baru lahir (atau token yang menunggu bergerak).
+
+**White-box vs. Black-box Pool:**
+- *White-box*: Pool berisi proses yang digambar (elemen terlihat).
+- *Black-box*: Pool hanya berisi label — proses internal tidak digambar. Digunakan untuk partisipan eksternal yang proses internalnya tidak kita ketahui atau tidak perlu ditampilkan.
+
+[PEDAGOGICAL SIMPLIFICATION] Tutorial ini hanya membahas white-box Pool. Black-box Pool valid secara BPMN dan sering digunakan untuk system/vendor eksternal.
+
+---
+
+## 6. Kapan digunakan
+
+- Ketika ada dua atau lebih entitas yang berbeda yang memiliki proses mereka sendiri.
+- Ketika penting untuk menunjukkan *siapa yang bertanggung jawab* atas bagian proses mana.
+- Ketika ada komunikasi antar-entitas yang perlu dimodelkan secara eksplisit.
+
+---
+
+## 7. Kapan jangan digunakan
+
+**Jangan gunakan Pool untuk membagi peran dalam satu organisasi.**
+
+Jika Customer Service dan Gudang keduanya adalah bagian dari Merchant, mereka bukan dua Pool — mereka adalah dua **Lane** dalam satu Pool Merchant. Pool untuk organisasi/entitas berbeda; Lane untuk peran di dalam satu organisasi (Modul 4).
+
+---
+
+## 8. Contoh penggunaan
+
+```
+[Pool "Customer"]
+  [Start] → [Send Task "Kirim pesanan"] → [Catch "Tunggu konfirmasi"] → [End]
+
+[Pool "Merchant"]
+  [Message Start "Pesanan diterima"] → [Task] → ... → [Send "Kirim konfirmasi"] → [End]
+
+Message Flow: dari Send Task Customer → ke Message Start Merchant
+Message Flow: dari Send Task Merchant → ke Catch Event Customer
+```
+
+---
+
+## 9. Diagram contoh
+
+Lihat [Modul 3](/jalur/03/) untuk contoh dua Pool berkolaborasi.
+
+---
+
+## 10. Cara membaca diagram
+
+Ketika melihat kotak besar berlabel di sisi kiri: itu adalah satu entitas. Semua elemen di dalamnya adalah proses milik entitas itu. Garis putus-putus yang melintasi batas Pool adalah komunikasi antar-entitas.
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Pool = departemen atau divisi"**
+
+Tidak. Pool adalah entitas yang memiliki otonomi prosesnya sendiri — biasanya organisasi berbeda atau sistem berbeda. Departemen dalam satu organisasi adalah Lane, bukan Pool.
+
+**"Sequence Flow bisa melintasi Pool"**
+
+Tidak pernah. Sequence Flow membawa token; token tidak berpindah antar-Pool. Lihat F02 (Message Flow) dan F01 (Sequence Flow) untuk perbedaan detailnya.
+
+---
+
+## 12. Anti-pattern
+
+**Pool untuk pihak yang bukan partisipan aktif**
+
+Gejala: Pool "Sistem Pembayaran" hanya menerima message tapi tidak melakukan apapun.
+
+Solusi lebih baik: jika proses internal sistem pembayaran tidak perlu ditampilkan, gunakan Black-box Pool — atau gambarkan hanya elemen yang relevan.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Tertukar dengan | Perbedaan kunci |
+|----------------|----------------|
+| **Lane** (P02) | Lane untuk peran di dalam satu Pool; Pool untuk entitas terpisah |
+| **Sub-Process** (A13) | Sub-Process adalah aktivitas dengan proses di dalamnya; Pool adalah partisipan |
+
+---
+
+## 14. Aturan pemilihan
+
+```
+Entitas berbeda (organisasi, sistem terpisah) → Pool berbeda
+Peran berbeda dalam satu organisasi → Lane dalam satu Pool
+Proses detail yang ingin di-encapsulate → Sub-Process
+```
+
+---
+
+## 15. Pertanyaan diagnostik
+
+1. Apakah kedua pihak ini milik organisasi yang berbeda?
+2. Apakah masing-masing punya proses sendiri yang mereka kendalikan?
+3. Apakah mereka berkomunikasi lewat pesan (bukan berbagi akses langsung)?
+
+---
+
+## 16. Argumentasi pemodelan
+
+*"Mengapa Customer dimasukkan ke dalam Pool terpisah?"*
+
+Customer adalah entitas yang **berdiri sendiri** — mereka bukan bagian dari sistem Merchant. Proses mereka (membuat pesanan, menunggu konfirmasi) berjalan secara independen di sisi mereka. Memasukkan Customer dalam Pool yang sama dengan Merchant akan menyatakan bahwa Customer adalah bagian dari proses Merchant — yang tidak benar secara semantik bisnis.
+
+---
+
+## 17. Validity check
+
+- [ ] Nama Pool adalah peran atau organisasi (bukan aktivitas).
+- [ ] Tidak ada Sequence Flow yang melintasi batas Pool.
+- [ ] Komunikasi antar-Pool menggunakan Message Flow.
+- [ ] Pool yang berisi proses (white-box) memiliki Start Event dan End Event.
+
+---
+
+## 18. Catatan Camunda
+
+Di Camunda, satu Pool biasanya di-deploy sebagai satu process definition. Kolaborasi multi-Pool tidak di-deploy sebagai satu unit — setiap Pool memiliki deployment dan instantiation-nya sendiri. Message Flow antara Pool diimplementasikan melalui message correlation (Camunda Messaging).
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Pool adalah batas kepemilikan proses: semua yang ada di dalam satu Pool adalah milik satu entitas yang memiliki otonomi penuh atas prosesnya sendiri.

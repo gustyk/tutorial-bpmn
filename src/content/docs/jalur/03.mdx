@@ -1,6 +1,177 @@
 ---
-title: "Modul 3 — Penanganan retur"
-description: "Kasus ketiga: jalur alternatif dan eksepsi."
+title: "Modul 3: Customer adalah Pihak Luar"
+description: "Tambahkan Pool untuk Customer. Komunikasi lintas organisasi menggunakan Message Flow, bukan Sequence Flow."
 ---
 
-Halaman ini akan diisi saat modul terkait diterbitkan.
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+import CriteriaChecker from '../../../components/CriteriaChecker.astro';
+
+## 1. Apa yang berubah
+
+**Perubahan requirement dari Modul 2:**
+
+> "Customer bukan bagian dari kami; kami hanya bertukar pesan."
+
+Di Modul 1 dan 2, customer tidak muncul dalam diagram — proses dimulai saat pesanan sudah ada. Sekarang kamu diminta menggambarkan **dari sisi customer juga**: customer mengirim pesanan, lalu menunggu konfirmasi.
+
+**Delta notasi:**
+
+| Kode | Nama | Peran dalam modul ini |
+|------|------|----------------------|
+| P01 | Pool | Kotak yang membungkus satu partisipan (satu organisasi/entitas) |
+| C01 | Collaboration | Diagram dengan dua atau lebih Pool yang berinteraksi |
+| F02 | Message Flow | Alur komunikasi *lintas* Pool — garis putus-putus dengan kepala panah terbuka |
+| E02 | Message Start / Intermediate / End Event | Event yang dipicu oleh atau mengirim pesan |
+| A08 | Send Task | Task yang aktif mengirim pesan ke partisipan lain |
+| A09 | Receive Task | Task yang aktif menunggu pesan dari partisipan lain |
+
+**Dari Modul 2 yang dipakai ulang:** E01, A01/A02/A04/A05, G01, F01.
+
+---
+
+## 2. Kasus bisnis
+
+Manajer operasional datang lagi, kali ini bersama kepala divisi IT:
+
+> "Kami sedang membangun sistem baru dan butuh menggambarkan bagaimana customer berinteraksi dengan kami. Customer bukan karyawan kami — mereka entitas tersendiri. Kami berkomunikasi lewat pesan: mereka mengirim pesanan, kami mengirim konfirmasi. Bisakah kamu tambahkan customer ke diagram?"
+
+---
+
+## 3. Requirement
+
+1. Customer memulai dengan kebutuhan barang yang muncul.
+2. Customer **membuat dan mengirim pesanan** ke Merchant.
+3. Customer **menunggu konfirmasi** dari Merchant.
+4. Ketika konfirmasi diterima, proses Customer selesai.
+5. Di sisi Merchant: proses dimulai ketika **pesan pesanan diterima** (bukan "tombol ditekan").
+6. Merchant memverifikasi data, memutuskan (XOR), lalu:
+   - Jika valid: **mengirim konfirmasi** ke Customer, lalu menyiapkan dan mengirim paket.
+   - Jika tidak valid: pesanan ditolak, tanpa konfirmasi ke Customer.
+7. Komunikasi antara Customer dan Merchant adalah **pertukaran pesan**, bukan alur internal.
+
+---
+
+## 4. Panduan analisis
+
+**Participant:**
+- Siapa saja yang terlibat sekarang? Berapa Pool yang kamu butuhkan?
+- Apakah Customer dan Merchant berada dalam satu organisasi yang sama?
+
+**Batas Pool:**
+- Dapatkah Sequence Flow melewati batas antara Pool Customer dan Pool Merchant? Mengapa tidak?
+- Apa yang harus digunakan sebagai pengganti Sequence Flow untuk komunikasi antar-Pool?
+
+**Event di batas Pool:**
+- Ketika Merchant *menerima* pesanan sebagai pemicu proses, apakah itu None Start Event atau Message Start Event? Apa perbedaannya?
+- Ketika Customer *menunggu* konfirmasi, elemen BPMN apa yang paling tepat?
+
+**Reuse negatif — dua jebakan modul ini:**
+1. *Sequence Flow melintasi Pool* — mengapa ini salah secara semantik, bukan hanya salah secara aturan?
+2. *Message Flow dipakai sebagai Sequence Flow dalam satu Pool* — apa yang terjadi pada token jika kamu melakukan ini?
+
+---
+
+## 5. Tugas
+
+Mulai dari diagram Modul 2, tambahkan:
+
+1. **Pool "Merchant"** — bungkus seluruh proses Modul 2 ke dalamnya.
+2. **Pool "Customer"** — di atas atau di bawah Pool Merchant.
+3. Di Pool Customer: gambar alur singkat Customer (Start → Send Task "Buat dan kirim pesanan" → Intermediate Message Catch Event "Konfirmasi pesanan diterima" → End Event).
+4. **Message Flow pertama**: dari Send Task Customer ke Start Event (atau Message Start Event) Merchant.
+5. **Message Flow kedua**: dari task konfirmasi Merchant ke Intermediate Catch Event Customer.
+6. Ubah Start Event Merchant dari None Start Event menjadi **Message Start Event**.
+
+:::tip[File starter]
+Gunakan [`case-03-order.bpmn`](/bpmn/case-03-order.bpmn) sebagai referensi, atau kembangkan file Modul 2-mu sendiri.
+:::
+
+---
+
+## 6. Pemeriksa kriteria
+
+<CriteriaChecker
+  criteriaSrc="/cases/case-03/criteria.json"
+  title="Periksa model Kasus 3"
+/>
+
+---
+
+## 7. Kunci jawaban
+
+:::caution[Coba kerjakan dulu]
+Buka hanya setelah kamu selesai mengerjakan tugas dan memeriksa modelmu.
+:::
+
+<details>
+<summary>**Lihat kunci jawaban Modul 3**</summary>
+
+### Lapis A — Model referensi
+
+<BpmnViewer src="/bpmn/case-03-order.bpmn" title="Kasus 3 — Customer adalah pihak luar" />
+
+**Walkthrough token:**
+
+*Di Pool Customer:*
+1. Token lahir di **Start Event "Kebutuhan barang muncul"**.
+2. Token masuk ke **Send Task "Buat dan kirim pesanan"** — Customer menyiapkan dan mengirim pesan pesanan.
+3. Saat Send Task selesai, **Message Flow** membawa pesan ke Pool Merchant.
+4. Token Customer bergerak ke **Intermediate Message Catch Event "Konfirmasi pesanan diterima"** — Customer menunggu.
+
+*Di Pool Merchant (bersamaan):*
+5. Ketika pesan pesanan tiba, token baru lahir di **Message Start Event "Pesanan diterima"** di Pool Merchant.
+6. Token bergerak melalui alur Modul 2: verifikasi → XOR → konfirmasi/penolakan.
+7. Pada jalur valid: **Send Task "Kirim konfirmasi pesanan"** mengirim Message Flow ke Customer.
+8. Token Customer di Intermediate Catch Event terlepas — Customer mendapat konfirmasi.
+9. Token Customer bergerak ke **End Event "Pesanan dikonfirmasi"**.
+10. Token Merchant lanjut ke siapkan paket → kirim paket → **End Event "Pesanan terkirim"**.
+
+**Dua proses berjalan di Pool masing-masing; berkomunikasi lewat Message Flow.**
+
+### Lapis B — Kriteria wajib
+
+1. **Minimal dua Pool** — Customer dan Merchant sebagai entitas terpisah.
+2. **Tidak ada Sequence Flow yang melintasi batas Pool** — semua internal.
+3. **Minimal satu Message Flow** antara kedua Pool.
+4. **Minimal satu Send Task** yang secara eksplisit menyatakan pengiriman pesan.
+5. **Message Flow tidak dipakai sebagai Sequence Flow** dalam satu Pool.
+
+### Lapis C — Variasi yang juga diterima
+
+**Variasi 1: Message Start Event vs. None Start Event di Merchant**
+Message Start Event (lingkaran dengan amplop) menyatakan secara eksplisit bahwa proses dimulai oleh pesan masuk. None Start Event sah secara BPMN tetapi kurang ekspresif di konteks kolaborasi — pembaca harus menduga dari mana proses mulai. Kedua-duanya diterima; Message Start Event lebih tepat di sini.
+
+**Variasi 2: Tidak mengirim konfirmasi jika ditolak**
+Model referensi tidak mengirim konfirmasi ke Customer ketika pesanan ditolak. Variasi yang mengirimkan pesan penolakan juga sah — asalkan ada Message Flow dan elemen penerima di Pool Customer yang sesuai.
+
+### Lapis D — Kesalahan umum
+
+**Kesalahan 1: Sequence Flow melintasi batas Pool**
+
+*Gejala:* Ada garis dengan kepala panah tertutup dari Pool Customer ke Pool Merchant.
+
+*Diagnosis semantik:* Sequence Flow menyatakan urutan kerja **dalam satu proses**. Customer dan Merchant adalah dua proses terpisah yang dijalankan oleh entitas berbeda. Mereka tidak berbagi token — mereka bertukar pesan. Sequence Flow lintas Pool adalah kontradiksi semantik: ia menyatakan bahwa token yang sama berpindah antara dua proses yang berbeda, yang tidak mungkin dalam BPMN.
+
+*Perbaikan:* Hapus Sequence Flow lintas Pool. Ganti dengan Message Flow + elemen penerima yang sesuai (Message Start Event, Intermediate Message Catch Event, atau Receive Task).
+
+**Kesalahan 2: Message Flow dipakai sebagai pengganti Sequence Flow dalam satu Pool**
+
+*Gejala:* Ada garis putus-putus antara dua task dalam Pool Merchant.
+
+*Diagnosis semantik:* Message Flow tidak membawa token — ia membawa pesan antara dua proses. Jika dipakai di dalam satu Pool, token tidak akan bergerak ke elemen berikutnya karena tidak ada Sequence Flow yang membawanya. Proses akan terhenti tanpa pesan error yang jelas.
+
+*Perbaikan:* Gunakan Sequence Flow (garis utuh) untuk menghubungkan elemen dalam satu Pool. Message Flow hanya untuk komunikasi lintas Pool.
+
+**Kesalahan 3: Pool tanpa proses internal**
+
+*Gejala:* Pool Customer hanya berisi label "Customer" tanpa elemen di dalamnya, tapi memiliki Message Flow masuk.
+
+*Diagnosis semantik:* Pool yang berisi proses (*white-box pool*) harus menunjukkan bagaimana partisipan itu bereaksi terhadap pesan. Pool kosong (*black-box pool*) valid secara BPMN tapi tidak memperlihatkan proses Customer — artinya pertanyaan "apa yang dilakukan Customer setelah mengirim pesanan?" tidak terjawab.
+
+*Perbaikan:* Isi Pool Customer dengan proses singkat, atau gunakan Black-box Pool secara sadar dan dokumentasikan keputusan itu.
+
+</details>
+
+---
+
+**← [Modul 2](/jalur/02/) · [Modul 4: Siapa Mengerjakan Apa](/jalur/04/) →**

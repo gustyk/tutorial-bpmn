@@ -1,0 +1,144 @@
+---
+title: "A03 — Manual Task"
+description: "Task yang dikerjakan manusia tanpa bantuan sistem atau aplikasi apapun."
+---
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | A03 |
+| **Nama BPMN** | Manual Task |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 2 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §10.2.1 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+Persegi panjang dengan sudut melengkung + ikon **tangan** di pojok kiri atas.
+
+---
+
+## 3. Apa artinya
+
+Manual Task menyatakan: *"Pekerjaan ini dikerjakan oleh manusia sepenuhnya dengan tangan — tanpa antarmuka sistem, tanpa alat digital."*
+
+Contoh nyata: mengemas paket secara fisik, menandatangani dokumen kertas, memeriksa kondisi barang secara visual.
+
+---
+
+## 4. Tujuan
+
+Membedakan pekerjaan fisik/manual dari pekerjaan yang melibatkan sistem. Penting ketika model digunakan untuk analisis otomasi: Manual Task adalah kandidat paling jelas untuk *tidak* diotomasi.
+
+---
+
+## 5. Semantik BPMN
+
+Identik dengan Task abstrak (A01) dari perspektif token. Manual Task tidak memiliki semantik eksekusi mesin — ia hanya menyatakan tipe pekerjaan untuk dokumentasi dan analisis.
+
+---
+
+## 6. Kapan digunakan
+
+- Pekerjaan fisik: mengemas, memindahkan, memeriksa kondisi barang.
+- Pekerjaan yang secara eksplisit tidak menggunakan sistem (misal: verifikasi dokumen fisik dengan mata).
+- Pemodelan *as-is* di mana kamu ingin menyatakan bahwa sebuah langkah belum terotomasi.
+
+---
+
+## 7. Kapan jangan digunakan
+
+- Jika pekerjaan melibatkan antarmuka digital (form, aplikasi, email) → gunakan **User Task** (A04).
+- Jika pekerjaan dilakukan oleh sistem secara otomatis → gunakan **Service Task** (A05).
+
+---
+
+## 8. Contoh penggunaan
+
+```
+[Task "Verifikasi data pesanan"] (User Task — pakai form)
+  → [Manual Task "Kemas paket"] (tanpa sistem)
+  → [Task "Cetak label pengiriman"] (Service Task — sistem cetak otomatis)
+```
+
+---
+
+## 9. Diagram contoh
+
+Lihat [Modul 2](/jalur/02/) untuk konteks task type variants.
+
+---
+
+## 10. Cara membaca diagram
+
+Ikon tangan = dikerjakan manusia tanpa sistem. Tanya: *"Pekerjaan apa yang dilakukan secara fisik di sini?"*
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Manual Task = apapun yang dikerjakan manusia"**
+
+Tidak. Manusia yang mengerjakan sesuatu *lewat aplikasi* adalah User Task. Manual Task khusus untuk pekerjaan tanpa sistem.
+
+---
+
+## 12. Anti-pattern
+
+Menggunakan Manual Task untuk pekerjaan yang sebenarnya menggunakan sistem hanya karena "saat ini masih manual." Jika target *to-be* adalah mengotomasi pekerjaan itu, gunakan Service Task untuk menyatakan target tersebut, dan dokumentasikan bahwa saat ini masih dieksekusi manual.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Tertukar dengan | Perbedaan kunci |
+|----------------|----------------|
+| **User Task** (A04) | User Task = manusia + antarmuka sistem |
+| **Task abstrak** (A01) | Task abstrak tidak menyatakan siapa/bagaimana |
+| **Service Task** (A05) | Service Task = sistem tanpa interaksi manusia |
+
+---
+
+## 14. Aturan pemilihan
+
+```
+Manusia, tanpa sistem → Manual Task
+Manusia, dengan antarmuka sistem → User Task
+Sistem otomatis → Service Task
+Tidak ditentukan / tidak relevan → Task abstrak
+```
+
+---
+
+## 15. Pertanyaan diagnostik
+
+1. Apakah ada orang yang mengerjakan ini secara fisik?
+2. Apakah mereka menggunakan komputer, tablet, atau aplikasi apapun?
+
+---
+
+## 16. Argumentasi pemodelan
+
+Dalam analisis proses, membedakan Manual Task dari User Task memungkinkan kamu mengidentifikasi **peluang digitalisasi** secara langsung dari diagram: setiap Manual Task adalah kandidat otomasi atau digitalisasi yang perlu dianalisis lebih lanjut.
+
+---
+
+## 17. Validity check
+
+- [ ] Nama mengikuti pola "kata kerja + objek".
+- [ ] Pekerjaan memang tidak melibatkan sistem apapun.
+
+---
+
+## 18. Catatan Camunda
+
+Manual Task di Camunda tidak dapat dieksekusi oleh mesin — ia dilewati begitu saja (*pass-through*). Untuk task manusia yang bisa di-assign dan diselesaikan via Camunda Tasklist, gunakan User Task.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Manual Task menyatakan pekerjaan yang dilakukan manusia secara fisik tanpa keterlibatan sistem — token masuk, pekerjaan fisik terjadi, token keluar.

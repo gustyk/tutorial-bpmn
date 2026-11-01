@@ -2,9 +2,9 @@
 
 Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y — judul` → `- [x] T-x.y — judul · 2026-11-xx · catatan satu baris`.
 
-**Acuan:** [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) v1.1 · [SPEC.md](SPEC.md) v1.1 · **Status keseluruhan:** WP-6 selesai
+**Acuan:** [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) v1.1 · [SPEC.md](SPEC.md) v1.1 · **Status keseluruhan:** WP-7 selesai (menunggu G2)
 **Keputusan pemilik:** S-01…S-04 dan D-01…D-03 sudah dijawab 2026-11-01 · G1 disetujui 2026-11-02
-**Gerbang berikutnya:** tidak ada sampai G2 (setelah WP-7)
+**Gerbang berikutnya:** G2 — purwarupa mutu 3 modul. Hentikan dan tunjukkan ke pemilik.
 
 ---
 
@@ -75,12 +75,12 @@ Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y
 
 ## WP-7 · Modul 1–3 dan notasinya → GERBANG G2
 
-- [ ] T-7.0 — Bongkar `practice/narrative.mdx`
-- [ ] T-7.1 — Perbaiki `case-01-order.bpmn` (id stabil, label SPEC 7.4)
-- [ ] T-7.2 — Modul 1 (Resep 5.1)
-- [ ] T-7.3 — Modul 2 (Resep 5.1) + reuse negatif
-- [ ] T-7.4 — Modul 3 (Resep 5.1) + reuse negatif
-- [ ] T-7.5 — 15 halaman notasi: E01, A01, A02, F01, G01, A03, A04, A05, A07, P01, C01, F02, E02, A08, A09
+- [x] T-7.0 — Bongkar `practice/narrative.mdx` · 2026-11-02 · redirect /practice/narrative→/jalur/01; konten narasi dibuka kembali di jalur/01-03; file asli tetap ada (tidak dihapus — masih dipakai oleh tautan lama sampai redirect aktif)
+- [x] T-7.1 — Perbaiki `case-01-order.bpmn` (id stabil, label SPEC 7.4) · 2026-11-02 · id stabil SE_PesananDiterima/TA_*/EE_*; nama SPEC 7.4 (kata kerja + objek); diagram 5 elemen linear
+- [x] T-7.2 — Modul 1 (Resep 5.1) · 2026-11-02 · jalur/01.mdx: 7 bagian; BpmnViewer terbuka di bagian 1; kunci jawaban 4 lapis di details; CriteriaChecker dengan criteriaSrc case-01
+- [x] T-7.3 — Modul 2 (Resep 5.1) + reuse negatif · 2026-11-02 · jalur/02.mdx: 7 bagian; reuse negatif: Task bercabang tanpa gateway, XOR join dianggap barrier; case-02-order.bpmn dengan XOR + 2 End Event
+- [x] T-7.4 — Modul 3 (Resep 5.1) + reuse negatif · 2026-11-02 · jalur/03.mdx: 7 bagian; reuse negatif: SF lintas Pool, MF sebagai SF; case-03-order.bpmn 2 Pool + 2 Message Flow
+- [x] T-7.5 — 15 halaman notasi Tier A · 2026-11-02 · E01/A01/A02/F01/G01/A03/A04/A05/A07/P01/C01/F02/E02/A08/A09; masing-masing 19 bagian; inventory.json docPath diperbarui; sidebar 15 entri
 - [ ] **G2** — Gerbang pemilik: purwarupa mutu 3 modul. **Jangan lanjut WP-8 tanpa persetujuan.**
 
 ## WP-8 · Modul 4–6 dan notasinya
@@ -154,6 +154,8 @@ Catat di sini setiap keputusan yang diambil tanpa bertanya, beserta alasannya sa
 | 2026-11-02 | T-0.8 | Tambah `public/favicon.svg` | Starlight membuat referensi `/favicon.svg` di setiap halaman; tanpa file ini `check-links.mjs` melaporkan 19 tautan rusak |
 | 2026-11-02 | T-1.3 | Lokator OMG ditandai TODO-VERIFY | PDF OMG tidak dapat diakses langsung; nomor baris tabel tepat tidak dapat diverifikasi; gunakan referensi bagian §10.4.x |
 | 2026-11-02 | T-1.4 | A2 reusedIn jadi WARN bukan FAIL | Kasus belum dibangun (WP-7+); failure di sini akan memblokir verify tanpa ada yang bisa diperbaiki sekarang |
+| 2026-11-02 | T-7.2 | BpmnViewer ditampilkan juga di bagian 1 (terbuka) selain di dalam details | Render test butuh .viewer-status terlihat tanpa membuka details; SPEC §7.5 memperbolehkan diagram di bagian 1-6 |
+| 2026-11-02 | T-7.5 | criteria.json disalin ke public/cases/ | Browser fetch membutuhkan file di public/; content-src/ tidak disajikan; salinan di public/ adalah sumber kebenaran saat deploy |
 
 ## Daftar tunggu pasca-rilis
 

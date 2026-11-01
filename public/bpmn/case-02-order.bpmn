@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  id="Def_Case02"
+  targetNamespace="https://uisi.ac.id/bpmn-tutorial">
+
+  <!-- Case 02: Pesanan perlu divalidasi -->
+  <!-- Modul 2: superset Case 01 + G01 (XOR Gateway), A03-A07, conditional/default flow -->
+  <!-- Notasi baru: G01 (XOR split, XOR join), A03 (Manual Task), A04 (User Task), A05 (Service Task), A07 (Business Rule Task) -->
+  <bpmn:process id="Proc_Case02" name="Proses Pesanan Kasus 2" isExecutable="false">
+
+    <bpmn:startEvent id="SE_PesananDiterima" name="Pesanan diterima">
+      <bpmn:outgoing>SF_1_2</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:userTask id="TA_VerifikasiData" name="Verifikasi data pesanan">
+      <bpmn:incoming>SF_1_2</bpmn:incoming>
+      <bpmn:outgoing>SF_2_GW</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="GW_DataValid" name="Data pesanan valid?">
+      <bpmn:incoming>SF_2_GW</bpmn:incoming>
+      <bpmn:outgoing>SF_GW_Ya</bpmn:outgoing>
+      <bpmn:outgoing>SF_GW_Tidak</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="TA_KonfirmasiPesanan" name="Konfirmasi pesanan ke sistem">
+      <bpmn:incoming>SF_GW_Ya</bpmn:incoming>
+      <bpmn:outgoing>SF_3_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:task id="TA_SiapkanPaket" name="Siapkan paket">
+      <bpmn:incoming>SF_3_4</bpmn:incoming>
+      <bpmn:outgoing>SF_4_5</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="TA_KirimPaket" name="Kirim paket">
+      <bpmn:incoming>SF_4_5</bpmn:incoming>
+      <bpmn:outgoing>SF_5_EE</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:endEvent id="EE_PesananTerkirim" name="Pesanan terkirim">
+      <bpmn:incoming>SF_5_EE</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:endEvent id="EE_PesananDitolak" name="Pesanan ditolak">
+      <bpmn:incoming>SF_GW_Tidak</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="SF_1_2" sourceRef="SE_PesananDiterima" targetRef="TA_VerifikasiData" />
+    <bpmn:sequenceFlow id="SF_2_GW" sourceRef="TA_VerifikasiData" targetRef="GW_DataValid" />
+    <bpmn:sequenceFlow id="SF_GW_Ya" name="ya" sourceRef="GW_DataValid" targetRef="TA_KonfirmasiPesanan">
+      <bpmn:conditionExpression>data valid dan stok tersedia</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="SF_GW_Tidak" name="tidak" sourceRef="GW_DataValid" targetRef="EE_PesananDitolak">
+      <bpmn:conditionExpression>data tidak lengkap atau barang kosong</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="SF_3_4" sourceRef="TA_KonfirmasiPesanan" targetRef="TA_SiapkanPaket" />
+    <bpmn:sequenceFlow id="SF_4_5" sourceRef="TA_SiapkanPaket" targetRef="TA_KirimPaket" />
+    <bpmn:sequenceFlow id="SF_5_EE" sourceRef="TA_KirimPaket" targetRef="EE_PesananTerkirim" />
+
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="Dia_Case02">
+    <bpmndi:BPMNPlane id="Pla_Case02" bpmnElement="Proc_Case02">
+      <bpmndi:BPMNShape id="Shp_SE" bpmnElement="SE_PesananDiterima">
+        <dc:Bounds x="120" y="200" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="100" y="243" width="76" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA_2" bpmnElement="TA_VerifikasiData">
+        <dc:Bounds x="210" y="178" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_GW" bpmnElement="GW_DataValid" isMarkerVisible="true">
+        <dc:Bounds x="405" y="193" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="385" y="250" width="90" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA_3" bpmnElement="TA_KonfirmasiPesanan">
+        <dc:Bounds x="510" y="178" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA_4" bpmnElement="TA_SiapkanPaket">
+        <dc:Bounds x="700" y="178" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA_5" bpmnElement="TA_KirimPaket">
+        <dc:Bounds x="890" y="178" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_EE_OK" bpmnElement="EE_PesananTerkirim">
+        <dc:Bounds x="1080" y="200" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1060" y="243" width="76" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_EE_NOK" bpmnElement="EE_PesananDitolak">
+        <dc:Bounds x="405" y="360" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="383" y="403" width="80" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edg_SF_1_2" bpmnElement="SF_1_2">
+        <di:waypoint x="156" y="218" /><di:waypoint x="210" y="218" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_SF_2_GW" bpmnElement="SF_2_GW">
+        <di:waypoint x="350" y="218" /><di:waypoint x="405" y="218" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_SF_GW_Ya" bpmnElement="SF_GW_Ya">
+        <di:waypoint x="455" y="218" /><di:waypoint x="510" y="218" />
+        <bpmndi:BPMNLabel><dc:Bounds x="474" y="200" width="16" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_SF_GW_Tidak" bpmnElement="SF_GW_Tidak">
+        <di:waypoint x="430" y="243" /><di:waypoint x="430" y="360" />
+        <bpmndi:BPMNLabel><dc:Bounds x="437" y="296" width="30" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_SF_3_4" bpmnElement="SF_3_4">
+        <di:waypoint x="650" y="218" /><di:waypoint x="700" y="218" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_SF_4_5" bpmnElement="SF_4_5">
+        <di:waypoint x="840" y="218" /><di:waypoint x="890" y="218" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_SF_5_EE" bpmnElement="SF_5_EE">
+        <di:waypoint x="1030" y="218" /><di:waypoint x="1080" y="218" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>

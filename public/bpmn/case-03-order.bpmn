@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  id="Def_Case03"
+  targetNamespace="https://uisi.ac.id/bpmn-tutorial">
+
+  <!-- Case 03: Customer adalah pihak luar -->
+  <!-- Modul 3: superset Case 02 + P01 (Pool/Participant), C01 (Collaboration), -->
+  <!--          F02 (Message Flow), E02 (Message Event: Start, Intermediate, End) -->
+  <!--          A08 (Send Task), A09 (Receive Task) -->
+
+  <bpmn:collaboration id="Collab_Case03" name="Pesanan Kasus 3">
+
+    <bpmn:participant id="Part_Customer" name="Customer" processRef="Proc_Customer" />
+    <bpmn:participant id="Part_Merchant" name="Merchant" processRef="Proc_Merchant" />
+
+    <bpmn:messageFlow id="MF_PesananDikirim" name="Pesanan dikirim"
+      sourceRef="TA_BuatPesanan" targetRef="SE_PesananDiterima" />
+    <bpmn:messageFlow id="MF_KonfirmasiDikirim" name="Konfirmasi pesanan"
+      sourceRef="TA_KonfirmasiPesanan" targetRef="IE_KonfirmasiDiterima" />
+
+  </bpmn:collaboration>
+
+  <!-- Proses Customer -->
+  <bpmn:process id="Proc_Customer" name="Proses Customer" isExecutable="false">
+
+    <bpmn:startEvent id="SE_CustomerMulai" name="Kebutuhan barang muncul">
+      <bpmn:outgoing>SFC_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:sendTask id="TA_BuatPesanan" name="Buat dan kirim pesanan">
+      <bpmn:incoming>SFC_1</bpmn:incoming>
+      <bpmn:outgoing>SFC_2</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <bpmn:intermediateCatchEvent id="IE_KonfirmasiDiterima" name="Konfirmasi pesanan diterima">
+      <bpmn:incoming>SFC_2</bpmn:incoming>
+      <bpmn:outgoing>SFC_3</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED_Konfirmasi" />
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:endEvent id="EE_CustomerSelesai" name="Pesanan dikonfirmasi">
+      <bpmn:incoming>SFC_3</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="SFC_1" sourceRef="SE_CustomerMulai" targetRef="TA_BuatPesanan" />
+    <bpmn:sequenceFlow id="SFC_2" sourceRef="TA_BuatPesanan" targetRef="IE_KonfirmasiDiterima" />
+    <bpmn:sequenceFlow id="SFC_3" sourceRef="IE_KonfirmasiDiterima" targetRef="EE_CustomerSelesai" />
+
+  </bpmn:process>
+
+  <!-- Proses Merchant -->
+  <bpmn:process id="Proc_Merchant" name="Proses Merchant" isExecutable="false">
+
+    <bpmn:startEvent id="SE_PesananDiterima" name="Pesanan diterima">
+      <bpmn:outgoing>SF_1_2</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED_PesananMasuk" />
+    </bpmn:startEvent>
+
+    <bpmn:userTask id="TA_VerifikasiData" name="Verifikasi data pesanan">
+      <bpmn:incoming>SF_1_2</bpmn:incoming>
+      <bpmn:outgoing>SF_2_GW</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="GW_DataValid" name="Data pesanan valid?">
+      <bpmn:incoming>SF_2_GW</bpmn:incoming>
+      <bpmn:outgoing>SF_GW_Ya</bpmn:outgoing>
+      <bpmn:outgoing>SF_GW_Tidak</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:sendTask id="TA_KonfirmasiPesanan" name="Kirim konfirmasi pesanan">
+      <bpmn:incoming>SF_GW_Ya</bpmn:incoming>
+      <bpmn:outgoing>SF_3_4</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <bpmn:task id="TA_SiapkanPaket" name="Siapkan paket">
+      <bpmn:incoming>SF_3_4</bpmn:incoming>
+      <bpmn:outgoing>SF_4_5</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="TA_KirimPaket" name="Kirim paket">
+      <bpmn:incoming>SF_4_5</bpmn:incoming>
+      <bpmn:outgoing>SF_5_EE</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:endEvent id="EE_PesananTerkirim" name="Pesanan terkirim">
+      <bpmn:incoming>SF_5_EE</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:endEvent id="EE_PesananDitolak" name="Pesanan ditolak">
+      <bpmn:incoming>SF_GW_Tidak</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="SF_1_2" sourceRef="SE_PesananDiterima" targetRef="TA_VerifikasiData" />
+    <bpmn:sequenceFlow id="SF_2_GW" sourceRef="TA_VerifikasiData" targetRef="GW_DataValid" />
+    <bpmn:sequenceFlow id="SF_GW_Ya" name="ya" sourceRef="GW_DataValid" targetRef="TA_KonfirmasiPesanan">
+      <bpmn:conditionExpression>data valid dan stok tersedia</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="SF_GW_Tidak" name="tidak" sourceRef="GW_DataValid" targetRef="EE_PesananDitolak">
+      <bpmn:conditionExpression>data tidak lengkap atau barang kosong</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="SF_3_4" sourceRef="TA_KonfirmasiPesanan" targetRef="TA_SiapkanPaket" />
+    <bpmn:sequenceFlow id="SF_4_5" sourceRef="TA_SiapkanPaket" targetRef="TA_KirimPaket" />
+    <bpmn:sequenceFlow id="SF_5_EE" sourceRef="TA_KirimPaket" targetRef="EE_PesananTerkirim" />
+
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="Dia_Case03">
+    <bpmndi:BPMNPlane id="Pla_Case03" bpmnElement="Collab_Case03">
+
+      <!-- Pool Customer (atas) -->
+      <bpmndi:BPMNShape id="Shp_Part_Customer" bpmnElement="Part_Customer" isHorizontal="true">
+        <dc:Bounds x="100" y="60" width="1060" height="160" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_SE_Cust" bpmnElement="SE_CustomerMulai">
+        <dc:Bounds x="162" y="122" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="143" y="165" width="73" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA_Buat" bpmnElement="TA_BuatPesanan">
+        <dc:Bounds x="250" y="100" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_IE_Konfirm" bpmnElement="IE_KonfirmasiDiterima">
+        <dc:Bounds x="702" y="122" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="680" y="165" width="80" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_EE_Cust" bpmnElement="EE_CustomerSelesai">
+        <dc:Bounds x="1100" y="122" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1080" y="165" width="76" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edg_SFC_1" bpmnElement="SFC_1">
+        <di:waypoint x="198" y="140" /><di:waypoint x="250" y="140" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_SFC_2" bpmnElement="SFC_2">
+        <di:waypoint x="390" y="140" /><di:waypoint x="702" y="140" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_SFC_3" bpmnElement="SFC_3">
+        <di:waypoint x="738" y="140" /><di:waypoint x="1100" y="140" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Pool Merchant (bawah) -->
+      <bpmndi:BPMNShape id="Shp_Part_Merchant" bpmnElement="Part_Merchant" isHorizontal="true">
+        <dc:Bounds x="100" y="260" width="1060" height="220" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_SE_Merch" bpmnElement="SE_PesananDiterima">
+        <dc:Bounds x="162" y="352" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="143" y="395" width="76" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA_Verif" bpmnElement="TA_VerifikasiData">
+        <dc:Bounds x="250" y="330" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_GW_Valid" bpmnElement="GW_DataValid" isMarkerVisible="true">
+        <dc:Bounds x="445" y="345" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="425" y="402" width="90" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA_Konfirm" bpmnElement="TA_KonfirmasiPesanan">
+        <dc:Bounds x="560" y="330" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA_Siap" bpmnElement="TA_SiapkanPaket">
+        <dc:Bounds x="760" y="330" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA_Kirim" bpmnElement="TA_KirimPaket">
+        <dc:Bounds x="960" y="330" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_EE_OK" bpmnElement="EE_PesananTerkirim">
+        <dc:Bounds x="1120" y="352" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1100" y="395" width="76" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_EE_NOK" bpmnElement="EE_PesananDitolak">
+        <dc:Bounds x="445" y="440" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="425" y="483" width="76" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edg_SF_1_2" bpmnElement="SF_1_2">
+        <di:waypoint x="198" y="370" /><di:waypoint x="250" y="370" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_SF_2_GW" bpmnElement="SF_2_GW">
+        <di:waypoint x="390" y="370" /><di:waypoint x="445" y="370" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_SF_GW_Ya" bpmnElement="SF_GW_Ya">
+        <di:waypoint x="495" y="370" /><di:waypoint x="560" y="370" />
+        <bpmndi:BPMNLabel><dc:Bounds x="515" y="352" width="16" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_SF_GW_Tidak" bpmnElement="SF_GW_Tidak">
+        <di:waypoint x="470" y="395" /><di:waypoint x="470" y="440" />
+        <bpmndi:BPMNLabel><dc:Bounds x="477" y="412" width="30" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_SF_3_4" bpmnElement="SF_3_4">
+        <di:waypoint x="700" y="370" /><di:waypoint x="760" y="370" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_SF_4_5" bpmnElement="SF_4_5">
+        <di:waypoint x="900" y="370" /><di:waypoint x="960" y="370" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_SF_5_EE" bpmnElement="SF_5_EE">
+        <di:waypoint x="1100" y="370" /><di:waypoint x="1120" y="370" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Message Flows -->
+      <bpmndi:BPMNEdge id="Edg_MF_Pesanan" bpmnElement="MF_PesananDikirim">
+        <di:waypoint x="320" y="180" /><di:waypoint x="320" y="260" /><di:waypoint x="180" y="260" /><di:waypoint x="180" y="352" />
+        <bpmndi:BPMNLabel><dc:Bounds x="326" y="210" width="80" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_MF_Konfirm" bpmnElement="MF_KonfirmasiDikirim">
+        <di:waypoint x="630" y="330" /><di:waypoint x="630" y="260" /><di:waypoint x="720" y="260" /><di:waypoint x="720" y="158" />
+        <bpmndi:BPMNLabel><dc:Bounds x="636" y="290" width="90" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>

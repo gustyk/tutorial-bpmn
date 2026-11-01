@@ -1,6 +1,174 @@
 ---
-title: "Modul 2 — Pembayaran dan pengiriman"
-description: "Kasus kedua: memodelkan proses dua-langkah dengan gateway."
+title: "Modul 2: Order Perlu Divalidasi"
+description: "Tambahkan keputusan: XOR Gateway memisahkan jalur pesanan valid dan tidak valid."
 ---
 
-Halaman ini akan diisi saat modul terkait diterbitkan.
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+import CriteriaChecker from '../../../components/CriteriaChecker.astro';
+
+## 1. Apa yang berubah
+
+**Perubahan requirement dari Modul 1:**
+
+> "Pesanan bisa ditolak kalau data tidak lengkap atau barang kosong."
+
+Satu kalimat ini mengubah segalanya. Model Modul 1 mengasumsikan semua pesanan lolos — sekarang ada **dua kemungkinan hasil**, dan model harus mencerminkan keduanya.
+
+**Delta notasi:**
+
+| Kode | Nama | Peran dalam modul ini |
+|------|------|----------------------|
+| G01 | Exclusive Gateway (XOR) | Memisahkan jalur berdasarkan kondisi |
+| — | Conditional flow | Label "ya"/"tidak" pada outgoing flow dari XOR |
+| A04 | User Task | Task yang dikerjakan manusia lewat antarmuka |
+| A05 | Service Task | Task yang dieksekusi sistem/otomasi tanpa interaksi manusia |
+
+**Dari Modul 1 yang dipakai ulang:** E01, A01/A02, F01.
+
+---
+
+## 2. Kasus bisnis
+
+Setelah kamu menyerahkan diagram Modul 1, manajer operasional memanggil lagi:
+
+> "Modelmu bagus, tapi kenyataannya tidak semua pesanan langsung diproses. Kalau data pelanggan tidak lengkap — misalnya alamat tidak ada — kita tidak bisa kirim. Kalau barang yang dipesan ternyata kosong, kita tidak bisa penuhi. Di kedua kasus itu, kita tolak pesanannya. Bisakah kamu tambahkan itu ke diagramnya?"
+
+---
+
+## 3. Requirement
+
+1. Proses dimulai ketika pesanan diterima.
+2. Staf **memverifikasi** data pesanan: kelengkapan data dan ketersediaan stok.
+3. Jika data lengkap **dan** stok tersedia → lanjut ke pemenuhan pesanan.
+4. Jika data tidak lengkap **atau** barang kosong → pesanan ditolak, proses berakhir di sini.
+5. Jika lanjut: sistem **mengonfirmasi pesanan** ke dalam sistem internal.
+6. Staf gudang **menyiapkan paket**.
+7. Staf pengiriman **mengirimkan paket**.
+8. Proses berakhir dengan satu dari dua keadaan: pesanan terkirim **atau** pesanan ditolak.
+
+---
+
+## 4. Panduan analisis
+
+Jawab dulu sebelum membuka alat gambar.
+
+**Keputusan:**
+- Di mana tepatnya keputusan dibuat dalam alur? Setelah task apa?
+- Berapa banyak hasil yang mungkin dari keputusan itu?
+- Apakah informasi yang dibutuhkan untuk keputusan itu *sudah tersedia* saat token tiba di titik keputusan?
+
+**Gateway:**
+- Jika hasilnya "ya" atau "tidak" berdasarkan data yang sudah ada, notasi apa yang tepat?
+- Bagaimana cara memberi label pada gateway dan pada setiap outgoing flow-nya?
+
+**End Event:**
+- Berapa End Event yang kamu butuhkan? Mengapa?
+
+**Reuse negatif — jangan lakukan ini:**
+- Bisakah kamu membuat percabangan langsung dari Task (task dengan dua outgoing flow)? Apa konsekuensinya untuk keterbacaan dan semantik BPMN?
+
+---
+
+## 5. Tugas
+
+Mulai dari diagram Modul 1, tambahkan:
+
+1. **XOR Gateway** setelah task verifikasi.
+2. **Dua outgoing flow** dari gateway: satu dengan kondisi "ya" (data valid dan stok ada), satu dengan kondisi "tidak".
+3. **End Event kedua** untuk jalur penolakan — beri nama keadaan akhirnya.
+4. Pada jalur yang lanjut: tambahkan task konfirmasi ke sistem sebelum siapkan paket.
+
+**Konvensi penamaan gateway:**
+
+| Elemen | Pola | Contoh benar | Contoh salah |
+|--------|------|-------------|--------------|
+| XOR Gateway | pertanyaan | "Data pesanan valid?" | "Cek data", "Gateway" |
+| Outgoing flow dari XOR | jawaban singkat | "ya" / "tidak" | tanpa label |
+
+:::tip[Unduh file starter]
+Gunakan [`case-02-order.bpmn`](/bpmn/case-02-order.bpmn) sebagai referensi struktur, atau mulai dari file Modul 1-mu sendiri.
+:::
+
+---
+
+## 6. Pemeriksa kriteria
+
+<CriteriaChecker
+  criteriaSrc="/cases/case-02/criteria.json"
+  title="Periksa model Kasus 2"
+/>
+
+---
+
+## 7. Kunci jawaban
+
+:::caution[Coba kerjakan dulu]
+Buka hanya setelah kamu selesai mengerjakan tugas dan memeriksa modelmu.
+:::
+
+<details>
+<summary>**Lihat kunci jawaban Modul 2**</summary>
+
+### Lapis A — Model referensi
+
+<BpmnViewer src="/bpmn/case-02-order.bpmn" title="Kasus 2 — Order perlu divalidasi" />
+
+**Walkthrough token:**
+
+1. Token lahir di **Start Event "Pesanan diterima"**.
+2. Token masuk ke **User Task "Verifikasi data pesanan"** — staf memeriksa data dan stok.
+3. Token tiba di **XOR Gateway "Data pesanan valid?"**.
+4. *Jalur "tidak":* Token bergerak ke **End Event "Pesanan ditolak"** — proses selesai di sini.
+5. *Jalur "ya":* Token bergerak ke **Service Task "Konfirmasi pesanan ke sistem"** — sistem mencatat.
+6. Token lanjut ke **Task "Siapkan paket"**, lalu ke **Task "Kirim paket"**.
+7. Token tiba di **End Event "Pesanan terkirim"** — proses selesai.
+
+**Dua jalur, dua End Event, satu keputusan.**
+
+### Lapis B — Kriteria wajib
+
+1. **Ada minimal satu XOR Gateway** untuk memisahkan jalur.
+2. **Setiap outgoing flow dari XOR memiliki kondisi** — tidak ada flow yang "mengambang" tanpa syarat.
+3. **Ada minimal dua End Event** — satu untuk setiap hasil akhir yang berbeda secara semantik.
+4. **Tidak ada Task yang bercabang langsung** — semua percabangan melalui Gateway.
+5. **Semua token dapat mencapai salah satu End Event** — tidak ada jalur buntu.
+
+### Lapis C — Variasi yang juga diterima
+
+**Variasi 1: Default flow untuk jalur "tidak"**
+Alih-alih label "tidak", kamu bisa menandai flow penolakan sebagai *default flow* (dengan tanda slash pada pangkalnya). Trade-off: semantik lebih ketat — default baru aktif jika semua kondisi lain gagal.
+
+**Variasi 2: XOR join sebelum End Event tunggal**
+Menggabungkan kedua jalur kembali ke satu End Event dengan XOR join. Sah secara BPMN, tapi nama End Event tunggal itu harus cukup umum untuk mencakup kedua hasil. Ini sering mengurangi keterbacaan.
+
+### Lapis D — Kesalahan umum
+
+**Kesalahan 1: Task bercabang langsung tanpa gateway**
+
+*Gejala:* Task "Verifikasi data pesanan" memiliki dua outgoing Sequence Flow.
+
+*Diagnosis semantik:* Dalam BPMN, Task yang memiliki lebih dari satu outgoing flow **secara default berperilaku seperti AND split** — token digandakan ke semua jalur sekaligus. Bukan keputusan, tapi pemisahan paralel.
+
+*Perbaikan:* Tambahkan XOR Gateway setelah task, pindahkan kedua outgoing flow ke gateway.
+
+**Kesalahan 2: XOR Gateway tanpa label pada outgoing flow**
+
+*Gejala:* Gateway memiliki dua outgoing flow yang tidak berlabel.
+
+*Diagnosis semantik:* BPMN membutuhkan kondisi atau penanda default pada setiap outgoing flow XOR agar mesin/pembaca tahu kapan memilih jalur mana (OMG BPMN 2.0.2 §13.3 TODO-VERIFY).
+
+*Perbaikan:* Beri label "ya" dan "tidak", atau gunakan `conditionExpression`.
+
+**Kesalahan 3: XOR join dianggap "penghalang" (barrier)**
+
+*Gejala:* Mahasiswa mengira XOR join menunggu semua token masuk sebelum meneruskan.
+
+*Diagnosis semantik:* XOR join meneruskan token **segera saat token pertama tiba** — ia tidak menunggu. Jika dua token masuk, dua token keluar. Ini berbeda dari AND join yang memang menunggu semua token (dibahas di Modul 6).
+
+*Perbaikan:* Pahami bahwa XOR join hanya menyatukan jalur secara struktural, bukan menunggu.
+
+</details>
+
+---
+
+**← [Modul 1](/jalur/01/) · [Modul 3: Customer adalah Pihak Luar](/jalur/03/) →**

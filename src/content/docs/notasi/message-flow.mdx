@@ -1,0 +1,173 @@
+---
+title: "F02 — Message Flow"
+description: "Alur komunikasi lintas Pool — garis putus-putus yang membawa pesan antar-entitas, bukan token."
+---
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | F02 |
+| **Nama BPMN** | Message Flow |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 3 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §10.2.3 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+Garis **putus-putus** dengan kepala panah **terbuka** (tidak tertutup/diisi) di ujung. Opsional: lingkaran kecil di pangkal (sumber) dan amplop di ujung (target) untuk memperjelas arah.
+
+*Perbedaan visual kunci dari Sequence Flow:* Sequence Flow = garis utuh + kepala panah tertutup. Message Flow = garis putus-putus + kepala panah terbuka.
+
+---
+
+## 3. Apa artinya
+
+Message Flow menyatakan: *"Entitas A mengirim pesan kepada Entitas B."*
+
+Ia tidak membawa token — ia membawa **pesan** (informasi, dokumen, sinyal). Token yang memungkinkan pengiriman pesan tetap ada di dalam Pool pengirim; di Pool penerima, pesan ini memicu event atau menyelesaikan event yang sedang menunggu.
+
+---
+
+## 4. Tujuan
+
+Message Flow adalah satu-satunya cara yang valid untuk menghubungkan elemen di Pool yang berbeda. Ia merepresentasikan **kontrak komunikasi** antar-entitas: apa yang dikirim, dari mana, ke mana.
+
+---
+
+## 5. Semantik BPMN
+
+**Mekanisme kerja:**
+
+1. Di Pool pengirim: token tiba di elemen sumber (Send Task, atau End Event, atau Intermediate Throw Event). Elemen ini "melempar" pesan ke luar Pool.
+2. Message Flow membawa pesan melintasi batas Pool.
+3. Di Pool penerima: pesan tiba di elemen target. Jika targetnya Start Event — proses baru diinstansiasi. Jika targetnya Intermediate Catch Event — token yang sedang menunggu di sana bergerak. Jika targetnya Receive Task — task selesai.
+
+**Yang *tidak* terjadi:** token pengirim tidak berpindah. Token tetap di Pool pengirim dan melanjutkan alurnya sendiri setelah pengiriman selesai.
+
+---
+
+## 6. Kapan digunakan
+
+- Untuk setiap komunikasi antara dua Pool yang berbeda.
+- Ketika ada pesan, dokumen, atau sinyal yang dikirim dari satu entitas ke entitas lain.
+- Berpasangan dengan: Send Task (A08), Receive Task (A09), Message Start/End/Intermediate Event (E02).
+
+---
+
+## 7. Kapan jangan digunakan
+
+**Jangan gunakan Message Flow di dalam satu Pool.**
+
+Ini adalah anti-pattern fatal: Message Flow di dalam satu Pool tidak membawa token, sehingga alur akan terhenti diam-diam — tanpa error yang jelas. Gunakan Sequence Flow untuk koneksi dalam satu Pool.
+
+**Jangan gunakan Message Flow sebagai pengganti Sequence Flow** meskipun secara visual terlihat "lebih jelas" untuk menunjukkan pertukaran data. Data exchange di dalam proses menggunakan Data Object dan Data Association (Modul 4).
+
+---
+
+## 8. Contoh penggunaan
+
+```
+[Pool Customer]
+  [Send Task "Kirim pesanan"] ---(Message Flow: "Pesanan")--→
+
+[Pool Merchant]
+  --→ [Message Start "Pesanan diterima"]
+```
+
+---
+
+## 9. Diagram contoh
+
+Lihat [Modul 3](/jalur/03/) untuk dua Message Flow dalam diagram Collaboration.
+
+---
+
+## 10. Cara membaca diagram
+
+Ketika melihat garis putus-putus melintasi batas Pool:
+1. Baca arah panah: dari Pool mana ke Pool mana?
+2. Baca label (jika ada): pesan apa yang dikirim?
+3. Identifikasi elemen sumber: Send Task, Intermediate Throw Event, atau End Event?
+4. Identifikasi elemen target: Message Start Event, Intermediate Catch Event, atau Receive Task?
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Message Flow = Sequence Flow yang melintasi Pool"**
+
+Tidak. Mereka berbeda secara fundamental. Sequence Flow membawa token (kontrol eksekusi). Message Flow membawa pesan (informasi). Menggunakan Sequence Flow yang melintasi Pool menyatakan bahwa token berpindah antar-proses — yang tidak mungkin. Menggunakan Message Flow di dalam satu Pool tidak membawa token — alur akan terhenti.
+
+**"Message Flow bisa menggantikan Sequence Flow jika pesannya penting"**
+
+Tidak. Jika kamu ingin menyatakan bahwa data berpindah antar-task dalam satu Pool, gunakan Data Association dengan Data Object. Message Flow untuk komunikasi lintas Pool saja.
+
+---
+
+## 12. Anti-pattern
+
+**Message Flow sebagai Sequence Flow dalam satu Pool**
+
+Gejala: garis putus-putus menghubungkan dua task dalam Pool yang sama.
+
+Diagnosis semantik: Message Flow tidak membawa token. Token akan tiba di Task pertama, task selesai, tapi tidak ada yang membawa token ke Task kedua karena Message Flow bukan jalur token. Proses "berhenti" di sini tanpa pesan error yang jelas — ini adalah bug tersembunyi yang sulit di-debug.
+
+Perbaikan: ganti dengan Sequence Flow (garis utuh).
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Tertukar dengan | Perbedaan kunci |
+|----------------|----------------|
+| **Sequence Flow** (F01) | Sequence Flow = token, dalam satu Pool; Message Flow = pesan, lintas Pool |
+| **Data Association** (F03) | Data Association = perpindahan data antara task dan data object; tidak lintas Pool |
+
+---
+
+## 14. Aturan pemilihan
+
+```
+Koneksi dalam satu Pool → Sequence Flow
+Komunikasi antara dua Pool → Message Flow
+Perpindahan data antara task dan data object → Data Association
+```
+
+---
+
+## 15. Pertanyaan diagnostik
+
+1. Apakah kedua elemen yang ingin dihubungkan berada di Pool yang berbeda?
+2. Apakah ini pengiriman pesan, atau hanya urutan eksekusi?
+
+---
+
+## 16. Argumentasi pemodelan
+
+*"Mengapa harus Message Flow dan bukan Sequence Flow jika Customer dan Merchant tetap berinteraksi secara langsung di sistem yang sama?"*
+
+BPMN memodelkan semantik bisnis, bukan implementasi teknis. Customer dan Merchant adalah entitas bisnis yang berbeda — bahkan jika mereka menggunakan platform yang sama, mereka berinteraksi melalui **transaksi bisnis** (pesanan, konfirmasi), bukan melalui satu alur kontrol yang sama. Message Flow mencerminkan realitas bisnis ini: Customer *mengirim* pesanan, Merchant *menerima* pesanan. Bukan Customer *meneruskan kontrol* ke Merchant.
+
+---
+
+## 17. Validity check
+
+- [ ] Message Flow hanya menghubungkan elemen dari Pool yang berbeda.
+- [ ] Sumber Message Flow adalah: Send Task, Intermediate Throw Message Event, End Message Event, atau elemen di Pool manapun (untuk model abstrak).
+- [ ] Target Message Flow adalah: Receive Task, Intermediate Catch Message Event, Start Message Event.
+- [ ] Tidak ada Message Flow di dalam satu Pool.
+
+---
+
+## 18. Catatan Camunda
+
+Di Camunda 8, Message Flow diimplementasikan melalui *message correlation*. Process A mengirim message dengan nama tertentu dan correlation key. Process B memiliki Intermediate Message Catch Event atau Receive Task yang menunggu message dengan nama dan correlation key yang sama. Pastikan nama pesan unik di seluruh deployment.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Message Flow membawa pesan dari satu Pool ke Pool lain — ia tidak membawa token, sehingga tidak memindahkan kontrol eksekusi, hanya memicu atau menyelesaikan event di Pool tujuan.

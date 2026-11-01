@@ -1,0 +1,142 @@
+---
+title: "A05 — Service Task"
+description: "Task yang dieksekusi oleh sistem secara otomatis — tidak ada interaksi manusia."
+---
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | A05 |
+| **Nama BPMN** | Service Task |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 2 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §10.2.1 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+Persegi panjang dengan sudut melengkung + ikon **roda gigi** di pojok kiri atas.
+
+---
+
+## 3. Apa artinya
+
+Service Task menyatakan: *"Pekerjaan ini dieksekusi oleh sistem secara otomatis — biasanya dengan memanggil service, API, atau microservice."*
+
+Tidak ada manusia yang terlibat di dalam task ini. Sistem menerima input, memproses, dan menghasilkan output secara mandiri.
+
+---
+
+## 4. Tujuan
+
+Menyatakan bahwa task ini dapat (atau harus) diotomasi penuh. Dalam analisis proses, Service Task menandai langkah yang tidak memerlukan intervensi manusia — ini penting untuk analisis efisiensi dan identifikasi bottleneck.
+
+---
+
+## 5. Semantik BPMN
+
+Dari perspektif token: sama dengan Task abstrak. Token masuk, sistem mengeksekusi (langsung, tanpa menunggu manusia), token keluar. Waktu eksekusi bisa sangat singkat (milidetik untuk API call) atau lama (batch processing).
+
+---
+
+## 6. Kapan digunakan
+
+- Memanggil API eksternal (cek stok, validasi pembayaran, kirim notifikasi).
+- Menyimpan data ke database.
+- Mengeksekusi kalkulasi otomatis.
+- Integrasi sistem ke sistem (middleware, ESB, message broker).
+
+---
+
+## 7. Kapan jangan digunakan
+
+- Jika ada manusia yang harus memutuskan atau menyetujui → gunakan **User Task** (A04).
+- Jika pekerjaan menerapkan aturan bisnis dari *decision table* → gunakan **Business Rule Task** (A07).
+
+---
+
+## 8. Contoh penggunaan
+
+```
+[User Task "Verifikasi data pesanan"]
+  → [XOR "Data valid?"]
+      → (ya) → [Service Task "Konfirmasi pesanan ke sistem"]
+               (API call: buat order record, kirim konfirmasi email otomatis)
+               → [Task "Siapkan paket"]
+```
+
+---
+
+## 9. Diagram contoh
+
+Lihat [Modul 2](/jalur/02/) — `TA_KonfirmasiPesanan` adalah Service Task.
+
+---
+
+## 10. Cara membaca diagram
+
+Ikon roda gigi = sistem, otomatis, tanpa manusia. Tanya: *"Sistem apa yang dipanggil? API mana? Apa outputnya?"*
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Service Task = semua yang berhubungan dengan teknologi"**
+
+Tidak. User Task juga melibatkan teknologi (form aplikasi), tapi ada manusia di dalamnya. Service Task adalah **otomasi penuh** — tidak ada keputusan manusia di dalam langkah itu.
+
+---
+
+## 12. Anti-pattern
+
+Menggunakan Service Task untuk pekerjaan yang sebenarnya membutuhkan pertimbangan manusia, hanya karena ada sistem yang terlibat. Jika ada manusia yang membaca, memutuskan, atau menyetujui → User Task.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Tertukar dengan | Perbedaan kunci |
+|----------------|----------------|
+| **User Task** (A04) | User Task ada manusianya; Service Task tidak |
+| **Business Rule Task** (A07) | Business Rule Task mengevaluasi aturan dari decision table |
+| **Send Task** (A08) | Send Task khusus untuk mengirim pesan ke partisipan lain |
+
+---
+
+## 14. Aturan pemilihan
+
+Lihat [A03 — Aturan pemilihan](/notasi/manual-task/#14-aturan-pemilihan).
+
+---
+
+## 15. Pertanyaan diagnostik
+
+1. Apakah ada manusia yang harus terlibat dalam langkah ini?
+2. Bisakah sistem menyelesaikan pekerjaan ini tanpa interaksi manusia?
+
+---
+
+## 16. Argumentasi pemodelan
+
+Service Task adalah fondasi otomasi proses. Ketika kamu mengidentifikasi Service Task dalam model *as-is* (proses saat ini), kamu sedang mendokumentasikan apa yang sudah terotomasi. Ketika kamu menempatkannya di model *to-be* (proses masa depan), kamu menyatakan aspirasi otomasi — dan itu menjadi input untuk tim IT.
+
+---
+
+## 17. Validity check
+
+- [ ] Nama mengikuti pola "kata kerja + objek".
+- [ ] Pekerjaan memang dapat dieksekusi otomatis tanpa intervensi manusia.
+
+---
+
+## 18. Catatan Camunda
+
+Di Camunda 8, Service Task dikonfigurasi dengan *job worker* yang mengimplementasikan logika bisnis. Ketika token tiba di Service Task, Camunda membuat *job* yang diambil dan dieksekusi oleh worker tersebut. Tanpa worker yang aktif, proses akan macet di sini.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Service Task menyatakan langkah yang dieksekusi sistem secara otomatis tanpa intervensi manusia — token masuk, mesin bekerja, token keluar tanpa menunggu.
