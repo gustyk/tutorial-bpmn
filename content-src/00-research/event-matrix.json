@@ -1,0 +1,1016 @@
+{
+  "schemaVersion": 1,
+  "verifiedOn": null,
+  "description": "Matriks validitas event BPMN 2.0.2: setiap kombinasi trigger×posisi. Status DRAFTED — perlu fact-check terhadap PDF OMG 2.0.2 tabel 10.84–10.92 sebelum naik VERIFIED.",
+  "cells": [
+    {
+      "trigger": "None",
+      "position": "Start",
+      "omgValid": true,
+      "omgLocator": "§10.4.2, tabel 10.84 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "None Start Event adalah titik masuk default process."
+    },
+    {
+      "trigger": "None",
+      "position": "IntermediateCatch",
+      "omgValid": false,
+      "omgLocator": "§10.4.3, tabel 10.86 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "None tidak dapat ditangkap; tidak ada semantik 'menunggu none'."
+    },
+    {
+      "trigger": "None",
+      "position": "IntermediateThrow",
+      "omgValid": true,
+      "omgLocator": "§10.4.3, tabel 10.85 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "None Intermediate Throw berfungsi sebagai penanda milestone."
+    },
+    {
+      "trigger": "None",
+      "position": "BoundaryInterrupting",
+      "omgValid": false,
+      "omgLocator": "§10.4.4, tabel 10.87 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Boundary event tidak memakai trigger None."
+    },
+    {
+      "trigger": "None",
+      "position": "BoundaryNonInterrupting",
+      "omgValid": false,
+      "omgLocator": "§10.4.4, tabel 10.88 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Boundary event tidak memakai trigger None."
+    },
+    {
+      "trigger": "None",
+      "position": "EventSubprocessInterrupting",
+      "omgValid": false,
+      "omgLocator": "§10.4.5, tabel 10.89 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Event Subprocess Start tidak memakai trigger None."
+    },
+    {
+      "trigger": "None",
+      "position": "EventSubprocessNonInterrupting",
+      "omgValid": false,
+      "omgLocator": "§10.4.5, tabel 10.90 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Event Subprocess Start tidak memakai trigger None."
+    },
+    {
+      "trigger": "None",
+      "position": "End",
+      "omgValid": true,
+      "omgLocator": "§10.4.6, tabel 10.91 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "None End Event adalah penyelesaian normal process."
+    },
+    {
+      "trigger": "Message",
+      "position": "Start",
+      "omgValid": true,
+      "omgLocator": "§10.4.2, tabel 10.84 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "Message",
+      "position": "IntermediateCatch",
+      "omgValid": true,
+      "omgLocator": "§10.4.3, tabel 10.86 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "Message",
+      "position": "IntermediateThrow",
+      "omgValid": true,
+      "omgLocator": "§10.4.3, tabel 10.85 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Message Intermediate Throw mengirim pesan ke peserta lain."
+    },
+    {
+      "trigger": "Message",
+      "position": "BoundaryInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.4, tabel 10.87 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "Message",
+      "position": "BoundaryNonInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.4, tabel 10.88 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "Message",
+      "position": "EventSubprocessInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.5, tabel 10.89 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "Message",
+      "position": "EventSubprocessNonInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.5, tabel 10.90 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "Message",
+      "position": "End",
+      "omgValid": true,
+      "omgLocator": "§10.4.6, tabel 10.91 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Message End Event mengirim pesan lalu mengakhiri token."
+    },
+    {
+      "trigger": "Timer",
+      "position": "Start",
+      "omgValid": true,
+      "omgLocator": "§10.4.2, tabel 10.84 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "Timer",
+      "position": "IntermediateCatch",
+      "omgValid": true,
+      "omgLocator": "§10.4.3, tabel 10.86 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "Timer",
+      "position": "IntermediateThrow",
+      "omgValid": false,
+      "omgLocator": "§10.4.3, tabel 10.85 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Timer tidak dapat dilempar (thrown); hanya dapat ditangkap."
+    },
+    {
+      "trigger": "Timer",
+      "position": "BoundaryInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.4, tabel 10.87 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "Timer",
+      "position": "BoundaryNonInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.4, tabel 10.88 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "Timer",
+      "position": "EventSubprocessInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.5, tabel 10.89 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "Timer",
+      "position": "EventSubprocessNonInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.5, tabel 10.90 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "Timer",
+      "position": "End",
+      "omgValid": false,
+      "omgLocator": "§10.4.6, tabel 10.91 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Tidak ada Timer End Event dalam standar BPMN."
+    },
+    {
+      "trigger": "Conditional",
+      "position": "Start",
+      "omgValid": true,
+      "omgLocator": "§10.4.2, tabel 10.84 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "TODO-VERIFY Camunda 8.9 support"
+    },
+    {
+      "trigger": "Conditional",
+      "position": "IntermediateCatch",
+      "omgValid": true,
+      "omgLocator": "§10.4.3, tabel 10.86 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "TODO-VERIFY Camunda 8.9 support"
+    },
+    {
+      "trigger": "Conditional",
+      "position": "IntermediateThrow",
+      "omgValid": false,
+      "omgLocator": "§10.4.3, tabel 10.85 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Conditional tidak dapat dilempar; hanya menunggu kondisi terpenuhi."
+    },
+    {
+      "trigger": "Conditional",
+      "position": "BoundaryInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.4, tabel 10.87 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "TODO-VERIFY Camunda 8.9 support"
+    },
+    {
+      "trigger": "Conditional",
+      "position": "BoundaryNonInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.4, tabel 10.88 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "TODO-VERIFY Camunda 8.9 support"
+    },
+    {
+      "trigger": "Conditional",
+      "position": "EventSubprocessInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.5, tabel 10.89 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "TODO-VERIFY Camunda 8.9 support"
+    },
+    {
+      "trigger": "Conditional",
+      "position": "EventSubprocessNonInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.5, tabel 10.90 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "TODO-VERIFY Camunda 8.9 support"
+    },
+    {
+      "trigger": "Conditional",
+      "position": "End",
+      "omgValid": false,
+      "omgLocator": "§10.4.6, tabel 10.91 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Tidak ada Conditional End Event dalam standar BPMN."
+    },
+    {
+      "trigger": "Signal",
+      "position": "Start",
+      "omgValid": true,
+      "omgLocator": "§10.4.2, tabel 10.84 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "Signal",
+      "position": "IntermediateCatch",
+      "omgValid": true,
+      "omgLocator": "§10.4.3, tabel 10.86 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "Signal",
+      "position": "IntermediateThrow",
+      "omgValid": true,
+      "omgLocator": "§10.4.3, tabel 10.85 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Signal Intermediate Throw menyiarkan sinyal ke semua penerima."
+    },
+    {
+      "trigger": "Signal",
+      "position": "BoundaryInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.4, tabel 10.87 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "Signal",
+      "position": "BoundaryNonInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.4, tabel 10.88 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "Signal",
+      "position": "EventSubprocessInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.5, tabel 10.89 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "Signal",
+      "position": "EventSubprocessNonInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.5, tabel 10.90 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "Signal",
+      "position": "End",
+      "omgValid": true,
+      "omgLocator": "§10.4.6, tabel 10.91 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Signal End Event menyiarkan sinyal lalu mengakhiri token."
+    },
+    {
+      "trigger": "Error",
+      "position": "Start",
+      "omgValid": false,
+      "omgLocator": "§10.4.2, tabel 10.84 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Error Start tidak sah di top-level process; hanya sah di Event Subprocess."
+    },
+    {
+      "trigger": "Error",
+      "position": "IntermediateCatch",
+      "omgValid": false,
+      "omgLocator": "§10.4.3, tabel 10.86 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Tidak ada Error Intermediate Catch; gunakan Boundary atau Event Subprocess."
+    },
+    {
+      "trigger": "Error",
+      "position": "IntermediateThrow",
+      "omgValid": false,
+      "omgLocator": "§10.4.3, tabel 10.85 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Tidak ada Error Intermediate Throw; gunakan Error End Event."
+    },
+    {
+      "trigger": "Error",
+      "position": "BoundaryInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.4, tabel 10.87 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Error Boundary selalu interrupting; tidak ada versi non-interrupting."
+    },
+    {
+      "trigger": "Error",
+      "position": "BoundaryNonInterrupting",
+      "omgValid": false,
+      "omgLocator": "§10.4.4, tabel 10.88 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Error Boundary tidak sah sebagai non-interrupting."
+    },
+    {
+      "trigger": "Error",
+      "position": "EventSubprocessInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.5, tabel 10.89 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "Error",
+      "position": "EventSubprocessNonInterrupting",
+      "omgValid": false,
+      "omgLocator": "§10.4.5, tabel 10.90 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Error Event Subprocess tidak sah sebagai non-interrupting."
+    },
+    {
+      "trigger": "Error",
+      "position": "End",
+      "omgValid": true,
+      "omgLocator": "§10.4.6, tabel 10.91 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Error End Event melempar error dan menghentikan token."
+    },
+    {
+      "trigger": "Escalation",
+      "position": "Start",
+      "omgValid": false,
+      "omgLocator": "§10.4.2, tabel 10.84 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Escalation Start tidak sah di top-level process; hanya di Event Subprocess."
+    },
+    {
+      "trigger": "Escalation",
+      "position": "IntermediateCatch",
+      "omgValid": false,
+      "omgLocator": "§10.4.3, tabel 10.86 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Tidak ada Escalation Intermediate Catch dalam standar."
+    },
+    {
+      "trigger": "Escalation",
+      "position": "IntermediateThrow",
+      "omgValid": true,
+      "omgLocator": "§10.4.3, tabel 10.85 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Escalation Intermediate Throw mengirimkan eskalasi ke scope luar."
+    },
+    {
+      "trigger": "Escalation",
+      "position": "BoundaryInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.4, tabel 10.87 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "Escalation",
+      "position": "BoundaryNonInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.4, tabel 10.88 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "Escalation",
+      "position": "EventSubprocessInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.5, tabel 10.89 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "Escalation",
+      "position": "EventSubprocessNonInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.5, tabel 10.90 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "Escalation",
+      "position": "End",
+      "omgValid": true,
+      "omgLocator": "§10.4.6, tabel 10.91 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Escalation End Event mengirimkan eskalasi lalu mengakhiri token."
+    },
+    {
+      "trigger": "Compensation",
+      "position": "Start",
+      "omgValid": false,
+      "omgLocator": "§10.4.2, tabel 10.84 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Compensation tidak sah sebagai Start Event."
+    },
+    {
+      "trigger": "Compensation",
+      "position": "IntermediateCatch",
+      "omgValid": false,
+      "omgLocator": "§10.4.3, tabel 10.86 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Tidak ada Compensation Intermediate Catch dalam standar."
+    },
+    {
+      "trigger": "Compensation",
+      "position": "IntermediateThrow",
+      "omgValid": true,
+      "omgLocator": "§10.4.3, tabel 10.85 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Compensation Intermediate Throw memulai kompensasi untuk scope saat ini."
+    },
+    {
+      "trigger": "Compensation",
+      "position": "BoundaryInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.4, tabel 10.87 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Compensation Boundary bersifat khusus: dipicu setelah activity selesai, bukan saat berlangsung. cancelActivity tidak berlaku."
+    },
+    {
+      "trigger": "Compensation",
+      "position": "BoundaryNonInterrupting",
+      "omgValid": false,
+      "omgLocator": "§10.4.4, tabel 10.88 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Compensation Boundary hanya ada dalam bentuk 'setelah selesai'; kategori interrupting/non-interrupting tidak berlaku secara konvensional."
+    },
+    {
+      "trigger": "Compensation",
+      "position": "EventSubprocessInterrupting",
+      "omgValid": false,
+      "omgLocator": "§10.4.5, tabel 10.89 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Compensation Event Subprocess tidak sah sebagai interrupting."
+    },
+    {
+      "trigger": "Compensation",
+      "position": "EventSubprocessNonInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.5, tabel 10.90 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Compensation Event Subprocess dipicu oleh handler kompensasi."
+    },
+    {
+      "trigger": "Compensation",
+      "position": "End",
+      "omgValid": true,
+      "omgLocator": "§10.4.6, tabel 10.91 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Compensation End Event memulai kompensasi untuk seluruh process."
+    },
+    {
+      "trigger": "Link",
+      "position": "Start",
+      "omgValid": false,
+      "omgLocator": "§10.4.2, tabel 10.84 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Link tidak sah sebagai Start Event."
+    },
+    {
+      "trigger": "Link",
+      "position": "IntermediateCatch",
+      "omgValid": true,
+      "omgLocator": "§10.4.3, tabel 10.86 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Link Intermediate Catch adalah target lompatan dalam halaman diagram."
+    },
+    {
+      "trigger": "Link",
+      "position": "IntermediateThrow",
+      "omgValid": true,
+      "omgLocator": "§10.4.3, tabel 10.85 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Link Intermediate Throw adalah asal lompatan; harus berpasangan dengan Link Catch."
+    },
+    {
+      "trigger": "Link",
+      "position": "BoundaryInterrupting",
+      "omgValid": false,
+      "omgLocator": "§10.4.4, tabel 10.87 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Link tidak sah sebagai Boundary Event."
+    },
+    {
+      "trigger": "Link",
+      "position": "BoundaryNonInterrupting",
+      "omgValid": false,
+      "omgLocator": "§10.4.4, tabel 10.88 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Link tidak sah sebagai Boundary Event."
+    },
+    {
+      "trigger": "Link",
+      "position": "EventSubprocessInterrupting",
+      "omgValid": false,
+      "omgLocator": "§10.4.5, tabel 10.89 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Link tidak sah sebagai Event Subprocess Start."
+    },
+    {
+      "trigger": "Link",
+      "position": "EventSubprocessNonInterrupting",
+      "omgValid": false,
+      "omgLocator": "§10.4.5, tabel 10.90 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Link tidak sah sebagai Event Subprocess Start."
+    },
+    {
+      "trigger": "Link",
+      "position": "End",
+      "omgValid": false,
+      "omgLocator": "§10.4.6, tabel 10.91 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Link tidak sah sebagai End Event."
+    },
+    {
+      "trigger": "Cancel",
+      "position": "Start",
+      "omgValid": false,
+      "omgLocator": "§10.4.2, tabel 10.84 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Cancel tidak sah sebagai Start Event."
+    },
+    {
+      "trigger": "Cancel",
+      "position": "IntermediateCatch",
+      "omgValid": false,
+      "omgLocator": "§10.4.3, tabel 10.86 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Tidak ada Cancel Intermediate Event."
+    },
+    {
+      "trigger": "Cancel",
+      "position": "IntermediateThrow",
+      "omgValid": false,
+      "omgLocator": "§10.4.3, tabel 10.85 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Tidak ada Cancel Intermediate Throw."
+    },
+    {
+      "trigger": "Cancel",
+      "position": "BoundaryInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.4, tabel 10.87 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Cancel Boundary hanya sah di dalam Transaction Subprocess."
+    },
+    {
+      "trigger": "Cancel",
+      "position": "BoundaryNonInterrupting",
+      "omgValid": false,
+      "omgLocator": "§10.4.4, tabel 10.88 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Cancel Boundary tidak sah sebagai non-interrupting."
+    },
+    {
+      "trigger": "Cancel",
+      "position": "EventSubprocessInterrupting",
+      "omgValid": false,
+      "omgLocator": "§10.4.5, tabel 10.89 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Cancel tidak sah sebagai Event Subprocess Start."
+    },
+    {
+      "trigger": "Cancel",
+      "position": "EventSubprocessNonInterrupting",
+      "omgValid": false,
+      "omgLocator": "§10.4.5, tabel 10.90 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Cancel tidak sah sebagai Event Subprocess Start."
+    },
+    {
+      "trigger": "Cancel",
+      "position": "End",
+      "omgValid": true,
+      "omgLocator": "§10.4.6, tabel 10.91 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Cancel End Event hanya sah di dalam Transaction Subprocess."
+    },
+    {
+      "trigger": "Terminate",
+      "position": "Start",
+      "omgValid": false,
+      "omgLocator": "§10.4.2, tabel 10.84 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Terminate tidak sah sebagai Start Event."
+    },
+    {
+      "trigger": "Terminate",
+      "position": "IntermediateCatch",
+      "omgValid": false,
+      "omgLocator": "§10.4.3, tabel 10.86 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Terminate tidak sah sebagai Intermediate Event."
+    },
+    {
+      "trigger": "Terminate",
+      "position": "IntermediateThrow",
+      "omgValid": false,
+      "omgLocator": "§10.4.3, tabel 10.85 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Terminate tidak sah sebagai Intermediate Event."
+    },
+    {
+      "trigger": "Terminate",
+      "position": "BoundaryInterrupting",
+      "omgValid": false,
+      "omgLocator": "§10.4.4, tabel 10.87 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Terminate tidak sah sebagai Boundary Event."
+    },
+    {
+      "trigger": "Terminate",
+      "position": "BoundaryNonInterrupting",
+      "omgValid": false,
+      "omgLocator": "§10.4.4, tabel 10.88 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Terminate tidak sah sebagai Boundary Event."
+    },
+    {
+      "trigger": "Terminate",
+      "position": "EventSubprocessInterrupting",
+      "omgValid": false,
+      "omgLocator": "§10.4.5, tabel 10.89 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Terminate tidak sah sebagai Event Subprocess Start."
+    },
+    {
+      "trigger": "Terminate",
+      "position": "EventSubprocessNonInterrupting",
+      "omgValid": false,
+      "omgLocator": "§10.4.5, tabel 10.90 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Terminate tidak sah sebagai Event Subprocess Start."
+    },
+    {
+      "trigger": "Terminate",
+      "position": "End",
+      "omgValid": true,
+      "omgLocator": "§10.4.6, tabel 10.91 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Terminate End Event mengakhiri seluruh process (semua token, semua instance)."
+    },
+    {
+      "trigger": "Multiple",
+      "position": "Start",
+      "omgValid": true,
+      "omgLocator": "§10.4.2, tabel 10.84 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Multiple Start: salah satu dari beberapa trigger memulai process (XOR)."
+    },
+    {
+      "trigger": "Multiple",
+      "position": "IntermediateCatch",
+      "omgValid": true,
+      "omgLocator": "§10.4.3, tabel 10.86 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Multiple Intermediate Catch: salah satu trigger pertama menangkap."
+    },
+    {
+      "trigger": "Multiple",
+      "position": "IntermediateThrow",
+      "omgValid": true,
+      "omgLocator": "§10.4.3, tabel 10.85 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Multiple Intermediate Throw: melempar semua trigger yang dikonfigurasi."
+    },
+    {
+      "trigger": "Multiple",
+      "position": "BoundaryInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.4, tabel 10.87 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "Multiple",
+      "position": "BoundaryNonInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.4, tabel 10.88 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "Multiple",
+      "position": "EventSubprocessInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.5, tabel 10.89 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "Multiple",
+      "position": "EventSubprocessNonInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.5, tabel 10.90 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "Multiple",
+      "position": "End",
+      "omgValid": true,
+      "omgLocator": "§10.4.6, tabel 10.91 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Multiple End Event melempar semua trigger yang dikonfigurasi."
+    },
+    {
+      "trigger": "ParallelMultiple",
+      "position": "Start",
+      "omgValid": true,
+      "omgLocator": "§10.4.2, tabel 10.84 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Parallel Multiple Start: semua trigger harus terjadi untuk memulai process (AND)."
+    },
+    {
+      "trigger": "ParallelMultiple",
+      "position": "IntermediateCatch",
+      "omgValid": true,
+      "omgLocator": "§10.4.3, tabel 10.86 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Parallel Multiple Catch: semua trigger harus terjadi sebelum dilanjutkan."
+    },
+    {
+      "trigger": "ParallelMultiple",
+      "position": "IntermediateThrow",
+      "omgValid": false,
+      "omgLocator": "§10.4.3, tabel 10.85 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Parallel Multiple tidak sah sebagai Throw event; semantik 'lempar semua' adalah Multiple Throw."
+    },
+    {
+      "trigger": "ParallelMultiple",
+      "position": "BoundaryInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.4, tabel 10.87 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "ParallelMultiple",
+      "position": "BoundaryNonInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.4, tabel 10.88 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "ParallelMultiple",
+      "position": "EventSubprocessInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.5, tabel 10.89 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "ParallelMultiple",
+      "position": "EventSubprocessNonInterrupting",
+      "omgValid": true,
+      "omgLocator": "§10.4.5, tabel 10.90 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED"
+    },
+    {
+      "trigger": "ParallelMultiple",
+      "position": "End",
+      "omgValid": false,
+      "omgLocator": "§10.4.6, tabel 10.91 (TODO-VERIFY lokasi baris tepat)",
+      "camundaExecutable": null,
+      "camundaLocator": null,
+      "status": "DRAFTED",
+      "note": "Tidak ada Parallel Multiple End Event; gunakan Multiple End."
+    }
+  ]
+}

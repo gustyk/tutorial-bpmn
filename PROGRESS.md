@@ -2,9 +2,9 @@
 
 Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y — judul` → `- [x] T-x.y — judul · 2026-11-xx · catatan satu baris`.
 
-**Acuan:** [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) v1.1 · [SPEC.md](SPEC.md) v1.1 · **Status keseluruhan:** WP-0 selesai
+**Acuan:** [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) v1.1 · [SPEC.md](SPEC.md) v1.1 · **Status keseluruhan:** WP-1 selesai, menunggu G1
 **Keputusan pemilik:** S-01…S-04 dan D-01…D-03 sudah dijawab 2026-11-01 — tidak ada tugas yang diblokir
-**Gerbang berikutnya:** G1 (setelah WP-1 — review tabel Tier + event matrix oleh pemilik)
+**Gerbang berikutnya:** G1 — pemilik harus review dan setujui sebelum WP-2 dimulai
 
 ---
 
@@ -23,13 +23,13 @@ Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y
 
 ## WP-1 · Lapisan data dan audit
 
-- [ ] T-1.1 — Perluas `inventory.json` (tier, slug, introducedIn, reusedIn, sources)
-- [ ] T-1.2 — `schemas/inventory.schema.json` + validasi `ajv`
-- [ ] T-1.3 — Riset verifikasi matriks event → `event-matrix.json`
-- [ ] T-1.4 — Tulis ulang `audit-coverage.mjs` (aturan A1–A9, exit non-zero)
-- [ ] T-1.5 — Perluas `content.config.ts` (frontmatter notasi + modul)
-- [ ] T-1.6 — `src/lib/inventory.ts`
-- [ ] **G1** — Gerbang pemilik: tabel Tier + ringkasan matriks event
+- [x] T-1.1 — Perluas `inventory.json` (tier, slug, introducedIn, reusedIn, sources) · 2026-11-02 · 48 elemen + tier A=35/B=10/C=3; 13 event + tierByPosition; A2 check: semua Tier A punya introducedIn
+- [x] T-1.2 — `schemas/inventory.schema.json` + validasi `ajv` · 2026-11-02 · draft-07 schema; AJV via createRequire; audit gagal bila field wajib hilang
+- [x] T-1.3 — Riset verifikasi matriks event → `event-matrix.json` · 2026-11-02 · 104 sel (63 valid/41 invalid); lokator §10.4.x tabel 10.84–10.92; status DRAFTED; TODO-VERIFY untuk baris tepat
+- [x] T-1.4 — Tulis ulang `audit-coverage.mjs` (aturan A1–A9, exit non-zero) · 2026-11-02 · semua 9 aturan; WARN untuk rules yang butuh konten WP-7+; FAIL untuk violations nyata; --release dan --report flag
+- [x] T-1.5 — Perluas `content.config.ts` (frontmatter notasi + modul) · 2026-11-02 · z.object opsional untuk moduleSchema + notationSchema; `npm run check` 0 errors
+- [x] T-1.6 — `src/lib/inventory.ts` · 2026-11-02 · reader + types; getInventory(), getElementsByTier(), getElementById(), getElementBySlug(), getElementsIntroducedIn()
+- [ ] **G1** — Gerbang pemilik: tabel Tier + ringkasan matriks event — **MENUNGGU PERSETUJUAN PEMILIK**
 
 ## WP-2 · Sistem desain dan komponen dasar
 
@@ -152,6 +152,8 @@ Catat di sini setiap keputusan yang diambil tanpa bertanya, beserta alasannya sa
 | 2026-11-02 | T-0.3 | Pindah `/>` ke akhir baris `]}`, bukan dihapus | `/>` adalah penutup JSX yang valid; `astro check` 0 error; menghapus akan merusak komponen |
 | 2026-11-02 | T-0.4 | Override `@astrojs/language-server` ke 2.16.16 | Versi 2.17.x memiliki bug `require()` ESM di Node 20.18; 2.16.16 adalah versi terakhir tanpa bug ini |
 | 2026-11-02 | T-0.8 | Tambah `public/favicon.svg` | Starlight membuat referensi `/favicon.svg` di setiap halaman; tanpa file ini `check-links.mjs` melaporkan 19 tautan rusak |
+| 2026-11-02 | T-1.3 | Lokator OMG ditandai TODO-VERIFY | PDF OMG tidak dapat diakses langsung; nomor baris tabel tepat tidak dapat diverifikasi; gunakan referensi bagian §10.4.x |
+| 2026-11-02 | T-1.4 | A2 reusedIn jadi WARN bukan FAIL | Kasus belum dibangun (WP-7+); failure di sini akan memblokir verify tanpa ada yang bisa diperbaiki sekarang |
 
 ## Daftar tunggu pasca-rilis
 
