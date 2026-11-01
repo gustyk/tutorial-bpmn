@@ -3,6 +3,8 @@ title: "A09 — Receive Task"
 description: "Task yang menunggu pesan dari partisipan lain sebelum melanjutkan."
 ---
 
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
 ## 1. Identitas
 
 | | |
@@ -17,7 +19,9 @@ description: "Task yang menunggu pesan dari partisipan lain sebelum melanjutkan.
 
 ## 2. Gambar notasi
 
-Persegi panjang dengan sudut melengkung + ikon **amplop kosong (outline)** di pojok kiri atas.
+<BpmnViewer src="/bpmn/notasi-demo-task-types.bpmn" title="A09 — Receive Task: ikon amplop kosong (outline) di pojok kiri atas (langkah ke-8: 'Terima bukti pengiriman')" />
+
+Persegi panjang dengan sudut melengkung + ikon **amplop kosong (outline)** di pojok kiri atas. Cari "Terima bukti pengiriman" (langkah kedelapan, sebelum End Event).
 
 *Bedakan dengan Message Intermediate Catch Event: Receive Task adalah kotak (aktivitas); Catch Event adalah lingkaran (event).*
 
@@ -62,21 +66,17 @@ Ini adalah mekanisme **sinkronisasi asinkron**: proses A mengirim pesan, proses 
 
 ## 8. Contoh penggunaan
 
-```
-Pool Customer:
-  [Send Task "Kirim pesanan"]
-    → [Receive Task "Terima konfirmasi pesanan"]
-         (menunggu konfirmasi dari Merchant)
-    → [End]
+Receive Task "Terima bukti pengiriman" (amplop outline) — menunggu pesan dari pihak lain:
 
-Pool Merchant: ←--Message Flow "Konfirmasi"--- [Send Task "Kirim konfirmasi"]
-```
+<BpmnViewer src="/bpmn/notasi-demo-task-types.bpmn" title="A09 — Receive Task dalam rangkaian tipe task berbeda" />
 
 ---
 
 ## 9. Diagram contoh
 
-Lihat [Modul 3](/jalur/03/) — Pool Customer menggunakan Intermediate Catch Event (alternatif yang sering digunakan alih-alih Receive Task).
+Kasus 3 — pola komunikasi antar-Pool yang menggunakan Message Event (alternatif Receive Task):
+
+<BpmnViewer src="/bpmn/case-03-order.bpmn" title="Kasus 3 — komunikasi antar-Pool dalam Collaboration diagram" />
 
 ---
 

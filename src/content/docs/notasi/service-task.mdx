@@ -3,6 +3,8 @@ title: "A05 — Service Task"
 description: "Task yang dieksekusi oleh sistem secara otomatis — tidak ada interaksi manusia."
 ---
 
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
 ## 1. Identitas
 
 | | |
@@ -17,7 +19,9 @@ description: "Task yang dieksekusi oleh sistem secara otomatis — tidak ada int
 
 ## 2. Gambar notasi
 
-Persegi panjang dengan sudut melengkung + ikon **roda gigi** di pojok kiri atas.
+<BpmnViewer src="/bpmn/notasi-demo-task-types.bpmn" title="A05 — Service Task: ikon roda gigi di pojok kiri atas (langkah ke-4: 'Kirim email konfirmasi')" />
+
+Persegi panjang dengan sudut melengkung + ikon **roda gigi** di pojok kiri atas. Cari "Kirim email konfirmasi" (langkah keempat dari kiri).
 
 ---
 
@@ -59,19 +63,17 @@ Dari perspektif token: sama dengan Task abstrak. Token masuk, sistem mengeksekus
 
 ## 8. Contoh penggunaan
 
-```
-[User Task "Verifikasi data pesanan"]
-  → [XOR "Data valid?"]
-      → (ya) → [Service Task "Konfirmasi pesanan ke sistem"]
-               (API call: buat order record, kirim konfirmasi email otomatis)
-               → [Task "Siapkan paket"]
-```
+Service Task "Kirim email konfirmasi" (roda gigi) — dieksekusi sistem setelah User Task selesai:
+
+<BpmnViewer src="/bpmn/notasi-demo-task-types.bpmn" title="A05 — Service Task dalam rangkaian tipe task berbeda" />
 
 ---
 
 ## 9. Diagram contoh
 
-Lihat [Modul 2](/jalur/02/) — `TA_KonfirmasiPesanan` adalah Service Task.
+Kasus 2 — Service Task "Konfirmasi pesanan" pada jalur "ya" dari XOR Gateway:
+
+<BpmnViewer src="/bpmn/case-02-order.bpmn" title="Kasus 2 — Service Task setelah keputusan XOR Gateway" />
 
 ---
 

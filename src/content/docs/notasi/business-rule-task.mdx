@@ -3,6 +3,8 @@ title: "A07 — Business Rule Task"
 description: "Task yang mengevaluasi aturan bisnis — biasanya dari decision table eksternal (DMN)."
 ---
 
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
 ## 1. Identitas
 
 | | |
@@ -17,7 +19,9 @@ description: "Task yang mengevaluasi aturan bisnis — biasanya dari decision ta
 
 ## 2. Gambar notasi
 
-Persegi panjang dengan sudut melengkung + ikon **tabel kecil** di pojok kiri atas.
+<BpmnViewer src="/bpmn/notasi-demo-task-types.bpmn" title="A07 — Business Rule Task: ikon tabel di pojok kiri atas (langkah ke-5: 'Hitung biaya pengiriman')" />
+
+Persegi panjang dengan sudut melengkung + ikon **tabel kecil** di pojok kiri atas. Cari "Hitung biaya pengiriman" (langkah kelima dari kiri).
 
 ---
 
@@ -58,18 +62,15 @@ Identik dengan Task abstrak dari perspektif token. Di level implementasi, Busine
 
 ## 8. Contoh penggunaan
 
-```
-[Business Rule Task "Klasifikasi risiko pesanan"]
-  (memanggil DMN: evaluasi nilai order, history customer, zona pengiriman)
-  → output: kategoriRisiko = "rendah" / "sedang" / "tinggi"
-  → [XOR "Tingkat risiko?"]
-```
+Business Rule Task "Hitung biaya pengiriman" (ikon tabel) — mengevaluasi aturan DMN secara otomatis:
+
+<BpmnViewer src="/bpmn/notasi-demo-task-types.bpmn" title="A07 — Business Rule Task dalam rangkaian tipe task berbeda" />
 
 ---
 
 ## 9. Diagram contoh
 
-Lihat [Modul 2](/jalur/02/) untuk konteks task type variants di lingkungan pesanan.
+<BpmnViewer src="/bpmn/case-02-order.bpmn" title="Kasus 2 — konteks task dalam proses pesanan dengan keputusan" />
 
 ---
 

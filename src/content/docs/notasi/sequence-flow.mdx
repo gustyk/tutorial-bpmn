@@ -3,6 +3,8 @@ title: "F01 — Sequence Flow"
 description: "Panah yang menghubungkan elemen dalam satu proses. Membawa token dari satu elemen ke elemen berikutnya."
 ---
 
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
 ## 1. Identitas
 
 | | |
@@ -17,9 +19,11 @@ description: "Panah yang menghubungkan elemen dalam satu proses. Membawa token d
 
 ## 2. Gambar notasi
 
-Garis utuh dengan kepala panah tertutup (segitiga) di ujungnya. Bisa berlabel (untuk conditional flow dari Gateway) atau tanpa label.
+<BpmnViewer src="/bpmn/notasi-demo-linear.bpmn" title="F01 — Sequence Flow: garis utuh dengan kepala panah menghubungkan elemen" />
 
-*Cara membuat di demo.bpmn.io:* Klik elemen sumber dan seret kepala panah yang muncul ke elemen target. Atau klik elemen, lalu pilih ikon panah dari context menu.
+Garis **utuh** dengan kepala panah **tertutup (segitiga)** di ujungnya — perhatikan empat panah yang menghubungkan lima elemen di atas.
+
+*Cara membuat di demo.bpmn.io:* Klik elemen sumber dan seret kepala panah yang muncul ke elemen target.
 
 ---
 
@@ -73,17 +77,19 @@ Ini adalah salah satu kesalahan paling umum di Modul 3. Sequence Flow hanya bole
 
 ## 8. Contoh penggunaan
 
-```
-[Start Event] →(SF)→ [Task A] →(SF)→ [XOR Gateway]
-                                          → (SF, kondisi "ya") → [Task B]
-                                          → (SF, kondisi "tidak") → [End Event]
-```
+Sequence Flow tanpa kondisi — empat panah menghubungkan lima elemen secara linear:
+
+<BpmnViewer src="/bpmn/notasi-demo-linear.bpmn" title="F01 — Sequence Flow tanpa kondisi dalam proses linear" />
+
+Sequence Flow dengan kondisi (dari XOR Gateway) — perhatikan label "ya" dan "tidak" pada dua panah yang keluar dari gateway:
+
+<BpmnViewer src="/bpmn/notasi-demo-gateway.bpmn" title="F01 — Conditional Sequence Flow keluar dari XOR Gateway" />
 
 ---
 
 ## 9. Diagram contoh
 
-Lihat [Modul 1](/jalur/01/) untuk Sequence Flow tanpa kondisi, dan [Modul 2](/jalur/02/) untuk conditional flow dari XOR Gateway.
+<BpmnViewer src="/bpmn/case-01-order.bpmn" title="Kasus 1 — Sequence Flow dalam proses pesanan nyata" />
 
 ---
 

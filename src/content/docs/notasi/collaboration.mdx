@@ -3,6 +3,8 @@ title: "C01 — Collaboration"
 description: "Diagram yang menampilkan dua atau lebih Pool yang berinteraksi melalui Message Flow."
 ---
 
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
 ## 1. Identitas
 
 | | |
@@ -16,6 +18,8 @@ description: "Diagram yang menampilkan dua atau lebih Pool yang berinteraksi mel
 ---
 
 ## 2. Gambar notasi
+
+<BpmnViewer src="/bpmn/case-03-order.bpmn" title="C01 — Collaboration: diagram dengan dua Pool dihubungkan Message Flow" />
 
 Bukan simbol tunggal — Collaboration adalah **tipe diagram**: diagram yang berisi dua atau lebih Pool yang dihubungkan dengan Message Flow. Di BPMN XML, dinyatakan dengan elemen `<collaboration>`.
 
@@ -65,13 +69,15 @@ Dalam Collaboration:
 
 ## 8. Contoh penggunaan
 
-Lihat [Modul 3](/jalur/03/) untuk contoh Collaboration Customer–Merchant.
+Collaboration diagram Customer–Merchant — dua proses independen yang berkomunikasi lewat Message Flow:
+
+<BpmnViewer src="/bpmn/case-03-order.bpmn" title="C01 — Collaboration Customer–Merchant" />
 
 ---
 
 ## 9. Diagram contoh
 
-Lihat [Modul 3](/jalur/03/).
+<BpmnViewer src="/bpmn/case-03-order.bpmn" title="Kasus 3 — Collaboration diagram lengkap" />
 
 ---
 

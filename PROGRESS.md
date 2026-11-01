@@ -81,6 +81,7 @@ Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y
 - [x] T-7.3 — Modul 2 (Resep 5.1) + reuse negatif · 2026-11-02 · jalur/02.mdx: 7 bagian; reuse negatif: Task bercabang tanpa gateway, XOR join dianggap barrier; case-02-order.bpmn dengan XOR + 2 End Event
 - [x] T-7.4 — Modul 3 (Resep 5.1) + reuse negatif · 2026-11-02 · jalur/03.mdx: 7 bagian; reuse negatif: SF lintas Pool, MF sebagai SF; case-03-order.bpmn 2 Pool + 2 Message Flow
 - [x] T-7.5 — 15 halaman notasi Tier A · 2026-11-02 · E01/A01/A02/F01/G01/A03/A04/A05/A07/P01/C01/F02/E02/A08/A09; masing-masing 19 bagian; inventory.json docPath diperbarui; sidebar 15 entri
+- [x] T-7.5b — Tambah BpmnViewer visual di semua 15 halaman notasi · 2026-11-02 · 3 demo BPMN baru (notasi-demo-linear, notasi-demo-gateway, notasi-demo-task-types); section 2 (gambar notasi), 8 (contoh penggunaan), 9 (diagram contoh) kini menampilkan diagram visual via BpmnViewer; verify exit 0
 - [ ] **G2** — Gerbang pemilik: purwarupa mutu 3 modul. **Jangan lanjut WP-8 tanpa persetujuan.**
 
 ## WP-8 · Modul 4–6 dan notasinya

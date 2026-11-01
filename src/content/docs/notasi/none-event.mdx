@@ -3,6 +3,8 @@ title: "E01 — None Start Event / None End Event"
 description: "Titik masuk dan keluar proses yang paling dasar. Dipelajari di Modul 1."
 ---
 
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
 ## 1. Identitas
 
 | | |
@@ -17,9 +19,11 @@ description: "Titik masuk dan keluar proses yang paling dasar. Dipelajari di Mod
 
 ## 2. Gambar notasi
 
-| None Start Event | None End Event |
-|-----------------|---------------|
-| Lingkaran tipis, tanpa ikon di dalamnya | Lingkaran tebal/dobel, tanpa ikon di dalamnya |
+<BpmnViewer src="/bpmn/notasi-demo-linear.bpmn" title="E01 — None Start Event (lingkaran tipis kiri) dan None End Event (lingkaran tebal kanan)" />
+
+**None Start Event** — lingkaran tipis di paling kiri, tanpa ikon di dalamnya.
+
+**None End Event** — lingkaran tebal/dobel di paling kanan, tanpa ikon di dalamnya.
 
 *Cara membuat di demo.bpmn.io:* Seret "Start Event" atau "End Event" dari palet kiri. Keduanya muncul sebagai None secara default.
 
@@ -71,23 +75,19 @@ None Start Event dan None End Event adalah **antarmuka proses dengan dunia luar*
 
 ## 8. Contoh penggunaan
 
-Proses sederhana: pesanan masuk, diproses, selesai.
+Proses pesanan linear — Start Event "Pesanan diterima" memulai alur, End Event "Pesanan terkirim" menutupnya:
 
-```
-[None Start Event "Pesanan diterima"]
-  → [Task "Verifikasi data pesanan"]
-  → [Task "Siapkan paket"]
-  → [Task "Kirim paket"]
-  → [None End Event "Pesanan terkirim"]
-```
+<BpmnViewer src="/bpmn/notasi-demo-linear.bpmn" title="Contoh: None Start Event memulai proses, None End Event mengakhirinya" />
 
-Perhatikan bahwa nama Start Event menyatakan **kondisi yang sudah terjadi** ("Pesanan diterima"), bukan imperatif ("Terima pesanan"). Nama End Event menyatakan **keadaan akhir** ("Pesanan terkirim"), bukan aksi ("Kirim pesanan").
+Perhatikan bahwa nama Start Event menyatakan **kondisi yang sudah terjadi** ("Pesanan diterima"), bukan imperatif. Nama End Event menyatakan **keadaan akhir** ("Pesanan terkirim"), bukan aksi.
 
 ---
 
 ## 9. Diagram contoh
 
-Lihat [Modul 1](/jalur/01/) untuk diagram lengkap proses pesanan linear.
+Model lengkap Modul 1 dengan None Start Event dan None End Event:
+
+<BpmnViewer src="/bpmn/case-01-order.bpmn" title="Kasus 1 — proses pesanan sederhana dengan E01" />
 
 ---
 

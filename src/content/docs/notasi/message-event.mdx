@@ -3,6 +3,8 @@ title: "E02 — Message Event"
 description: "Event yang dipicu oleh atau menghasilkan pesan: Message Start, Message Intermediate Catch/Throw, Message End."
 ---
 
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
 ## 1. Identitas
 
 | | |
@@ -16,6 +18,8 @@ description: "Event yang dipicu oleh atau menghasilkan pesan: Message Start, Mes
 ---
 
 ## 2. Gambar notasi
+
+<BpmnViewer src="/bpmn/case-03-order.bpmn" title="E02 — Message Event: amplop dalam lingkaran — kosong = menerima, terisi = mengirim" />
 
 Ikon **amplop** di dalam lingkaran event. Tiga varian:
 
@@ -89,19 +93,15 @@ Message Event membuat **titik komunikasi antar-Pool menjadi eksplisit** dalam di
 
 ## 8. Contoh penggunaan
 
-```
-Pool Customer:
-  [Start] → [Send Task "Kirim pesanan"] → [Intermediate Catch "Tunggu konfirmasi"] → [End]
+Message Start Event di Pool Merchant (pemicu dari pesan), Message Catch Event di Pool Customer (menunggu konfirmasi):
 
-Pool Merchant:
-  [Message Start "Pesanan diterima"] → ... → [Message End / Send Task "Kirim konfirmasi"] → [End]
-```
+<BpmnViewer src="/bpmn/case-03-order.bpmn" title="E02 — Message Event dalam Collaboration: Start Event dan Intermediate Catch Event" />
 
 ---
 
 ## 9. Diagram contoh
 
-Lihat [Modul 3](/jalur/03/) — Pool Merchant menggunakan Message Start Event; Pool Customer menggunakan Intermediate Message Catch Event.
+<BpmnViewer src="/bpmn/case-03-order.bpmn" title="Kasus 3 — Message Event dalam konteks Collaboration nyata" />
 
 ---
 

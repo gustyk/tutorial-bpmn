@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  id="Def_DemoGateway"
+  targetNamespace="https://uisi.ac.id/bpmn-tutorial">
+
+  <!-- Demo: G01 (Exclusive Gateway XOR split + XOR join) -->
+  <bpmn:process id="Proc_DemoGateway" name="Proses dengan keputusan" isExecutable="false">
+
+    <bpmn:startEvent id="SE_GW" name="Pesanan diterima">
+      <bpmn:outgoing>SF_GW_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:userTask id="TA_GW_Verif" name="Verifikasi data pesanan">
+      <bpmn:incoming>SF_GW_1</bpmn:incoming>
+      <bpmn:outgoing>SF_GW_2</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="GW_Split" name="Data pesanan valid?">
+      <bpmn:incoming>SF_GW_2</bpmn:incoming>
+      <bpmn:outgoing>SF_GW_Ya</bpmn:outgoing>
+      <bpmn:outgoing>SF_GW_Tidak</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:task id="TA_GW_Proses" name="Proses pesanan">
+      <bpmn:incoming>SF_GW_Ya</bpmn:incoming>
+      <bpmn:outgoing>SF_GW_3</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:endEvent id="EE_GW_OK" name="Pesanan diproses">
+      <bpmn:incoming>SF_GW_3</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:endEvent id="EE_GW_NOK" name="Pesanan ditolak">
+      <bpmn:incoming>SF_GW_Tidak</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="SF_GW_1" sourceRef="SE_GW" targetRef="TA_GW_Verif" />
+    <bpmn:sequenceFlow id="SF_GW_2" sourceRef="TA_GW_Verif" targetRef="GW_Split" />
+    <bpmn:sequenceFlow id="SF_GW_Ya" name="ya" sourceRef="GW_Split" targetRef="TA_GW_Proses">
+      <bpmn:conditionExpression>data lengkap dan stok tersedia</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="SF_GW_Tidak" name="tidak" sourceRef="GW_Split" targetRef="EE_GW_NOK">
+      <bpmn:conditionExpression>data tidak lengkap atau stok habis</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="SF_GW_3" sourceRef="TA_GW_Proses" targetRef="EE_GW_OK" />
+
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="Dia_DemoGateway">
+    <bpmndi:BPMNPlane id="Pla_DemoGateway" bpmnElement="Proc_DemoGateway">
+      <bpmndi:BPMNShape id="Shp_SE_GW" bpmnElement="SE_GW">
+        <dc:Bounds x="120" y="200" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="100" y="243" width="76" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA_GW_V" bpmnElement="TA_GW_Verif">
+        <dc:Bounds x="210" y="178" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_GW_Split" bpmnElement="GW_Split" isMarkerVisible="true">
+        <dc:Bounds x="405" y="193" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="385" y="250" width="90" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA_GW_P" bpmnElement="TA_GW_Proses">
+        <dc:Bounds x="510" y="178" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_EE_OK" bpmnElement="EE_GW_OK">
+        <dc:Bounds x="700" y="200" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="680" y="243" width="76" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_EE_NOK" bpmnElement="EE_GW_NOK">
+        <dc:Bounds x="405" y="360" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="383" y="403" width="80" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edg_GW_1" bpmnElement="SF_GW_1">
+        <di:waypoint x="156" y="218" /><di:waypoint x="210" y="218" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_GW_2" bpmnElement="SF_GW_2">
+        <di:waypoint x="350" y="218" /><di:waypoint x="405" y="218" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_GW_Ya" bpmnElement="SF_GW_Ya">
+        <di:waypoint x="455" y="218" /><di:waypoint x="510" y="218" />
+        <bpmndi:BPMNLabel><dc:Bounds x="473" y="200" width="16" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_GW_Tidak" bpmnElement="SF_GW_Tidak">
+        <di:waypoint x="430" y="243" /><di:waypoint x="430" y="360" />
+        <bpmndi:BPMNLabel><dc:Bounds x="437" y="296" width="30" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_GW_3" bpmnElement="SF_GW_3">
+        <di:waypoint x="650" y="218" /><di:waypoint x="700" y="218" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>

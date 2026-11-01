@@ -3,6 +3,8 @@ title: "A08 — Send Task"
 description: "Task yang aktif mengirim pesan ke partisipan lain — Task dengan semantik pengiriman pesan."
 ---
 
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
 ## 1. Identitas
 
 | | |
@@ -17,7 +19,9 @@ description: "Task yang aktif mengirim pesan ke partisipan lain — Task dengan 
 
 ## 2. Gambar notasi
 
-Persegi panjang dengan sudut melengkung + ikon **amplop terisi (gelap)** di pojok kiri atas.
+<BpmnViewer src="/bpmn/notasi-demo-task-types.bpmn" title="A08 — Send Task: ikon amplop terisi (gelap) di pojok kiri atas (langkah ke-7: 'Kirim notifikasi ke kurir')" />
+
+Persegi panjang dengan sudut melengkung + ikon **amplop terisi (gelap)** di pojok kiri atas. Cari "Kirim notifikasi ke kurir" (langkah ketujuh dari kiri).
 
 *Bedakan dengan Message End Event: Send Task adalah aktivitas (kotak); Message End Event adalah event (lingkaran).*
 
@@ -65,18 +69,17 @@ Send Task adalah **Task yang mengimplementasikan pengiriman pesan**. Ia tidak me
 
 ## 8. Contoh penggunaan
 
-```
-Pool Customer:
-  [Start] → [Send Task "Buat dan kirim pesanan"]
-              (membuat data pesanan, mengirim ke Merchant)
-              ---Message Flow "Pesanan"--→ [Pool Merchant: Message Start]
-```
+Send Task "Kirim notifikasi ke kurir" (amplop gelap) — mengirim pesan ke partisipan lain:
+
+<BpmnViewer src="/bpmn/notasi-demo-task-types.bpmn" title="A08 — Send Task dalam rangkaian tipe task berbeda" />
 
 ---
 
 ## 9. Diagram contoh
 
-Lihat [Modul 3](/jalur/03/) — Pool Customer menggunakan Send Task.
+Kasus 3 — Send Task di Pool Customer mengirim pesanan ke Pool Merchant:
+
+<BpmnViewer src="/bpmn/case-03-order.bpmn" title="Kasus 3 — Send Task dalam Collaboration diagram" />
 
 ---
 

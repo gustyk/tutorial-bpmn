@@ -3,6 +3,8 @@ title: "P01 — Pool / Participant"
 description: "Kotak yang membungkus satu partisipan dalam kolaborasi — satu Pool = satu proses milik satu entitas."
 ---
 
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
 ## 1. Identitas
 
 | | |
@@ -17,7 +19,9 @@ description: "Kotak yang membungkus satu partisipan dalam kolaborasi — satu Po
 
 ## 2. Gambar notasi
 
-Persegi panjang besar dengan **label di sisi kiri** (vertikal, rotasi 90°). Pool membungkus seluruh elemen proses satu partisipan. Bisa berisi Lane (jalur/swim-lane) untuk membagi peran internal.
+<BpmnViewer src="/bpmn/case-03-order.bpmn" title="P01 — Pool: persegi panjang besar dengan label vertikal di sisi kiri, membungkus proses satu partisipan" />
+
+Persegi panjang besar dengan **label di sisi kiri** (vertikal, rotasi 90°). Lihat "Customer" dan "Merchant" — masing-masing adalah satu Pool yang berisi proses independen.
 
 *Cara membuat di demo.bpmn.io:* Seret "Pool" dari palet. Diagram otomatis menjadi Collaboration diagram.
 
@@ -70,22 +74,15 @@ Jika Customer Service dan Gudang keduanya adalah bagian dari Merchant, mereka bu
 
 ## 8. Contoh penggunaan
 
-```
-[Pool "Customer"]
-  [Start] → [Send Task "Kirim pesanan"] → [Catch "Tunggu konfirmasi"] → [End]
+Dua Pool "Customer" dan "Merchant" dihubungkan dengan Message Flow:
 
-[Pool "Merchant"]
-  [Message Start "Pesanan diterima"] → [Task] → ... → [Send "Kirim konfirmasi"] → [End]
-
-Message Flow: dari Send Task Customer → ke Message Start Merchant
-Message Flow: dari Send Task Merchant → ke Catch Event Customer
-```
+<BpmnViewer src="/bpmn/case-03-order.bpmn" title="P01 — Pool dalam diagram Collaboration Customer–Merchant" />
 
 ---
 
 ## 9. Diagram contoh
 
-Lihat [Modul 3](/jalur/03/) untuk contoh dua Pool berkolaborasi.
+<BpmnViewer src="/bpmn/case-03-order.bpmn" title="Kasus 3 — Pool Participant dalam Collaboration diagram" />
 
 ---
 

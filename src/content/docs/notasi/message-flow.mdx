@@ -3,6 +3,8 @@ title: "F02 — Message Flow"
 description: "Alur komunikasi lintas Pool — garis putus-putus yang membawa pesan antar-entitas, bukan token."
 ---
 
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
 ## 1. Identitas
 
 | | |
@@ -17,9 +19,11 @@ description: "Alur komunikasi lintas Pool — garis putus-putus yang membawa pes
 
 ## 2. Gambar notasi
 
-Garis **putus-putus** dengan kepala panah **terbuka** (tidak tertutup/diisi) di ujung. Opsional: lingkaran kecil di pangkal (sumber) dan amplop di ujung (target) untuk memperjelas arah.
+<BpmnViewer src="/bpmn/case-03-order.bpmn" title="F02 — Message Flow: garis putus-putus dengan kepala panah terbuka, menghubungkan dua Pool" />
 
-*Perbedaan visual kunci dari Sequence Flow:* Sequence Flow = garis utuh + kepala panah tertutup. Message Flow = garis putus-putus + kepala panah terbuka.
+Garis **putus-putus** dengan kepala panah **terbuka** (tidak tertutup/diisi) di ujung — berbeda dari Sequence Flow yang bergaris utuh dengan panah tertutup.
+
+Perhatikan dua garis putus-putus antar Pool di atas: itulah Message Flow.
 
 ---
 
@@ -69,19 +73,15 @@ Ini adalah anti-pattern fatal: Message Flow di dalam satu Pool tidak membawa tok
 
 ## 8. Contoh penggunaan
 
-```
-[Pool Customer]
-  [Send Task "Kirim pesanan"] ---(Message Flow: "Pesanan")--→
+Dua Message Flow: satu dari Customer ke Merchant (pesanan), satu dari Merchant ke Customer (konfirmasi):
 
-[Pool Merchant]
-  --→ [Message Start "Pesanan diterima"]
-```
+<BpmnViewer src="/bpmn/case-03-order.bpmn" title="F02 — Message Flow dalam Collaboration Customer–Merchant" />
 
 ---
 
 ## 9. Diagram contoh
 
-Lihat [Modul 3](/jalur/03/) untuk dua Message Flow dalam diagram Collaboration.
+<BpmnViewer src="/bpmn/case-03-order.bpmn" title="Kasus 3 — Message Flow menghubungkan dua Pool" />
 
 ---
 

@@ -3,6 +3,8 @@ title: "G01 — Exclusive Gateway (XOR)"
 description: "Gateway keputusan: dari semua outgoing flow, tepat satu yang dipilih berdasarkan kondisi."
 ---
 
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
 ## 1. Identitas
 
 | | |
@@ -17,7 +19,9 @@ description: "Gateway keputusan: dari semua outgoing flow, tepat satu yang dipil
 
 ## 2. Gambar notasi
 
-Belah ketupat (*diamond*) dengan tanda **X** di tengah (opsional — belah ketupat polos juga valid untuk XOR). Tanda X membedakannya secara visual dari gateway lain.
+<BpmnViewer src="/bpmn/notasi-demo-gateway.bpmn" title="G01 — Exclusive Gateway: belah ketupat dengan X di tengah, memisahkan dua jalur" />
+
+Belah ketupat (*diamond*) dengan tanda **X** di tengah. Perhatikan dua outgoing Sequence Flow berlabel "ya" dan "tidak" yang keluar dari gateway.
 
 *Cara membuat di demo.bpmn.io:* Seret "Gateway" dari palet. Default adalah Exclusive Gateway. Atau ubah tipe gateway via context menu.
 
@@ -82,18 +86,17 @@ XOR hanya memilih satu jalur. Jika semua jalur harus diambil secara bersamaan, g
 
 ## 8. Contoh penggunaan
 
-```
-[Task "Verifikasi data pesanan"]
-  → [XOR Gateway "Data pesanan valid?"]
-      → (ya) → [Task "Konfirmasi pesanan"]
-      → (tidak) → [End Event "Pesanan ditolak"]
-```
+XOR Gateway memisahkan jalur berdasarkan kondisi — token mengambil tepat satu jalur:
+
+<BpmnViewer src="/bpmn/notasi-demo-gateway.bpmn" title="G01 — XOR Gateway: keputusan 'Data pesanan valid?' dengan jalur ya/tidak" />
 
 ---
 
 ## 9. Diagram contoh
 
-Lihat [Modul 2](/jalur/02/) untuk contoh XOR split dan jalur ganda.
+Model lengkap Kasus 2 dengan XOR Gateway, dua End Event, dan task spesifik:
+
+<BpmnViewer src="/bpmn/case-02-order.bpmn" title="Kasus 2 — XOR Gateway dalam proses pesanan nyata" />
 
 ---
 

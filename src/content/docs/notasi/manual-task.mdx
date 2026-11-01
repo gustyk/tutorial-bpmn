@@ -3,6 +3,8 @@ title: "A03 — Manual Task"
 description: "Task yang dikerjakan manusia tanpa bantuan sistem atau aplikasi apapun."
 ---
 
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
 ## 1. Identitas
 
 | | |
@@ -17,7 +19,9 @@ description: "Task yang dikerjakan manusia tanpa bantuan sistem atau aplikasi ap
 
 ## 2. Gambar notasi
 
-Persegi panjang dengan sudut melengkung + ikon **tangan** di pojok kiri atas.
+<BpmnViewer src="/bpmn/notasi-demo-task-types.bpmn" title="A03 — Manual Task: ikon tangan di pojok kiri atas (langkah ke-2: 'Kemas paket')" />
+
+Persegi panjang dengan sudut melengkung + ikon **tangan** di pojok kiri atas. Cari "Kemas paket" (langkah kedua dari kiri) di diagram di atas.
 
 ---
 
@@ -58,17 +62,15 @@ Identik dengan Task abstrak (A01) dari perspektif token. Manual Task tidak memil
 
 ## 8. Contoh penggunaan
 
-```
-[Task "Verifikasi data pesanan"] (User Task — pakai form)
-  → [Manual Task "Kemas paket"] (tanpa sistem)
-  → [Task "Cetak label pengiriman"] (Service Task — sistem cetak otomatis)
-```
+Bandingkan Manual Task "Kemas paket" (ikon tangan) dengan User Task "Verifikasi data pesanan" (ikon orang) dan Service Task "Kirim email konfirmasi" (ikon roda gigi):
+
+<BpmnViewer src="/bpmn/notasi-demo-task-types.bpmn" title="A03 — Manual Task dibandingkan tipe task lain dalam satu proses" />
 
 ---
 
 ## 9. Diagram contoh
 
-Lihat [Modul 2](/jalur/02/) untuk konteks task type variants.
+<BpmnViewer src="/bpmn/case-02-order.bpmn" title="Kasus 2 — Task dalam konteks proses pesanan dengan keputusan" />
 
 ---
 

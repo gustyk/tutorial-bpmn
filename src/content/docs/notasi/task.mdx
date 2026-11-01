@@ -3,6 +3,8 @@ title: "A01 — Task (Abstrak)"
 description: "Unit kerja paling dasar dalam BPMN. Digunakan ketika tipe task belum atau tidak perlu ditentukan."
 ---
 
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
 ## 1. Identitas
 
 | | |
@@ -17,7 +19,9 @@ description: "Unit kerja paling dasar dalam BPMN. Digunakan ketika tipe task bel
 
 ## 2. Gambar notasi
 
-Persegi panjang dengan sudut melengkung, tanpa ikon di pojok kiri atas.
+<BpmnViewer src="/bpmn/notasi-demo-linear.bpmn" title="A01 — Task: persegi panjang sudut melengkung tanpa ikon di pojok kiri atas" />
+
+Persegi panjang dengan sudut melengkung, **tanpa ikon** di pojok kiri atas — itulah yang membedakannya dari Task bertipe khusus.
 
 *Cara membuat di demo.bpmn.io:* Seret "Task" dari palet, atau klik elemen yang ada dan pilih ikon kotak untuk mengubah tipe.
 
@@ -71,19 +75,17 @@ Token **tidak pernah tiba di lebih dari satu Task sekaligus** melalui jalur yang
 
 ## 8. Contoh penggunaan
 
-```
-[Start Event "Pesanan diterima"]
-  → [Task "Verifikasi data pesanan"]   ← siapa yang verifikasi? pakai Modul 4
-  → [Task "Siapkan paket"]
-  → [Task "Kirim paket"]
-  → [End Event "Pesanan terkirim"]
-```
+Tiga Task berurutan dalam proses pesanan linear — perhatikan kotak tanpa ikon di pojok kiri atas:
+
+<BpmnViewer src="/bpmn/notasi-demo-linear.bpmn" title="A01 — Task dalam alur linear: tiga task tanpa tipe khusus" />
 
 ---
 
 ## 9. Diagram contoh
 
-Lihat [Modul 1](/jalur/01/) untuk contoh Task dalam alur linear.
+Model lengkap Modul 1 dengan Task abstrak sebagai langkah utama:
+
+<BpmnViewer src="/bpmn/case-01-order.bpmn" title="Kasus 1 — Task dalam konteks proses pesanan nyata" />
 
 ---
 

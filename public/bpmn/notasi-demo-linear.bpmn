@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  id="Def_DemoLinear"
+  targetNamespace="https://uisi.ac.id/bpmn-tutorial">
+
+  <!-- Demo: E01 (None Start/End), A01 (Task), F01 (Sequence Flow) -->
+  <bpmn:process id="Proc_DemoLinear" name="Proses pesanan sederhana" isExecutable="false">
+
+    <bpmn:startEvent id="SE_Demo" name="Pesanan diterima">
+      <bpmn:outgoing>SF_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:task id="TA_Verifikasi" name="Verifikasi data pesanan">
+      <bpmn:incoming>SF_1</bpmn:incoming>
+      <bpmn:outgoing>SF_2</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="TA_Siapkan" name="Siapkan paket">
+      <bpmn:incoming>SF_2</bpmn:incoming>
+      <bpmn:outgoing>SF_3</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="TA_Kirim" name="Kirim paket">
+      <bpmn:incoming>SF_3</bpmn:incoming>
+      <bpmn:outgoing>SF_4</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:endEvent id="EE_Demo" name="Pesanan terkirim">
+      <bpmn:incoming>SF_4</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="SF_1" sourceRef="SE_Demo" targetRef="TA_Verifikasi" />
+    <bpmn:sequenceFlow id="SF_2" sourceRef="TA_Verifikasi" targetRef="TA_Siapkan" />
+    <bpmn:sequenceFlow id="SF_3" sourceRef="TA_Siapkan" targetRef="TA_Kirim" />
+    <bpmn:sequenceFlow id="SF_4" sourceRef="TA_Kirim" targetRef="EE_Demo" />
+
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="Dia_DemoLinear">
+    <bpmndi:BPMNPlane id="Pla_DemoLinear" bpmnElement="Proc_DemoLinear">
+      <bpmndi:BPMNShape id="Shp_SE" bpmnElement="SE_Demo">
+        <dc:Bounds x="120" y="160" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="100" y="203" width="76" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_V" bpmnElement="TA_Verifikasi">
+        <dc:Bounds x="210" y="138" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_S" bpmnElement="TA_Siapkan">
+        <dc:Bounds x="400" y="138" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_K" bpmnElement="TA_Kirim">
+        <dc:Bounds x="590" y="138" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_EE" bpmnElement="EE_Demo">
+        <dc:Bounds x="780" y="160" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="760" y="203" width="76" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edg_1" bpmnElement="SF_1">
+        <di:waypoint x="156" y="178" /><di:waypoint x="210" y="178" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_2" bpmnElement="SF_2">
+        <di:waypoint x="350" y="178" /><di:waypoint x="400" y="178" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_3" bpmnElement="SF_3">
+        <di:waypoint x="540" y="178" /><di:waypoint x="590" y="178" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_4" bpmnElement="SF_4">
+        <di:waypoint x="730" y="178" /><di:waypoint x="780" y="178" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  id="Def_DemoTaskTypes"
+  targetNamespace="https://uisi.ac.id/bpmn-tutorial">
+
+  <!-- Demo: semua tipe Task — A01 (Task), A03 (Manual), A04 (User), -->
+  <!--        A05 (Service), A07 (Business Rule), A08 (Send), A09 (Receive) -->
+  <!-- Setiap task mewakili langkah nyata proses toko daring -->
+  <bpmn:process id="Proc_DemoTaskTypes" name="Tipe-tipe Task BPMN" isExecutable="false">
+
+    <bpmn:startEvent id="SE_TT" name="Pesanan diterima">
+      <bpmn:outgoing>SFT_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <!-- A01: Task abstrak — tipe tidak ditentukan -->
+    <bpmn:task id="TA_Abstrak" name="Catat pesanan">
+      <bpmn:incoming>SFT_1</bpmn:incoming>
+      <bpmn:outgoing>SFT_2</bpmn:outgoing>
+    </bpmn:task>
+
+    <!-- A03: Manual Task — dikerjakan manusia tanpa sistem -->
+    <bpmn:manualTask id="TA_Manual" name="Kemas paket">
+      <bpmn:incoming>SFT_2</bpmn:incoming>
+      <bpmn:outgoing>SFT_3</bpmn:outgoing>
+    </bpmn:manualTask>
+
+    <!-- A04: User Task — dikerjakan manusia lewat antarmuka sistem -->
+    <bpmn:userTask id="TA_User" name="Verifikasi data pesanan">
+      <bpmn:incoming>SFT_3</bpmn:incoming>
+      <bpmn:outgoing>SFT_4</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <!-- A05: Service Task — dikerjakan sistem secara otomatis -->
+    <bpmn:serviceTask id="TA_Service" name="Kirim email konfirmasi">
+      <bpmn:incoming>SFT_4</bpmn:incoming>
+      <bpmn:outgoing>SFT_5</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- A07: Business Rule Task — evaluasi aturan bisnis / DMN -->
+    <bpmn:businessRuleTask id="TA_BizRule" name="Hitung biaya pengiriman">
+      <bpmn:incoming>SFT_5</bpmn:incoming>
+      <bpmn:outgoing>SFT_6</bpmn:outgoing>
+    </bpmn:businessRuleTask>
+
+    <!-- A08: Send Task — kirim pesan ke partisipan lain -->
+    <bpmn:sendTask id="TA_Send" name="Kirim notifikasi ke kurir">
+      <bpmn:incoming>SFT_6</bpmn:incoming>
+      <bpmn:outgoing>SFT_7</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <!-- A09: Receive Task — tunggu pesan dari partisipan lain -->
+    <bpmn:receiveTask id="TA_Receive" name="Terima bukti pengiriman">
+      <bpmn:incoming>SFT_7</bpmn:incoming>
+      <bpmn:outgoing>SFT_8</bpmn:outgoing>
+    </bpmn:receiveTask>
+
+    <bpmn:endEvent id="EE_TT" name="Proses selesai">
+      <bpmn:incoming>SFT_8</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="SFT_1" sourceRef="SE_TT" targetRef="TA_Abstrak" />
+    <bpmn:sequenceFlow id="SFT_2" sourceRef="TA_Abstrak" targetRef="TA_Manual" />
+    <bpmn:sequenceFlow id="SFT_3" sourceRef="TA_Manual" targetRef="TA_User" />
+    <bpmn:sequenceFlow id="SFT_4" sourceRef="TA_User" targetRef="TA_Service" />
+    <bpmn:sequenceFlow id="SFT_5" sourceRef="TA_Service" targetRef="TA_BizRule" />
+    <bpmn:sequenceFlow id="SFT_6" sourceRef="TA_BizRule" targetRef="TA_Send" />
+    <bpmn:sequenceFlow id="SFT_7" sourceRef="TA_Send" targetRef="TA_Receive" />
+    <bpmn:sequenceFlow id="SFT_8" sourceRef="TA_Receive" targetRef="EE_TT" />
+
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="Dia_DemoTaskTypes">
+    <bpmndi:BPMNPlane id="Pla_DemoTaskTypes" bpmnElement="Proc_DemoTaskTypes">
+      <bpmndi:BPMNShape id="ShpTT_SE" bpmnElement="SE_TT">
+        <dc:Bounds x="60" y="200" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="40" y="243" width="76" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ShpTT_Ab" bpmnElement="TA_Abstrak">
+        <dc:Bounds x="150" y="178" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ShpTT_Ma" bpmnElement="TA_Manual">
+        <dc:Bounds x="320" y="178" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ShpTT_Us" bpmnElement="TA_User">
+        <dc:Bounds x="490" y="178" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ShpTT_Sv" bpmnElement="TA_Service">
+        <dc:Bounds x="660" y="178" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ShpTT_Br" bpmnElement="TA_BizRule">
+        <dc:Bounds x="830" y="178" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ShpTT_Sn" bpmnElement="TA_Send">
+        <dc:Bounds x="1000" y="178" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ShpTT_Rc" bpmnElement="TA_Receive">
+        <dc:Bounds x="1170" y="178" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ShpTT_EE" bpmnElement="EE_TT">
+        <dc:Bounds x="1340" y="200" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1322" y="243" width="72" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="EdgTT_1" bpmnElement="SFT_1">
+        <di:waypoint x="96" y="218" /><di:waypoint x="150" y="218" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="EdgTT_2" bpmnElement="SFT_2">
+        <di:waypoint x="270" y="218" /><di:waypoint x="320" y="218" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="EdgTT_3" bpmnElement="SFT_3">
+        <di:waypoint x="440" y="218" /><di:waypoint x="490" y="218" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="EdgTT_4" bpmnElement="SFT_4">
+        <di:waypoint x="610" y="218" /><di:waypoint x="660" y="218" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="EdgTT_5" bpmnElement="SFT_5">
+        <di:waypoint x="780" y="218" /><di:waypoint x="830" y="218" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="EdgTT_6" bpmnElement="SFT_6">
+        <di:waypoint x="950" y="218" /><di:waypoint x="1000" y="218" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="EdgTT_7" bpmnElement="SFT_7">
+        <di:waypoint x="1120" y="218" /><di:waypoint x="1170" y="218" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="EdgTT_8" bpmnElement="SFT_8">
+        <di:waypoint x="1290" y="218" /><di:waypoint x="1340" y="218" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>

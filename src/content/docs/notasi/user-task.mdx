@@ -3,6 +3,8 @@ title: "A04 — User Task"
 description: "Task yang dikerjakan manusia melalui antarmuka sistem — form, aplikasi web, atau antarmuka lain yang dikelola oleh mesin proses."
 ---
 
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
 ## 1. Identitas
 
 | | |
@@ -17,7 +19,9 @@ description: "Task yang dikerjakan manusia melalui antarmuka sistem — form, ap
 
 ## 2. Gambar notasi
 
-Persegi panjang dengan sudut melengkung + ikon **orang kecil (siluet manusia)** di pojok kiri atas.
+<BpmnViewer src="/bpmn/notasi-demo-task-types.bpmn" title="A04 — User Task: ikon orang (siluet) di pojok kiri atas (langkah ke-3: 'Verifikasi data pesanan')" />
+
+Persegi panjang dengan sudut melengkung + ikon **orang kecil (siluet manusia)** di pojok kiri atas. Cari "Verifikasi data pesanan" (langkah ketiga dari kiri) di diagram di atas.
 
 ---
 
@@ -59,17 +63,17 @@ Dari perspektif token: sama dengan Task abstrak. Namun di level eksekusi, User T
 
 ## 8. Contoh penggunaan
 
-```
-[User Task "Verifikasi data pesanan"]
-  (staf membuka form di aplikasi, memeriksa, dan mengklik "Setujui" atau "Tolak")
-  → [XOR Gateway "Data valid?"]
-```
+User Task "Verifikasi data pesanan" (ikon orang) — staf membuka form, mengisi, dan mengklik konfirmasi:
+
+<BpmnViewer src="/bpmn/notasi-demo-task-types.bpmn" title="A04 — User Task dalam rangkaian tipe task berbeda" />
 
 ---
 
 ## 9. Diagram contoh
 
-Lihat [Modul 2](/jalur/02/) — `TA_VerifikasiData` adalah User Task.
+Kasus 2 — User Task "Verifikasi data pesanan" mendahului XOR Gateway keputusan:
+
+<BpmnViewer src="/bpmn/case-02-order.bpmn" title="Kasus 2 — User Task dalam proses pesanan dengan keputusan" />
 
 ---
 
