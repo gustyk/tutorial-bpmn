@@ -24,7 +24,7 @@ for (const file of files) {
     const slug = file.replace('.bpmn', '');
     const pageMap: Record<string, string> = {
       'case-01-order': '/jalur/01/',
-      'case-11-capstone': '/practice/capstone/',
+      'case-10-capstone': '/jalur/10/',
       'fondasi-token-demo': '/fondasi/token/',
     };
     const url = pageMap[slug];

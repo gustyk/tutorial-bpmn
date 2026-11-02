@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "caseId": "case-10",
+  "criteria": [
+    {
+      "id": "C10-1",
+      "statement": "Model menggunakan minimal 3 Pool yang terpisah — Merchant sebagai orkestrasi, dan peserta eksternal sebagai black box.",
+      "rationale": "Kasus 10 mensintesis seluruh kolaborasi e-commerce. Setiap pihak eksternal (Customer, Payment Provider, Jasa Pengiriman) harus menjadi Pool terpisah karena mereka memiliki proses sendiri yang tidak dikontrol Merchant.",
+      "readIfFailed": ["/notasi/pool"],
+      "check": {
+        "mode": "auto",
+        "rule": "element-count",
+        "type": "bpmn:Participant",
+        "min": 3
+      }
+    },
+    {
+      "id": "C10-2",
+      "statement": "Pool Merchant menggunakan Lane untuk memisahkan tanggung jawab antar tim — minimal 2 Lane.",
+      "rationale": "Lane mengekspresikan batas tanggung jawab di dalam satu organisasi. Tanpa Lane, tidak ada perbedaan antara 'siapa yang melakukan apa' di internal Merchant.",
+      "readIfFailed": ["/notasi/lane"],
+      "check": {
+        "mode": "auto",
+        "rule": "element-exists",
+        "type": "bpmn:Lane",
+        "min": 2
+      }
+    },
+    {
+      "id": "C10-3",
+      "statement": "Ada Event-Based Gateway yang menunggu dua kemungkinan: pembayaran masuk atau batas waktu habis — bukan XOR Gateway atas data status pembayaran.",
+      "rationale": "Pada saat token tiba di titik tunggu, data pembayaran belum ada. XOR Gateway hanya bisa memilih berdasarkan data yang sudah ada. Event-Based Gateway menunggu event pertama yang terjadi — semantik yang tepat untuk race condition.",
+      "readIfFailed": ["/notasi/event-based-gateway"],
+      "check": {
+        "mode": "auto",
+        "rule": "element-exists",
+        "type": "bpmn:EventBasedGateway",
+        "min": 1
+      }
+    },
+    {
+      "id": "C10-4",
+      "statement": "Ada Compensation Boundary Event dan Compensation Handler yang terhubung via Association — bukan hanya task 'Pembatalan' di jalur timeout.",
+      "rationale": "Compensation menyatakan secara eksplisit 'handler ini adalah pembalik dari aktivitas X'. Task pembatalan biasa hanya mengerjakan satu tindakan tanpa keterkaitan semantik ke aktivitas yang dibalik.",
+      "readIfFailed": ["/notasi/compensation-event"],
+      "check": {
+        "mode": "auto",
+        "rule": "boundary-attached-to",
+        "eventType": "bpmn:CompensateEventDefinition",
+        "attachedTo": "bpmn:SubProcess"
+      }
+    },
+    {
+      "id": "C10-5",
+      "statement": "Ada Subprocess untuk mengelompokkan aktivitas fulfillment yang berulang per item — dengan Multi-instance marker jika setiap item diproses secara terpisah.",
+      "rationale": "Subprocess menyembunyikan kompleksitas internal dan menjaga keterbacaan diagram. Multi-instance berarti subprocess ini dieksekusi sekali untuk setiap item pesanan — bukan dalam satu alur linier.",
+      "readIfFailed": ["/notasi/embedded-subprocess", "/notasi/multi-instance"],
+      "check": {
+        "mode": "auto",
+        "rule": "element-exists",
+        "type": "bpmn:SubProcess",
+        "min": 1
+      }
+    },
+    {
+      "id": "C10-6",
+      "statement": "Ada Event Subprocess non-interrupting yang dapat dipicu kapan saja — untuk permintaan status yang tidak mengganggu proses utama.",
+      "rationale": "Non-interrupting Event Subprocess berjalan paralel dengan proses utama. Customer bisa meminta status kapan saja selama proses berlangsung — baik sebelum bayar, saat dikemas, maupun setelah dikirim.",
+      "readIfFailed": ["/notasi/event-subprocess"],
+      "check": {
+        "mode": "manual",
+        "question": "Apakah ada Event Subprocess dengan border putus-putus (non-interrupting) yang berisi Signal Start Event? Border putus-putus berarti proses utama tetap berjalan ketika Event Subprocess aktif."
+      }
+    },
+    {
+      "id": "C10-7",
+      "statement": "Ada minimal 4 jenis Message Flow yang berbeda — antara Customer dan Merchant, Merchant dan Payment Provider, serta Merchant dan Jasa Pengiriman.",
+      "rationale": "Kolaborasi 4-participant harus menunjukkan semua jalur komunikasi. Message Flow bukan sekadar anak panah dekoratif — setiap flow menyatakan kontrak 'siapa mengirim apa kepada siapa'.",
+      "readIfFailed": ["/notasi/message-flow"],
+      "check": {
+        "mode": "auto",
+        "rule": "message-flow-between-participants",
+        "min": 4
+      }
+    },
+    {
+      "id": "C10-8",
+      "statement": "Ada Error Boundary Event yang menangani kegagalan teknis pada Subprocess — dipisah dari jalur bisnis normal.",
+      "rationale": "Error adalah exception teknis — bukan jalur bisnis normal seperti pembatalan. Error Boundary Event memisahkan handling exception dari happy path, sehingga alur utama tidak dipenuhi logika penanganan kegagalan.",
+      "readIfFailed": ["/notasi/error-event"],
+      "check": {
+        "mode": "auto",
+        "rule": "boundary-attached-to",
+        "eventType": "bpmn:ErrorEventDefinition",
+        "attachedTo": "bpmn:SubProcess"
+      }
+    }
+  ]
+}

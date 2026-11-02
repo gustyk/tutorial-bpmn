@@ -1,6 +1,264 @@
 ---
-title: "Modul 10 — Capstone"
-description: "Kasus akhir: model komprehensif mencakup semua notasi Tier A."
+title: "Modul 10 — Capstone: Orkestrasi E-Commerce"
+description: "Sintesis semua notasi Tier A dalam satu model kolaborasi e-commerce. Diuji lewat diagnosis, bukan lewat kesamaan gambar."
 ---
 
-Halaman ini akan diisi saat modul terkait diterbitkan.
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+import CriteriaChecker from '../../../components/CriteriaChecker.astro';
+
+## 1. Apa yang berubah
+
+**Perubahan requirement dari Modul 9:**
+
+> "Kita sudah memisah-misah sistem kita menjadi sembilan potongan. Sekarang kita perlu satu gambar utuh — semua pihak, semua jalur, semua exception — agar tim teknologi dan tim operasional bisa duduk bersama dan menunjuk ke bagian yang sama."
+
+Tidak ada notasi baru di Modul 10. Inilah yang membuat capstone berbeda dari modul sebelumnya: kamu tidak sedang belajar simbol baru — kamu sedang membuktikan bahwa kamu bisa menyusun semua simbol yang sudah dipelajari ke dalam satu model yang koheren.
+
+**Delta notasi:**
+
+Tidak ada. Seluruh notasi yang dipakai sudah diperkenalkan di Modul 1–9 dan Cabang S2.
+
+**Dari seluruh modul sebelumnya yang dipakai ulang:**
+
+| Kelompok | Notasi |
+|---|---|
+| Struktur kolaborasi | P01 Pool, P02 Lane, C01 Collaboration, F02 Message Flow |
+| Alur dan data | F01 Sequence Flow, F03 Association, F04 Data Association, D01 Data Object, D04 Data Store, R01 Text Annotation |
+| Tipe task | A01–A09 (Task, Manual, User, Service, Business Rule, Send, Receive), A16 Call Activity |
+| Subprocess dan instansi | A11 Multi-instance, A12 Compensation Marker, A13 Embedded Subprocess, A14 Event Subprocess |
+| Gateway | G01 XOR, G02 Parallel, G03 Inclusive, G04 Event-Based |
+| Event | E01 None, E02 Message, E03 Timer, E05 Signal, E06 Error, E07 Escalation, E08 Compensation, E11 Terminate |
+
+---
+
+## 2. Kasus bisnis
+
+Direktur operasional membawa laporan kepada tim pemodelan:
+
+> "Selama sembilan sprint terakhir kita sudah punya model yang bagus untuk setiap bagian proses kita: validasi pesanan, pembayaran, fulfillment, pengiriman, pembatalan, dan eskalasi. Tapi setiap kali ada insiden, tim saya tidak tahu di bagian mana mereka harus melihat. Mereka punya sembilan diagram terpisah yang harus dibolak-balik.
+>
+> Saya butuh satu model. Customer, Payment Provider, dan Jasa Pengiriman semuanya ada. Semua tim internal kita ada. Semua jalur exception ada. Kalau ada yang salah di produksi, saya mau bisa menunjuk satu titik di satu diagram."
+
+Ini bukan permintaan sederhana. Model yang menggabungkan sembilan modul harus tetap terbaca — artinya kompleksitas tersembunyi di dalam Subprocess yang bisa dibuka saat diperlukan, dan setiap jalur harus memiliki semantik yang jelas, bukan sekadar panah yang terlihat benar.
+
+---
+
+## 3. Requirement
+
+1. **Semua pihak harus ada** — Customer, Merchant (dengan Lane per tim), Payment Provider, Jasa Pengiriman — masing-masing di Pool yang tepat.
+2. **Jalur pembayaran** harus memakai Event-Based Gateway: menunggu konfirmasi pembayaran atau habisnya batas waktu, bukan XOR atas data status.
+3. **Fulfillment per item** dimodelkan sebagai Multi-instance Subprocess: satu instansi subprocess per item pesanan.
+4. **Kegagalan teknis** (stok tidak tersedia) ditangani dengan Error Boundary Event, bukan XOR kondisi.
+5. **Pembatalan setelah aktivitas selesai** memerlukan Compensation: setiap aktivitas yang bisa dibalik punya Compensation Handler.
+6. **Permintaan status kapan saja** dilayani oleh Event Subprocess non-interrupting dengan Signal Start.
+7. **Eskalasi pengiriman** menggunakan Escalation Boundary Event pada Call Activity yang memanggil layanan pengiriman eksternal.
+8. **Data disimpan** di Data Store setelah pesanan selesai.
+9. Semua requirement Modul 1–9 tetap berlaku.
+
+---
+
+## 4. Panduan analisis
+
+Capstone bukan soal menambahkan elemen baru — soal memutuskan *di mana* setiap pola yang sudah kamu pelajari harus diletakkan, dan *mengapa alternatifnya salah*.
+
+**Pertanyaan kunci saat membangun model:**
+
+**1. Pool atau Lane?**
+
+Batas Pool = batas organisasi dengan proses mandiri. Lane = pembagian tanggung jawab dalam satu organisasi.
+
+Customer memiliki proses sendiri (membuat pesanan, melakukan pembayaran) yang tidak dikontrol Merchant. Ia harus menjadi Pool terpisah. Payment Provider dan Jasa Pengiriman juga demikian — mereka punya sistem sendiri yang hanya berkomunikasi via pesan.
+
+Tim CS, Tim Keuangan, dan Tim Operasional adalah bagian dari Merchant. Mereka tidak punya proses terpisah — hanya pembagian pekerjaan. Mereka harus menjadi Lane di dalam Pool Merchant.
+
+**Alternatif yang ditolak — Lima Pool dengan Lane per department:** Ini menyembunyikan batas komunikasi. Jika Customer berada di dalam Pool Merchant sebagai Lane, kita kehilangan kemampuan untuk menunjukkan Message Flow antara Customer dan Merchant — karena Sequence Flow tidak bisa melintasi Pool.
+
+**2. Event-Based Gateway vs. XOR untuk menunggu pembayaran:**
+
+Ketika token tiba di titik tunggu pembayaran, data "status pembayaran" belum ada. XOR Gateway memilih berdasarkan data yang sudah ada. Jika kamu pakai XOR di sini, diagram kamu secara semantik mengatakan "kita sudah tahu hasilnya sebelum menunggu" — yang tidak benar.
+
+Event-Based Gateway mengatakan: "kita tidak tahu apa yang akan terjadi lebih dulu — pembayaran masuk atau waktu habis." Token menunggu event pertama, lalu melanjutkan ke jalur yang sesuai.
+
+**3. Error Boundary vs. XOR untuk stok habis:**
+
+XOR untuk "stok tersedia/tidak tersedia" berasumsi bahwa kita mengecek stok *sebelum* memproses item. Error Boundary mengekspresikan bahwa kegagalan terjadi *di dalam* pemrosesan — sistem mencoba, gagal, dan kita menangani kegagalannya.
+
+Mana yang lebih tepat untuk sistem produksi? Error Boundary: stok bisa habis kapan saja selama pemrosesan karena sistem lain juga mengaksesnya secara bersamaan.
+
+**4. Multi-instance untuk setiap item:**
+
+Jika pesanan punya 5 item, ada dua cara memodelkan pemrosesan:
+- *Satu task "Proses semua item"* — ini black box, tidak ada semantik
+- *Multi-instance Subprocess* — satu instansi subprocess per item, paralel atau sequential
+
+Multi-instance memungkinkan token untuk setiap item, sehingga engine tahu kapan *semua* item selesai diproses sebelum melanjutkan.
+
+**5. Compensation vs. task "Pembatalan":**
+
+Lihat kembali Modul 9: task "Pembatalan" biasa tidak terhubung secara semantik ke aktivitas yang dibalik. Jika prosedur fulfillment berubah, task pembatalan tidak otomatis ikut berubah. Compensation Boundary Event menyatakan keterkaitan itu secara eksplisit di dalam model.
+
+**6. Inclusive Gateway untuk notifikasi:**
+
+Setelah pesanan selesai, ada dua hal yang harus dilakukan: merekam ke riwayat pesanan DAN mengirim notifikasi ke customer. Apakah keduanya selalu terjadi? Ya. Apakah keduanya harus selesai sebelum langkah berikutnya? Ya.
+
+Parallel Gateway cocok jika kedua cabang selalu aktif. Inclusive Gateway memberi fleksibilitas: kita bisa mengaktifkan satu atau dua cabang tergantung kondisi, dan join menunggu semua yang aktif.
+
+---
+
+## 5. Tugas
+
+Mulai dari diagram Modul 9 atau bangun dari awal dengan mengikuti panduan di bawah:
+
+1. Buat **4 Pool**: Customer, Merchant (dengan 3 Lane: Tim CS, Tim Keuangan, Tim Operasional), Payment Provider, Jasa Pengiriman.
+2. Di **Tim CS**: tambahkan Message Start Event (pesanan masuk dari Customer), User Task (verifikasi), Business Rule Task (hitung harga), XOR Gateway (data lengkap?), Manual Task (tolak jika tidak lengkap), Text Annotation (SLA), Data Object (invoice).
+3. Di **Tim Keuangan**: Send Task (kirim tagihan ke Payment Provider), Event-Based Gateway (tunggu pembayaran/timeout), Timer Catch (PT24H), Service Task (verifikasi pembayaran), Task (batalkan), Intermediate Throw Compensation, None End.
+4. Di **Tim Operasional**: Collapsed Multi-instance Subprocess (fulfillment per item) dengan Error Boundary Event dan Compensation Boundary Event; Parallel Gateway split/join; Call Activity (layanan pengiriman) dengan Escalation Boundary Event non-interrupting; Receive Task (konfirmasi pengiriman); Inclusive Gateway split/join; Service Task (rekam ke Data Store); Send Task (kirim konfirmasi ke customer); None End.
+5. Di dalam **Pool Merchant**: tambahkan Event Subprocess non-interrupting (Signal Start — customer minta status, Service Task — cek status, Message End — kirim status ke customer).
+6. Tambahkan **Compensation Handler Task** (isForCompensation) di Tim Operasional, dihubungkan dengan Association ke Compensation Boundary Event.
+7. Periksa semua **Message Flow**: Customer↔Merchant, Merchant↔Payment Provider, Merchant↔Jasa Pengiriman.
+
+:::tip[File referensi]
+Gunakan [`case-10-capstone.bpmn`](/bpmn/case-10-capstone.bpmn) sebagai model referensi — tetapi coba buat dulu sebelum membukanya.
+:::
+
+<BpmnViewer src="/bpmn/case-10-capstone.bpmn" title="Model referensi Capstone" />
+
+---
+
+## 6. Pemeriksa kriteria
+
+<CriteriaChecker
+  criteriaSrc="/cases/case-10/criteria.json"
+  title="Periksa model Capstone"
+/>
+
+---
+
+## 7. Kunci jawaban
+
+:::caution[Coba kerjakan dulu]
+Buka hanya setelah kamu selesai mengerjakan tugas dan memeriksa modelmu dengan kriteria di atas.
+:::
+
+<details>
+<summary>**Lihat kunci jawaban Modul 10**</summary>
+
+### Lapis A — Model referensi
+
+<BpmnViewer src="/bpmn/case-10-capstone.bpmn" title="Capstone — Orkestrasi E-Commerce (seluruh Tier A)" />
+
+**Walkthrough token — jalur normal (happy path):**
+
+1. Customer membuat pesanan → **Message Flow** → **Message Start Event** di Pool Merchant (Tim CS)
+2. **User Task** Verifikasi Pesanan menghasilkan **Data Object** Invoice
+3. **XOR Gateway** — data lengkap → **Business Rule Task** Hitung Harga → lanjut ke Tim Keuangan
+4. **Send Task** Kirim Tagihan → **Message Flow** → Pool Payment Provider
+5. **Event-Based Gateway** menunggu dua event:
+   - **Message Catch** (pembayaran dikonfirmasi oleh Payment Provider) → **Service Task** Verifikasi Pembayaran → lanjut ke Tim Operasional
+   - **Timer Catch** PT24H → Task Batalkan → **Intermediate Throw Compensation** (memanggil semua handler aktif) → End
+6. **Multi-instance Collapsed Subprocess** Proses per Item dieksekusi sekali per item pesanan, secara paralel
+7. **Parallel Gateway split** → dua cabang bersamaan:
+   - Task Siapkan Dokumen Pengiriman
+   - **Call Activity** Layanan Pengiriman (memanggil proses eksternal)
+8. **Parallel Gateway join** — menunggu kedua cabang selesai
+9. **Receive Task** Terima Konfirmasi Pengiriman ← **Message Flow** ← Pool Jasa Pengiriman
+10. **Inclusive Gateway split** → dua cabang:
+    - **Service Task** Rekam ke Riwayat → **Data Association** → **Data Store**
+    - Task Kirim Notifikasi Customer
+11. **Inclusive Gateway join** → **Send Task** Kirim Konfirmasi → **Message Flow** → Customer → End
+
+**Walkthrough token — skenario stok habis:**
+
+1. Di dalam Subprocess Fulfillment, Service Task "Cek stok item" melempar Error
+2. **Error Boundary Event** (interrupting) pada Subprocess menangkap error → subprocess dibatalkan
+3. **Manual Task** Tinjau Kegagalan Manual → **Terminate End** (seluruh proses dihentikan)
+
+**Walkthrough token — skenario eskalasi pengiriman:**
+
+1. Call Activity sedang berjalan
+2. **Escalation Boundary Event** (non-interrupting) ditrigger — Call Activity *tetap berjalan*
+3. **Service Task** Notifikasi Supervisor Pengiriman → None End (jalur eskalasi selesai secara terpisah)
+
+**Walkthrough token — permintaan status customer:**
+
+1. Customer mengirim sinyal "StatusPesananDiminta"
+2. **Event Subprocess non-interrupting** (border putus-putus) menangkap **Signal Start Event**
+3. **Service Task** Cek Status → **Message End** → **Message Flow** → Customer
+4. Proses utama *tidak terganggu*
+
+### Lapis B — Kriteria wajib
+
+1. **Minimal 3 Pool** dengan Merchant berisi Lane.
+2. **Event-Based Gateway** untuk menunggu pembayaran/timeout — bukan XOR.
+3. **Compensation Boundary Event** pada Subprocess, terhubung ke **Compensation Handler** via Association.
+4. **Multi-instance Subprocess** (parallel) untuk proses per item.
+5. **Error Boundary Event** (interrupting) pada Subprocess untuk stok habis.
+6. **Event Subprocess non-interrupting** dengan Signal Start untuk permintaan status.
+7. **Minimal 4 Message Flow** yang mencakup semua batas Pool.
+8. **Error Boundary Event** pada Subprocess terpisah dari jalur bisnis normal.
+
+### Lapis C — Variasi yang juga diterima
+
+**Variasi 1: Lebih banyak Lane**
+
+Kamu bisa menambahkan Lane ke Pool Customer (misalnya "Tim Pembelian" vs "Akuntansi Customer") dan Pool Jasa Pengiriman (misalnya "Dispatcher" vs "Driver"). Ini valid selama Sequence Flow tetap di dalam Pool yang sama dan komunikasi antarpihak tetap via Message Flow.
+
+**Variasi 2: Sequential multi-instance**
+
+Jika kebijakan bisnis mensyaratkan item diproses satu per satu (karena keterbatasan gudang), Multi-instance Subprocess bisa `isSequential="true"`. Semantiknya berbeda — lebih lambat tapi lebih terkontrol. Keduanya valid; pilih berdasarkan kebijakan bisnis, bukan preferensi.
+
+**Variasi 3: Inclusive Gateway vs. Parallel untuk notifikasi**
+
+Jika kedua cabang notifikasi (rekam riwayat dan kirim notifikasi) selalu aktif, Parallel Gateway juga valid. Inclusive Gateway memberi fleksibilitas untuk menonaktifkan satu cabang berdasarkan kondisi — berguna jika notifikasi customer bisa dimatikan untuk pesanan tertentu (misalnya pesanan B2B).
+
+**Variasi 4: Call Activity vs. Embedded Subprocess untuk pengiriman**
+
+Call Activity (A16) merujuk ke proses global yang bisa dipakai ulang di luar konteks ini. Jika proses pengiriman hanya dipakai di sini, Embedded Subprocess (A13) lebih tepat. Gunakan Call Activity ketika proses pengiriman adalah layanan standar yang dipakai di banyak alur bisnis.
+
+### Lapis D — Kesalahan umum
+
+**Kesalahan 1: Sequence Flow melintasi Pool**
+
+*Gejala:* Ada panah Sequence Flow yang menghubungkan elemen di Pool Merchant langsung ke elemen di Pool Customer atau Payment Provider.
+
+*Diagnosis semantik:* Sequence Flow mengekspresikan transfer token di dalam satu proses. Melintasi Pool berarti mengatakan bahwa token Merchant berpindah ke proses Customer — yang tidak mungkin secara semantik. Merchant tidak bisa "memindahkan" kendali ke proses Customer.
+
+*Perbaikan:* Gunakan Message Flow (panah putus-putus dengan ikon amplop) untuk komunikasi antarpihak. Setiap Pool memiliki token-nya sendiri.
+
+**Kesalahan 2: XOR Gateway untuk menunggu pembayaran**
+
+*Gejala:* Setelah Send Task "Kirim Tagihan", ada XOR Gateway dengan kondisi "pembayaran berhasil" dan "timeout".
+
+*Diagnosis semantik:* Data "pembayaran berhasil/gagal" tidak ada ketika token tiba di XOR. XOR memilih berdasarkan data yang sudah ada — tapi pada titik ini Merchant baru saja mengirim tagihan dan sedang menunggu. Token akan terjebak karena tidak ada data untuk dievaluasi.
+
+*Perbaikan:* Ganti XOR Gateway dengan Event-Based Gateway. Tambahkan dua cabang: Intermediate Message Catch (konfirmasi dari Payment Provider) dan Intermediate Timer Catch (PT24H). Event-Based Gateway menunggu event pertama yang terjadi.
+
+**Kesalahan 3: Compensation sebagai task biasa di jalur timeout**
+
+*Gejala:* Setelah timeout, ada task "Batalkan semua pesanan" yang menjalankan semua pembalikan dalam satu task.
+
+*Diagnosis semantik:* Task biasa tidak terhubung ke aktivitas yang dibalikkan secara semantik. Jika prosedur fulfillment berubah, task "batalkan" tidak otomatis ikut berubah. Engine BPMN tidak tahu bahwa "batalkan fulfillment" adalah kebalikan dari "proses fulfillment". Intermediate Throw Compensation Event mentrigger semua Compensation Handler yang terdaftar — secara otomatis dan terhubung secara eksplisit.
+
+*Perbaikan:* Tambahkan Compensation Boundary Event pada setiap aktivitas yang bisa dibalik. Buat Compensation Handler (task dengan marker ◀◀, `isForCompensation="true"`). Hubungkan dengan Association. Di jalur pembatalan, ganti task biasa dengan Intermediate Throw Compensation Event.
+
+**Kesalahan 4: Event Subprocess interrupting untuk permintaan status**
+
+*Gejala:* Event Subprocess untuk "Customer minta status" memiliki border tebal solid (interrupting). Setiap kali ada permintaan status masuk, proses utama dihentikan.
+
+*Diagnosis semantik:* Ini berarti mengemas barang berhenti setiap kali ada customer yang bertanya. Jika ada 100 customer bertanya bersamaan, proses utama tidak pernah selesai. Non-interrupting memungkinkan Event Subprocess berjalan paralel — proses utama tidak peduli berapa kali status diminta.
+
+*Perbaikan:* Ubah Event Subprocess menjadi non-interrupting (border putus-putus). Pastikan Start Event di dalamnya juga non-interrupting (`isInterrupting="false"`).
+
+**Kesalahan 5: Parallel Gateway join menunggu semua cabang termasuk yang sudah mati**
+
+*Gejala:* Pada jalur eskalasi, setelah Escalation Boundary Event (interrupting), alur utama menuju Parallel Gateway join yang tidak pernah menerima token dari cabang yang dibatalkan.
+
+*Diagnosis semantik:* Jika Escalation Boundary Event bersifat interrupting, Call Activity dibatalkan — token dari cabang itu tidak pernah sampai ke join. Parallel Gateway join menunggu selamanya.
+
+*Perbaikan:* Gunakan Escalation Boundary Event non-interrupting (cancelActivity="false") sehingga Call Activity terus berjalan dan tokennya tetap mencapai join. Atau restrukturisasi alur sehingga jalur eskalasi berakhir di End Event tersendiri tanpa menuju ke join.
+
+</details>
+
+---
+
+**← [Modul 9](/jalur/09/) · [Cabang S1: Reservasi Perjalanan](/jalur/s1/) →**

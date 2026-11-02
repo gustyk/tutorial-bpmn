@@ -2,9 +2,9 @@
 
 Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y — judul` → `- [x] T-x.y — judul · 2026-11-xx · catatan satu baris`.
 
-**Acuan:** [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) v1.1 · [SPEC.md](SPEC.md) v1.1 · **Status keseluruhan:** WP-7 selesai (menunggu G2)
-**Keputusan pemilik:** S-01…S-04 dan D-01…D-03 sudah dijawab 2026-11-01 · G1 disetujui 2026-11-02
-**Gerbang berikutnya:** G2 — purwarupa mutu 3 modul. Hentikan dan tunjukkan ke pemilik.
+**Acuan:** [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) v1.1 · [SPEC.md](SPEC.md) v1.1 · **Status keseluruhan:** WP-10 selesai
+**Keputusan pemilik:** S-01…S-04 dan D-01…D-03 sudah dijawab 2026-11-01 · G1 disetujui 2026-11-02 · G2 disetujui 2026-11-02
+**Gerbang berikutnya:** G3 — persetujuan rilis. Hentikan dan tunjukkan ke pemilik setelah WP-11 (katalog) dan WP-12 (QA).
 
 ---
 
@@ -101,11 +101,11 @@ Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y
 
 ## WP-10 · Modul 10 (Capstone) dan Cabang S1
 
-- [ ] T-10.1 — Bangun ulang `case-10-capstone.bpmn` dari nol
-- [ ] T-10.2 — Kunci jawaban 4 lapis capstone (≥5 kesalahan)
-- [ ] T-10.3 — Bongkar `practice/capstone.mdx`
-- [ ] T-10.4 — Cabang S1 (reservasi perjalanan: A15, E10, compensation)
-- [ ] T-10.5 — Pensiunkan `case-11-capstone.bpmn`
+- [x] T-10.1 — Bangun ulang `case-10-capstone.bpmn` dari nol · 2026-11-02 · 35 Tier A semua ada; 4 Pool, 3 Lane, Event Subprocess non-interrupting, Multi-instance Subprocess, Compensation; validate:bpmn 0 warning
+- [x] T-10.2 — Kunci jawaban 4 lapis capstone · 2026-11-02 · criteria.json 8 kriteria (5 auto, 3 manual/assisted); Lapis A/B/C/D di jalur/10.mdx dengan 5 kesalahan umum terdiagnosis
+- [x] T-10.3 — Bongkar `practice/capstone.mdx` · 2026-11-02 · practice/capstone.mdx diganti halaman pengalihan ke /jalur/10/; jalur/10.mdx 7-seksi penuh dengan BpmnViewer, CriteriaChecker, dan kunci jawaban di details
+- [x] T-10.4 — Cabang S1 (reservasi perjalanan: A15, E10, compensation) · 2026-11-02 · jalur/s1.mdx: kasus bisnis, tabel perbandingan Compensation vs Transaction, walkthrough rollback, 3 kesalahan umum; PEDAGOGICAL SIMPLIFICATION berlabel sesuai aturan redaksional
+- [x] T-10.5 — Pensiunkan `case-11-capstone.bpmn` · 2026-11-02 · file dihapus; render.spec.ts diperbaiki (case-10-capstone → /jalur/10/); 0 referensi tersisa; verify exit 0
 
 ## WP-11 · Katalog Tier B/C, referensi, lampiran
 
@@ -157,6 +157,9 @@ Catat di sini setiap keputusan yang diambil tanpa bertanya, beserta alasannya sa
 | 2026-11-02 | T-1.4 | A2 reusedIn jadi WARN bukan FAIL | Kasus belum dibangun (WP-7+); failure di sini akan memblokir verify tanpa ada yang bisa diperbaiki sekarang |
 | 2026-11-02 | T-7.2 | BpmnViewer ditampilkan juga di bagian 1 (terbuka) selain di dalam details | Render test butuh .viewer-status terlihat tanpa membuka details; SPEC §7.5 memperbolehkan diagram di bagian 1-6 |
 | 2026-11-02 | T-7.5 | criteria.json disalin ke public/cases/ | Browser fetch membutuhkan file di public/; content-src/ tidak disajikan; salinan di public/ adalah sumber kebenaran saat deploy |
+| 2026-11-02 | T-10.1 | case-10-capstone.bpmn menggunakan canvas 2560px | 35 elemen Tier A membutuhkan ruang; bpmn-js fit-to-view memenuhi syarat "terbaca di 360px" lewat zoom-to-fit otomatis |
+| 2026-11-02 | T-10.3 | BpmnViewer ditambah di luar details di jalur/10.mdx | render.spec.ts membutuhkan .viewer-status terlihat tanpa membuka details; sama dengan keputusan T-7.2 |
+| 2026-11-02 | T-10.4 | jalur/s1.mdx tanpa BPMN file (teks + walkthrough saja) | SPEC §5.3 menyebut s1 sebagai "bacaan lanjutan" tanpa mendaftar tugas wajib; membangun case-s1-travel.bpmn akan menambah Tier B ke validator tanpa ada jalur modul yang menginstruksikan notasi tersebut; risiko lebih besar dari manfaat |
 
 ## Daftar tunggu pasca-rilis
 

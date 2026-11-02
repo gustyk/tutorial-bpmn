@@ -1,0 +1,834 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  id="Def_Case10"
+  targetNamespace="https://uisi.ac.id/bpmn-tutorial">
+
+  <!-- Case 10: Capstone — seluruh Tier A dalam satu kolaborasi e-commerce -->
+  <!-- Tier A types: P01 P02 C01 F01 F02 F03 F04 A01 A02 A03 A04 A05 A07 A08 A09 -->
+  <!--               A11 A12 A13 A14 A16 G01 G02 G03 G04 D01 D04 R01               -->
+  <!--               E01 E02 E03 E05 E06 E07 E08 E11                                -->
+
+  <bpmn:signal id="Sig10_StatusDiminta" name="StatusPesananDiminta" />
+
+  <!-- ============================================================
+       KOLABORASI: C01
+       ============================================================ -->
+  <bpmn:collaboration id="Collab_Cap10" name="Pemenuhan Pesanan E-Commerce — Kapstone">
+    <!-- P01: Pool/Participant -->
+    <bpmn:participant id="P10_Customer"   name="Customer"          processRef="Proc10_Customer" />
+    <bpmn:participant id="P10_Merchant"   name="Merchant"          processRef="Proc10_Merchant" />
+    <bpmn:participant id="P10_PayProv"    name="Payment Provider" />
+    <bpmn:participant id="P10_JasaKirim"  name="Jasa Pengiriman" />
+
+    <!-- F02: Message Flow -->
+    <bpmn:messageFlow id="MF10_1" name="Pesanan"
+      sourceRef="TA10_C_BuatPesanan" targetRef="SE10_PesananMasuk" />
+    <bpmn:messageFlow id="MF10_2" name="Tagihan pembayaran"
+      sourceRef="TA10_KirimTagihan" targetRef="P10_PayProv" />
+    <bpmn:messageFlow id="MF10_3" name="Konfirmasi pembayaran"
+      sourceRef="P10_PayProv" targetRef="ICE10_BayarDiterima" />
+    <bpmn:messageFlow id="MF10_4" name="Instruksi pengiriman"
+      sourceRef="CA10_LayananPengiriman" targetRef="P10_JasaKirim" />
+    <bpmn:messageFlow id="MF10_5" name="Konfirmasi pengiriman"
+      sourceRef="P10_JasaKirim" targetRef="TA10_TerimaKonfirmasi" />
+    <bpmn:messageFlow id="MF10_6" name="Pesanan selesai"
+      sourceRef="TA10_KirimKonfirmasi" targetRef="IE10_C_KonfirmasiDiterima" />
+    <bpmn:messageFlow id="MF10_7" name="Status pesanan"
+      sourceRef="EE10_ES_StatusDikirim" targetRef="IE10_C_StatusDiterima" />
+  </bpmn:collaboration>
+
+  <!-- ============================================================
+       PROSES CUSTOMER
+       ============================================================ -->
+  <bpmn:process id="Proc10_Customer" name="Proses Customer" isExecutable="false">
+    <bpmn:startEvent id="SE10_C_Mulai" name="Kebutuhan muncul">
+      <bpmn:outgoing>SF10_C1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <!-- A08: Send Task -->
+    <bpmn:sendTask id="TA10_C_BuatPesanan" name="Buat dan kirim pesanan">
+      <bpmn:incoming>SF10_C1</bpmn:incoming>
+      <bpmn:outgoing>SF10_C2</bpmn:outgoing>
+    </bpmn:sendTask>
+    <!-- E02: Message Catch -->
+    <bpmn:intermediateCatchEvent id="IE10_C_KonfirmasiDiterima" name="Konfirmasi pesanan diterima">
+      <bpmn:incoming>SF10_C2</bpmn:incoming>
+      <bpmn:outgoing>SF10_C3</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED10_C1" />
+    </bpmn:intermediateCatchEvent>
+    <!-- E01: None End -->
+    <bpmn:endEvent id="EE10_C_Selesai" name="Pesanan selesai">
+      <bpmn:incoming>SF10_C3</bpmn:incoming>
+    </bpmn:endEvent>
+    <!-- Status pesanan: standalone catch (dipicu kapan saja via MF) -->
+    <bpmn:intermediateCatchEvent id="IE10_C_StatusDiterima" name="Status diterima">
+      <bpmn:outgoing>SF10_C_Status</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED10_C2" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:endEvent id="EE10_C_StatusDiketahui" name="Status diketahui">
+      <bpmn:incoming>SF10_C_Status</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="SF10_C1" sourceRef="SE10_C_Mulai" targetRef="TA10_C_BuatPesanan" />
+    <bpmn:sequenceFlow id="SF10_C2" sourceRef="TA10_C_BuatPesanan" targetRef="IE10_C_KonfirmasiDiterima" />
+    <bpmn:sequenceFlow id="SF10_C3" sourceRef="IE10_C_KonfirmasiDiterima" targetRef="EE10_C_Selesai" />
+    <bpmn:sequenceFlow id="SF10_C_Status" sourceRef="IE10_C_StatusDiterima" targetRef="EE10_C_StatusDiketahui" />
+  </bpmn:process>
+
+  <!-- ============================================================
+       PROSES MERCHANT
+       ============================================================ -->
+  <bpmn:process id="Proc10_Merchant" name="Proses Merchant" isExecutable="false">
+
+    <!-- P02: Lane -->
+    <bpmn:laneSet id="LS10_Merchant">
+      <bpmn:lane id="Lane10_CS" name="Tim CS">
+        <bpmn:flowNodeRef>SE10_PesananMasuk</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA10_VerifikasiPesanan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW10_DataLengkap</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA10_TolakPesanan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EE10_PesananDitolak</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA10_HitungHarga</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane10_Keuangan" name="Tim Keuangan">
+        <bpmn:flowNodeRef>TA10_KirimTagihan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EBG10_TungguBayar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ICE10_BayarDiterima</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ICE10_BatasWaktu</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA10_VerifikasiBayar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA10_BatalPesanan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ITE10_BatalkanSemua</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EE10_PesananBatal</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane10_Operasional" name="Tim Operasional">
+        <bpmn:flowNodeRef>SubProc10_Fulfillment</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA10_TinjauManual</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EE10_GagalTotal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA10_CompHandlerFulfillment</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW10_ParalelSplit</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA10_SiapkanDokumen</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>CA10_LayananPengiriman</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA10_NotifikasiEskalasi</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EE10_EskalasiEnd</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW10_ParalelJoin</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA10_TerimaKonfirmasi</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW10_NotifikasiSplit</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA10_RekamRiwayat</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA10_KirimNotifikasi</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW10_NotifikasiJoin</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA10_KirimKonfirmasi</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EE10_PesananSelesai</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <!-- D01: Data Object -->
+    <bpmn:dataObject id="DO10_Invoice" name="Invoice" />
+    <bpmn:dataObjectReference id="DOR10_Invoice" name="Invoice [dibuat]" dataObjectRef="DO10_Invoice" />
+
+    <!-- D04: Data Store Reference -->
+    <bpmn:dataStoreReference id="DS10_RiwayatPesanan" name="Riwayat Pesanan" />
+
+    <!-- R01: Text Annotation -->
+    <bpmn:textAnnotation id="Anno10_SLA">
+      <bpmn:text>SLA verifikasi: maks. 2 jam</bpmn:text>
+    </bpmn:textAnnotation>
+
+    <!-- ---- TIM CS ---- -->
+
+    <!-- E02: Message Start Event -->
+    <bpmn:startEvent id="SE10_PesananMasuk" name="Pesanan masuk">
+      <bpmn:outgoing>SF10_M1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED10_M1" />
+    </bpmn:startEvent>
+
+    <!-- A04: User Task -->
+    <bpmn:userTask id="TA10_VerifikasiPesanan" name="Verifikasi Pesanan">
+      <bpmn:incoming>SF10_M1</bpmn:incoming>
+      <bpmn:outgoing>SF10_M2</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="DA10_Invoice">
+        <bpmn:targetRef>DOR10_Invoice</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:userTask>
+
+    <!-- G01: Exclusive Gateway -->
+    <bpmn:exclusiveGateway id="GW10_DataLengkap" name="Data lengkap?">
+      <bpmn:incoming>SF10_M2</bpmn:incoming>
+      <bpmn:outgoing>SF10_M3_Ya</bpmn:outgoing>
+      <bpmn:outgoing>SF10_M3_Tidak</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <!-- A03: Manual Task -->
+    <bpmn:manualTask id="TA10_TolakPesanan" name="Tolak pesanan secara manual">
+      <bpmn:incoming>SF10_M3_Tidak</bpmn:incoming>
+      <bpmn:outgoing>SF10_M4</bpmn:outgoing>
+    </bpmn:manualTask>
+
+    <!-- E02: Message End Event -->
+    <bpmn:endEvent id="EE10_PesananDitolak" name="Pesanan ditolak">
+      <bpmn:incoming>SF10_M4</bpmn:incoming>
+      <bpmn:messageEventDefinition id="MED10_M2" />
+    </bpmn:endEvent>
+
+    <!-- A07: Business Rule Task -->
+    <bpmn:businessRuleTask id="TA10_HitungHarga" name="Hitung Harga dan Diskon">
+      <bpmn:incoming>SF10_M3_Ya</bpmn:incoming>
+      <bpmn:outgoing>SF10_M5</bpmn:outgoing>
+    </bpmn:businessRuleTask>
+
+    <!-- ---- TIM KEUANGAN ---- -->
+
+    <!-- A08: Send Task -->
+    <bpmn:sendTask id="TA10_KirimTagihan" name="Kirim Tagihan ke Payment Provider">
+      <bpmn:incoming>SF10_M5</bpmn:incoming>
+      <bpmn:outgoing>SF10_M6</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <!-- G04: Event-Based Gateway -->
+    <bpmn:eventBasedGateway id="EBG10_TungguBayar" name="Tunggu pembayaran">
+      <bpmn:incoming>SF10_M6</bpmn:incoming>
+      <bpmn:outgoing>SF10_M7_Bayar</bpmn:outgoing>
+      <bpmn:outgoing>SF10_M7_Timer</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+
+    <!-- E02: Intermediate Message Catch -->
+    <bpmn:intermediateCatchEvent id="ICE10_BayarDiterima" name="Pembayaran dikonfirmasi">
+      <bpmn:incoming>SF10_M7_Bayar</bpmn:incoming>
+      <bpmn:outgoing>SF10_M8</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED10_M3" />
+    </bpmn:intermediateCatchEvent>
+
+    <!-- E03: Intermediate Timer Catch -->
+    <bpmn:intermediateCatchEvent id="ICE10_BatasWaktu" name="Batas waktu habis">
+      <bpmn:incoming>SF10_M7_Timer</bpmn:incoming>
+      <bpmn:outgoing>SF10_M9</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TED10_M1">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">PT24H</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+
+    <!-- A05: Service Task -->
+    <bpmn:serviceTask id="TA10_VerifikasiBayar" name="Verifikasi Pembayaran Otomatis">
+      <bpmn:incoming>SF10_M8</bpmn:incoming>
+      <bpmn:outgoing>SF10_M10</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- A01: Task (generic) -->
+    <bpmn:task id="TA10_BatalPesanan" name="Batalkan Pesanan">
+      <bpmn:incoming>SF10_M9</bpmn:incoming>
+      <bpmn:outgoing>SF10_M11</bpmn:outgoing>
+    </bpmn:task>
+
+    <!-- E08: Intermediate Throw Compensation -->
+    <bpmn:intermediateThrowEvent id="ITE10_BatalkanSemua" name="Batalkan aktivitas yang sudah dilakukan">
+      <bpmn:incoming>SF10_M11</bpmn:incoming>
+      <bpmn:outgoing>SF10_M12</bpmn:outgoing>
+      <bpmn:compensateEventDefinition id="CED10_Throw" />
+    </bpmn:intermediateThrowEvent>
+
+    <!-- E01: None End -->
+    <bpmn:endEvent id="EE10_PesananBatal" name="Pesanan dibatalkan">
+      <bpmn:incoming>SF10_M12</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- ---- TIM OPERASIONAL ---- -->
+
+    <!-- A13: Embedded Subprocess + A11: Multi-instance (collapsed) -->
+    <bpmn:subProcess id="SubProc10_Fulfillment" name="Proses per Item Pesanan">
+      <bpmn:incoming>SF10_M10</bpmn:incoming>
+      <bpmn:outgoing>SF10_M13</bpmn:outgoing>
+      <!-- A11: Multi-instance marker (parallel, satu per item) -->
+      <bpmn:multiInstanceLoopCharacteristics isSequential="false" />
+
+      <!-- Inner elements (collapsed — tidak tampil di diagram utama) -->
+      <bpmn:startEvent id="SE10_SP_Mulai" name="">
+        <bpmn:outgoing>SF10_SP1</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:serviceTask id="TA10_SP_CekStok" name="Cek stok item">
+        <bpmn:incoming>SF10_SP1</bpmn:incoming>
+        <bpmn:outgoing>SF10_SP2</bpmn:outgoing>
+      </bpmn:serviceTask>
+      <bpmn:userTask id="TA10_SP_SiapkanItem" name="Siapkan item pesanan">
+        <bpmn:incoming>SF10_SP2</bpmn:incoming>
+        <bpmn:outgoing>SF10_SP3</bpmn:outgoing>
+      </bpmn:userTask>
+      <bpmn:endEvent id="EE10_SP_Selesai" name="">
+        <bpmn:incoming>SF10_SP3</bpmn:incoming>
+      </bpmn:endEvent>
+
+      <bpmn:sequenceFlow id="SF10_SP1" sourceRef="SE10_SP_Mulai" targetRef="TA10_SP_CekStok" />
+      <bpmn:sequenceFlow id="SF10_SP2" sourceRef="TA10_SP_CekStok" targetRef="TA10_SP_SiapkanItem" />
+      <bpmn:sequenceFlow id="SF10_SP3" sourceRef="TA10_SP_SiapkanItem" targetRef="EE10_SP_Selesai" />
+    </bpmn:subProcess>
+
+    <!-- E06: Error Boundary Event (interrupting) on SubProc -->
+    <bpmn:boundaryEvent id="BE10_ErrorFulfillment" name="Stok tidak tersedia"
+      attachedToRef="SubProc10_Fulfillment" cancelActivity="true">
+      <bpmn:outgoing>SF10_M14_Err</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="EED10_1" />
+    </bpmn:boundaryEvent>
+
+    <!-- E08: Compensation Boundary Event on SubProc -->
+    <bpmn:boundaryEvent id="BE10_KompenFulfillment" name="Kompensasi fulfillment"
+      attachedToRef="SubProc10_Fulfillment" cancelActivity="true">
+      <bpmn:compensateEventDefinition id="CED10_Bdry" />
+    </bpmn:boundaryEvent>
+
+    <!-- A12: Compensation Handler (isForCompensation=true) -->
+    <bpmn:task id="TA10_CompHandlerFulfillment"
+      name="Batalkan dan kembalikan semua item ke stok"
+      isForCompensation="true">
+    </bpmn:task>
+
+    <!-- A03: Manual Task (error path) -->
+    <bpmn:manualTask id="TA10_TinjauManual" name="Tinjau Kegagalan Manual">
+      <bpmn:incoming>SF10_M14_Err</bpmn:incoming>
+      <bpmn:outgoing>SF10_M14_End</bpmn:outgoing>
+    </bpmn:manualTask>
+
+    <!-- E11: Terminate End -->
+    <bpmn:endEvent id="EE10_GagalTotal" name="Proses dihentikan">
+      <bpmn:incoming>SF10_M14_End</bpmn:incoming>
+      <bpmn:terminateEventDefinition id="TED10_Terminate" />
+    </bpmn:endEvent>
+
+    <!-- G02: Parallel Gateway (split) -->
+    <bpmn:parallelGateway id="GW10_ParalelSplit" name="Mulai paralel">
+      <bpmn:incoming>SF10_M13</bpmn:incoming>
+      <bpmn:outgoing>SF10_M15_Dok</bpmn:outgoing>
+      <bpmn:outgoing>SF10_M15_Kirim</bpmn:outgoing>
+    </bpmn:parallelGateway>
+
+    <!-- A02: None/Undefined Task -->
+    <bpmn:task id="TA10_SiapkanDokumen" name="Siapkan Dokumen Pengiriman">
+      <bpmn:incoming>SF10_M15_Dok</bpmn:incoming>
+      <bpmn:outgoing>SF10_M16_Dok</bpmn:outgoing>
+    </bpmn:task>
+
+    <!-- A16: Call Activity -->
+    <bpmn:callActivity id="CA10_LayananPengiriman" name="Layanan Pengiriman Pihak Ketiga"
+      calledElement="Proc_LayananPengiriman">
+      <bpmn:incoming>SF10_M15_Kirim</bpmn:incoming>
+      <bpmn:outgoing>SF10_M16_Kirim</bpmn:outgoing>
+    </bpmn:callActivity>
+
+    <!-- E07: Escalation Boundary Event (non-interrupting) on Call Activity -->
+    <bpmn:boundaryEvent id="BE10_EskalasiPengiriman" name="Masalah pengiriman"
+      attachedToRef="CA10_LayananPengiriman" cancelActivity="false">
+      <bpmn:outgoing>SF10_M17_Esk</bpmn:outgoing>
+      <bpmn:escalationEventDefinition id="ESCED10_1" />
+    </bpmn:boundaryEvent>
+
+    <!-- A05: Service Task (escalation notification) -->
+    <bpmn:serviceTask id="TA10_NotifikasiEskalasi" name="Notifikasi Supervisor Pengiriman">
+      <bpmn:incoming>SF10_M17_Esk</bpmn:incoming>
+      <bpmn:outgoing>SF10_M18_Esk</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- E01: None End (escalation path) -->
+    <bpmn:endEvent id="EE10_EskalasiEnd" name="Eskalasi selesai">
+      <bpmn:incoming>SF10_M18_Esk</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- G02: Parallel Gateway (join) -->
+    <bpmn:parallelGateway id="GW10_ParalelJoin" name="Tunggu selesai">
+      <bpmn:incoming>SF10_M16_Dok</bpmn:incoming>
+      <bpmn:incoming>SF10_M16_Kirim</bpmn:incoming>
+      <bpmn:outgoing>SF10_M19</bpmn:outgoing>
+    </bpmn:parallelGateway>
+
+    <!-- A09: Receive Task -->
+    <bpmn:receiveTask id="TA10_TerimaKonfirmasi" name="Terima Konfirmasi Pengiriman">
+      <bpmn:incoming>SF10_M19</bpmn:incoming>
+      <bpmn:outgoing>SF10_M20</bpmn:outgoing>
+    </bpmn:receiveTask>
+
+    <!-- G03: Inclusive Gateway (split) -->
+    <bpmn:inclusiveGateway id="GW10_NotifikasiSplit" name="Proses notifikasi">
+      <bpmn:incoming>SF10_M20</bpmn:incoming>
+      <bpmn:outgoing>SF10_M21_Rekam</bpmn:outgoing>
+      <bpmn:outgoing>SF10_M21_Notif</bpmn:outgoing>
+    </bpmn:inclusiveGateway>
+
+    <!-- A05: Service Task (rekam riwayat) -->
+    <bpmn:serviceTask id="TA10_RekamRiwayat" name="Rekam ke Riwayat Pesanan">
+      <bpmn:incoming>SF10_M21_Rekam</bpmn:incoming>
+      <bpmn:outgoing>SF10_M22_Rekam</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="DA10_Riwayat">
+        <bpmn:targetRef>DS10_RiwayatPesanan</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:serviceTask>
+
+    <!-- A01: Task (kirim notifikasi customer) -->
+    <bpmn:task id="TA10_KirimNotifikasi" name="Kirim Notifikasi Customer">
+      <bpmn:incoming>SF10_M21_Notif</bpmn:incoming>
+      <bpmn:outgoing>SF10_M22_Notif</bpmn:outgoing>
+    </bpmn:task>
+
+    <!-- G03: Inclusive Gateway (join) -->
+    <bpmn:inclusiveGateway id="GW10_NotifikasiJoin" name="Notifikasi selesai">
+      <bpmn:incoming>SF10_M22_Rekam</bpmn:incoming>
+      <bpmn:incoming>SF10_M22_Notif</bpmn:incoming>
+      <bpmn:outgoing>SF10_M23</bpmn:outgoing>
+    </bpmn:inclusiveGateway>
+
+    <!-- A08: Send Task (kirim konfirmasi final ke customer) -->
+    <bpmn:sendTask id="TA10_KirimKonfirmasi" name="Kirim Konfirmasi Pesanan ke Customer">
+      <bpmn:incoming>SF10_M23</bpmn:incoming>
+      <bpmn:outgoing>SF10_M24</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <!-- E01: None End -->
+    <bpmn:endEvent id="EE10_PesananSelesai" name="Pesanan dikirim">
+      <bpmn:incoming>SF10_M24</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- ---- EVENT SUBPROCESS: A14 (non-interrupting) + E05 (Signal) ---- -->
+    <bpmn:subProcess id="EVSP10_StatusQuery" triggeredByEvent="true"
+      name="Layanan Status Pesanan">
+      <!-- E05: Signal Start Event -->
+      <bpmn:startEvent id="SE10_ES_StatusDiminta" name="Customer meminta status" isInterrupting="false">
+        <bpmn:outgoing>SF10_ES1</bpmn:outgoing>
+        <bpmn:signalEventDefinition id="SED10_ES1" signalRef="Sig10_StatusDiminta" />
+      </bpmn:startEvent>
+      <!-- A05: Service Task -->
+      <bpmn:serviceTask id="TA10_ES_CekStatus" name="Cek dan kirim status pesanan">
+        <bpmn:incoming>SF10_ES1</bpmn:incoming>
+        <bpmn:outgoing>SF10_ES2</bpmn:outgoing>
+      </bpmn:serviceTask>
+      <!-- E02: Message End (kirim ke customer) -->
+      <bpmn:endEvent id="EE10_ES_StatusDikirim" name="Status pesanan dikirim">
+        <bpmn:incoming>SF10_ES2</bpmn:incoming>
+        <bpmn:messageEventDefinition id="MED10_ES1" />
+      </bpmn:endEvent>
+
+      <bpmn:sequenceFlow id="SF10_ES1" sourceRef="SE10_ES_StatusDiminta" targetRef="TA10_ES_CekStatus" />
+      <bpmn:sequenceFlow id="SF10_ES2" sourceRef="TA10_ES_CekStatus" targetRef="EE10_ES_StatusDikirim" />
+    </bpmn:subProcess>
+
+    <!-- ---- ASSOCIATIONS ---- -->
+    <!-- F03: Association (TextAnnotation SLA → TA_VerifikasiPesanan) -->
+    <bpmn:association id="Assoc10_SLA"
+      sourceRef="TA10_VerifikasiPesanan" targetRef="Anno10_SLA" />
+    <!-- Compensation handler link -->
+    <bpmn:association id="Assoc10_Comp"
+      sourceRef="BE10_KompenFulfillment" targetRef="TA10_CompHandlerFulfillment" />
+
+    <!-- ---- SEQUENCE FLOWS (main process) ---- -->
+    <bpmn:sequenceFlow id="SF10_M1"  sourceRef="SE10_PesananMasuk"    targetRef="TA10_VerifikasiPesanan" />
+    <bpmn:sequenceFlow id="SF10_M2"  sourceRef="TA10_VerifikasiPesanan" targetRef="GW10_DataLengkap" />
+    <bpmn:sequenceFlow id="SF10_M3_Tidak" name="tidak lengkap"
+      sourceRef="GW10_DataLengkap" targetRef="TA10_TolakPesanan">
+      <bpmn:conditionExpression>data tidak lengkap</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="SF10_M3_Ya" name="lengkap"
+      sourceRef="GW10_DataLengkap" targetRef="TA10_HitungHarga">
+      <bpmn:conditionExpression>data lengkap</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="SF10_M4"  sourceRef="TA10_TolakPesanan"    targetRef="EE10_PesananDitolak" />
+    <bpmn:sequenceFlow id="SF10_M5"  sourceRef="TA10_HitungHarga"     targetRef="TA10_KirimTagihan" />
+    <bpmn:sequenceFlow id="SF10_M6"  sourceRef="TA10_KirimTagihan"    targetRef="EBG10_TungguBayar" />
+    <bpmn:sequenceFlow id="SF10_M7_Bayar" sourceRef="EBG10_TungguBayar" targetRef="ICE10_BayarDiterima" />
+    <bpmn:sequenceFlow id="SF10_M7_Timer" sourceRef="EBG10_TungguBayar" targetRef="ICE10_BatasWaktu" />
+    <bpmn:sequenceFlow id="SF10_M8"  sourceRef="ICE10_BayarDiterima"  targetRef="TA10_VerifikasiBayar" />
+    <bpmn:sequenceFlow id="SF10_M9"  sourceRef="ICE10_BatasWaktu"     targetRef="TA10_BatalPesanan" />
+    <bpmn:sequenceFlow id="SF10_M10" sourceRef="TA10_VerifikasiBayar" targetRef="SubProc10_Fulfillment" />
+    <bpmn:sequenceFlow id="SF10_M11" sourceRef="TA10_BatalPesanan"    targetRef="ITE10_BatalkanSemua" />
+    <bpmn:sequenceFlow id="SF10_M12" sourceRef="ITE10_BatalkanSemua"  targetRef="EE10_PesananBatal" />
+    <bpmn:sequenceFlow id="SF10_M13" sourceRef="SubProc10_Fulfillment" targetRef="GW10_ParalelSplit" />
+    <bpmn:sequenceFlow id="SF10_M14_Err" sourceRef="BE10_ErrorFulfillment" targetRef="TA10_TinjauManual" />
+    <bpmn:sequenceFlow id="SF10_M14_End" sourceRef="TA10_TinjauManual"    targetRef="EE10_GagalTotal" />
+    <bpmn:sequenceFlow id="SF10_M15_Dok"  sourceRef="GW10_ParalelSplit"   targetRef="TA10_SiapkanDokumen" />
+    <bpmn:sequenceFlow id="SF10_M15_Kirim" sourceRef="GW10_ParalelSplit"  targetRef="CA10_LayananPengiriman" />
+    <bpmn:sequenceFlow id="SF10_M16_Dok"  sourceRef="TA10_SiapkanDokumen" targetRef="GW10_ParalelJoin" />
+    <bpmn:sequenceFlow id="SF10_M16_Kirim" sourceRef="CA10_LayananPengiriman" targetRef="GW10_ParalelJoin" />
+    <bpmn:sequenceFlow id="SF10_M17_Esk" sourceRef="BE10_EskalasiPengiriman" targetRef="TA10_NotifikasiEskalasi" />
+    <bpmn:sequenceFlow id="SF10_M18_Esk" sourceRef="TA10_NotifikasiEskalasi" targetRef="EE10_EskalasiEnd" />
+    <bpmn:sequenceFlow id="SF10_M19"  sourceRef="GW10_ParalelJoin"     targetRef="TA10_TerimaKonfirmasi" />
+    <bpmn:sequenceFlow id="SF10_M20"  sourceRef="TA10_TerimaKonfirmasi" targetRef="GW10_NotifikasiSplit" />
+    <bpmn:sequenceFlow id="SF10_M21_Rekam" sourceRef="GW10_NotifikasiSplit" targetRef="TA10_RekamRiwayat" />
+    <bpmn:sequenceFlow id="SF10_M21_Notif" sourceRef="GW10_NotifikasiSplit" targetRef="TA10_KirimNotifikasi" />
+    <bpmn:sequenceFlow id="SF10_M22_Rekam" sourceRef="TA10_RekamRiwayat"   targetRef="GW10_NotifikasiJoin" />
+    <bpmn:sequenceFlow id="SF10_M22_Notif" sourceRef="TA10_KirimNotifikasi" targetRef="GW10_NotifikasiJoin" />
+    <bpmn:sequenceFlow id="SF10_M23"  sourceRef="GW10_NotifikasiJoin"  targetRef="TA10_KirimKonfirmasi" />
+    <bpmn:sequenceFlow id="SF10_M24"  sourceRef="TA10_KirimKonfirmasi" targetRef="EE10_PesananSelesai" />
+  </bpmn:process>
+
+  <!-- ============================================================
+       DI (Diagram Interchange)
+       ============================================================ -->
+  <bpmndi:BPMNDiagram id="Diagram_Cap10">
+    <bpmndi:BPMNPlane id="Plane_Cap10" bpmnElement="Collab_Cap10">
+
+      <!-- Customer pool -->
+      <bpmndi:BPMNShape id="Shp_P10_Customer" bpmnElement="P10_Customer" isHorizontal="true">
+        <dc:Bounds x="60" y="20" width="2560" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_SE10_C_Mulai" bpmnElement="SE10_C_Mulai">
+        <dc:Bounds x="155" y="45" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="134" y="88" width="78" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA10_C_BuatPesanan" bpmnElement="TA10_C_BuatPesanan">
+        <dc:Bounds x="225" y="33" width="120" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_IE10_C_KonfirmasiDiterima" bpmnElement="IE10_C_KonfirmasiDiterima">
+        <dc:Bounds x="1660" y="45" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1638" y="88" width="80" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_EE10_C_Selesai" bpmnElement="EE10_C_Selesai">
+        <dc:Bounds x="1750" y="45" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1728" y="88" width="80" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_IE10_C_StatusDiterima" bpmnElement="IE10_C_StatusDiterima">
+        <dc:Bounds x="1870" y="45" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1851" y="88" width="74" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_EE10_C_StatusDiketahui" bpmnElement="EE10_C_StatusDiketahui">
+        <dc:Bounds x="1960" y="45" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1940" y="88" width="76" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Merchant pool -->
+      <bpmndi:BPMNShape id="Shp_P10_Merchant" bpmnElement="P10_Merchant" isHorizontal="true">
+        <dc:Bounds x="60" y="120" width="2560" height="660" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_Lane10_CS" bpmnElement="Lane10_CS" isHorizontal="true">
+        <dc:Bounds x="90" y="120" width="2530" height="160" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_Lane10_Keuangan" bpmnElement="Lane10_Keuangan" isHorizontal="true">
+        <dc:Bounds x="90" y="280" width="2530" height="180" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_Lane10_Operasional" bpmnElement="Lane10_Operasional" isHorizontal="true">
+        <dc:Bounds x="90" y="460" width="2530" height="320" />
+      </bpmndi:BPMNShape>
+
+      <!-- CS lane elements -->
+      <bpmndi:BPMNShape id="Shp_SE10_PesananMasuk" bpmnElement="SE10_PesananMasuk">
+        <dc:Bounds x="160" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="140" y="225" width="76" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA10_VerifikasiPesanan" bpmnElement="TA10_VerifikasiPesanan">
+        <dc:Bounds x="240" y="170" width="120" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_Anno10_SLA" bpmnElement="Anno10_SLA">
+        <dc:Bounds x="255" y="127" width="170" height="30" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_DOR10_Invoice" bpmnElement="DOR10_Invoice" isHorizontal="false">
+        <dc:Bounds x="465" y="127" width="36" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="447" y="180" width="72" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_GW10_DataLengkap" bpmnElement="GW10_DataLengkap" isMarkerVisible="true">
+        <dc:Bounds x="415" y="185" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="405" y="242" width="70" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA10_TolakPesanan" bpmnElement="TA10_TolakPesanan">
+        <dc:Bounds x="530" y="228" width="110" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_EE10_PesananDitolak" bpmnElement="EE10_PesananDitolak">
+        <dc:Bounds x="672" y="236" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="650" y="279" width="80" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA10_HitungHarga" bpmnElement="TA10_HitungHarga">
+        <dc:Bounds x="515" y="170" width="130" height="60" />
+      </bpmndi:BPMNShape>
+
+      <!-- Keuangan lane elements -->
+      <bpmndi:BPMNShape id="Shp_TA10_KirimTagihan" bpmnElement="TA10_KirimTagihan">
+        <dc:Bounds x="700" y="350" width="130" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_EBG10_TungguBayar" bpmnElement="EBG10_TungguBayar">
+        <dc:Bounds x="885" y="365" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="866" y="422" width="88" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_ICE10_BayarDiterima" bpmnElement="ICE10_BayarDiterima">
+        <dc:Bounds x="970" y="333" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="950" y="376" width="76" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_ICE10_BatasWaktu" bpmnElement="ICE10_BatasWaktu">
+        <dc:Bounds x="970" y="413" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="950" y="456" width="76" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA10_VerifikasiBayar" bpmnElement="TA10_VerifikasiBayar">
+        <dc:Bounds x="1060" y="350" width="130" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA10_BatalPesanan" bpmnElement="TA10_BatalPesanan">
+        <dc:Bounds x="1060" y="405" width="110" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_ITE10_BatalkanSemua" bpmnElement="ITE10_BatalkanSemua">
+        <dc:Bounds x="1220" y="413" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1196" y="456" width="84" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_EE10_PesananBatal" bpmnElement="EE10_PesananBatal">
+        <dc:Bounds x="1310" y="413" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1288" y="456" width="80" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Operasional lane elements -->
+      <bpmndi:BPMNShape id="Shp_SubProc10_Fulfillment" bpmnElement="SubProc10_Fulfillment" isExpanded="false">
+        <dc:Bounds x="1200" y="493" width="180" height="90" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_BE10_ErrorFulfillment" bpmnElement="BE10_ErrorFulfillment">
+        <dc:Bounds x="1258" y="565" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1237" y="608" width="78" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_BE10_KompenFulfillment" bpmnElement="BE10_KompenFulfillment">
+        <dc:Bounds x="1303" y="565" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1282" y="608" width="78" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA10_TinjauManual" bpmnElement="TA10_TinjauManual">
+        <dc:Bounds x="1200" y="633" width="120" height="56" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_EE10_GagalTotal" bpmnElement="EE10_GagalTotal">
+        <dc:Bounds x="1362" y="645" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1340" y="688" width="80" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA10_CompHandlerFulfillment" bpmnElement="TA10_CompHandlerFulfillment">
+        <dc:Bounds x="1410" y="636" width="140" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_GW10_ParalelSplit" bpmnElement="GW10_ParalelSplit">
+        <dc:Bounds x="1435" y="513" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1421" y="570" width="78" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA10_SiapkanDokumen" bpmnElement="TA10_SiapkanDokumen">
+        <dc:Bounds x="1530" y="485" width="130" height="56" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_CA10_LayananPengiriman" bpmnElement="CA10_LayananPengiriman">
+        <dc:Bounds x="1530" y="558" width="130" height="56" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_BE10_EskalasiPengiriman" bpmnElement="BE10_EskalasiPengiriman">
+        <dc:Bounds x="1576" y="596" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1555" y="639" width="78" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA10_NotifikasiEskalasi" bpmnElement="TA10_NotifikasiEskalasi">
+        <dc:Bounds x="1540" y="652" width="130" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_EE10_EskalasiEnd" bpmnElement="EE10_EskalasiEnd">
+        <dc:Bounds x="1710" y="660" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1691" y="703" width="74" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_GW10_ParalelJoin" bpmnElement="GW10_ParalelJoin">
+        <dc:Bounds x="1715" y="513" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1701" y="570" width="78" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA10_TerimaKonfirmasi" bpmnElement="TA10_TerimaKonfirmasi">
+        <dc:Bounds x="1810" y="501" width="130" height="56" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_GW10_NotifikasiSplit" bpmnElement="GW10_NotifikasiSplit">
+        <dc:Bounds x="1995" y="513" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1977" y="570" width="86" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA10_RekamRiwayat" bpmnElement="TA10_RekamRiwayat">
+        <dc:Bounds x="2095" y="483" width="130" height="56" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA10_KirimNotifikasi" bpmnElement="TA10_KirimNotifikasi">
+        <dc:Bounds x="2095" y="556" width="120" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_DS10_RiwayatPesanan" bpmnElement="DS10_RiwayatPesanan">
+        <dc:Bounds x="2145" y="643" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="2126" y="700" width="88" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_GW10_NotifikasiJoin" bpmnElement="GW10_NotifikasiJoin">
+        <dc:Bounds x="2275" y="513" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="2257" y="570" width="86" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <!-- Event Subprocess (non-interrupting) -->
+      <bpmndi:BPMNShape id="Shp_EVSP10_StatusQuery" bpmnElement="EVSP10_StatusQuery" isExpanded="true">
+        <dc:Bounds x="1820" y="640" width="280" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_SE10_ES_StatusDiminta" bpmnElement="SE10_ES_StatusDiminta">
+        <dc:Bounds x="1848" y="660" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1828" y="703" width="76" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA10_ES_CekStatus" bpmnElement="TA10_ES_CekStatus">
+        <dc:Bounds x="1920" y="651" width="110" height="54" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_EE10_ES_StatusDikirim" bpmnElement="EE10_ES_StatusDikirim">
+        <dc:Bounds x="2061" y="660" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="2040" y="703" width="78" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA10_KirimKonfirmasi" bpmnElement="TA10_KirimKonfirmasi">
+        <dc:Bounds x="2380" y="501" width="130" height="56" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_EE10_PesananSelesai" bpmnElement="EE10_PesananSelesai">
+        <dc:Bounds x="2562" y="513" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="2540" y="556" width="80" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- PaymentProvider pool -->
+      <bpmndi:BPMNShape id="Shp_P10_PayProv" bpmnElement="P10_PayProv" isHorizontal="true">
+        <dc:Bounds x="60" y="800" width="2560" height="75" />
+      </bpmndi:BPMNShape>
+
+      <!-- JasaPengiriman pool -->
+      <bpmndi:BPMNShape id="Shp_P10_JasaKirim" bpmnElement="P10_JasaKirim" isHorizontal="true">
+        <dc:Bounds x="60" y="895" width="2560" height="75" />
+      </bpmndi:BPMNShape>
+
+      <!-- Customer process flows -->
+      <bpmndi:BPMNEdge id="Edge_SF10_C1" bpmnElement="SF10_C1">
+        <di:waypoint x="191" y="63" /><di:waypoint x="225" y="63" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_C2" bpmnElement="SF10_C2">
+        <di:waypoint x="345" y="63" /><di:waypoint x="1660" y="63" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_C3" bpmnElement="SF10_C3">
+        <di:waypoint x="1696" y="63" /><di:waypoint x="1750" y="63" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_C_Status" bpmnElement="SF10_C_Status">
+        <di:waypoint x="1906" y="63" /><di:waypoint x="1960" y="63" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Merchant CS flows -->
+      <bpmndi:BPMNEdge id="Edge_SF10_M1" bpmnElement="SF10_M1">
+        <di:waypoint x="196" y="200" /><di:waypoint x="240" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_M2" bpmnElement="SF10_M2">
+        <di:waypoint x="360" y="200" /><di:waypoint x="415" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_M3_Ya" bpmnElement="SF10_M3_Ya">
+        <di:waypoint x="465" y="200" /><di:waypoint x="515" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_M3_Tidak" bpmnElement="SF10_M3_Tidak">
+        <di:waypoint x="440" y="235" /><di:waypoint x="440" y="253" /><di:waypoint x="530" y="253" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_M4" bpmnElement="SF10_M4">
+        <di:waypoint x="640" y="253" /><di:waypoint x="672" y="254" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_M5" bpmnElement="SF10_M5">
+        <di:waypoint x="645" y="200" /><di:waypoint x="700" y="380" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Merchant Keuangan flows -->
+      <bpmndi:BPMNEdge id="Edge_SF10_M6" bpmnElement="SF10_M6">
+        <di:waypoint x="830" y="380" /><di:waypoint x="885" y="390" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_M7_Bayar" bpmnElement="SF10_M7_Bayar">
+        <di:waypoint x="910" y="365" /><di:waypoint x="910" y="351" /><di:waypoint x="970" y="351" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_M7_Timer" bpmnElement="SF10_M7_Timer">
+        <di:waypoint x="910" y="415" /><di:waypoint x="910" y="431" /><di:waypoint x="970" y="431" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_M8" bpmnElement="SF10_M8">
+        <di:waypoint x="1006" y="351" /><di:waypoint x="1060" y="380" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_M9" bpmnElement="SF10_M9">
+        <di:waypoint x="1006" y="431" /><di:waypoint x="1060" y="430" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_M11" bpmnElement="SF10_M11">
+        <di:waypoint x="1170" y="430" /><di:waypoint x="1220" y="431" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_M12" bpmnElement="SF10_M12">
+        <di:waypoint x="1256" y="431" /><di:waypoint x="1310" y="431" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_M10" bpmnElement="SF10_M10">
+        <di:waypoint x="1190" y="380" /><di:waypoint x="1190" y="460" /><di:waypoint x="1200" y="538" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Operasional main flow -->
+      <bpmndi:BPMNEdge id="Edge_SF10_M13" bpmnElement="SF10_M13">
+        <di:waypoint x="1380" y="538" /><di:waypoint x="1435" y="538" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_M14_Err" bpmnElement="SF10_M14_Err">
+        <di:waypoint x="1276" y="601" /><di:waypoint x="1276" y="633" /><di:waypoint x="1200" y="661" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_M14_End" bpmnElement="SF10_M14_End">
+        <di:waypoint x="1320" y="661" /><di:waypoint x="1362" y="663" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_M15_Dok" bpmnElement="SF10_M15_Dok">
+        <di:waypoint x="1460" y="513" /><di:waypoint x="1460" y="513" /><di:waypoint x="1530" y="513" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_M15_Kirim" bpmnElement="SF10_M15_Kirim">
+        <di:waypoint x="1460" y="563" /><di:waypoint x="1460" y="586" /><di:waypoint x="1530" y="586" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_M16_Dok" bpmnElement="SF10_M16_Dok">
+        <di:waypoint x="1660" y="513" /><di:waypoint x="1715" y="538" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_M16_Kirim" bpmnElement="SF10_M16_Kirim">
+        <di:waypoint x="1660" y="586" /><di:waypoint x="1715" y="538" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_M17_Esk" bpmnElement="SF10_M17_Esk">
+        <di:waypoint x="1594" y="632" /><di:waypoint x="1594" y="652" /><di:waypoint x="1540" y="677" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_M18_Esk" bpmnElement="SF10_M18_Esk">
+        <di:waypoint x="1670" y="677" /><di:waypoint x="1710" y="678" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_M19" bpmnElement="SF10_M19">
+        <di:waypoint x="1765" y="538" /><di:waypoint x="1810" y="529" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_M20" bpmnElement="SF10_M20">
+        <di:waypoint x="1940" y="529" /><di:waypoint x="1995" y="538" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_M21_Rekam" bpmnElement="SF10_M21_Rekam">
+        <di:waypoint x="2020" y="513" /><di:waypoint x="2020" y="511" /><di:waypoint x="2095" y="511" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_M21_Notif" bpmnElement="SF10_M21_Notif">
+        <di:waypoint x="2020" y="563" /><di:waypoint x="2020" y="581" /><di:waypoint x="2095" y="581" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_M22_Rekam" bpmnElement="SF10_M22_Rekam">
+        <di:waypoint x="2225" y="511" /><di:waypoint x="2275" y="538" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_M22_Notif" bpmnElement="SF10_M22_Notif">
+        <di:waypoint x="2215" y="581" /><di:waypoint x="2275" y="538" />
+      </bpmndi:BPMNEdge>
+
+      <!-- GW_NotifikasiJoin → KirimKonfirmasi → PesananSelesai -->
+      <bpmndi:BPMNEdge id="Edge_SF10_M23" bpmnElement="SF10_M23">
+        <di:waypoint x="2325" y="538" /><di:waypoint x="2380" y="529" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_M24" bpmnElement="SF10_M24">
+        <di:waypoint x="2510" y="529" /><di:waypoint x="2562" y="531" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Event Subprocess inner flows -->
+      <bpmndi:BPMNEdge id="Edge_SF10_ES1" bpmnElement="SF10_ES1">
+        <di:waypoint x="1884" y="678" /><di:waypoint x="1920" y="678" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF10_ES2" bpmnElement="SF10_ES2">
+        <di:waypoint x="2030" y="678" /><di:waypoint x="2061" y="678" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Message flows -->
+      <bpmndi:BPMNEdge id="Edge_MF10_1" bpmnElement="MF10_1">
+        <di:waypoint x="285" y="93" /><di:waypoint x="285" y="120" /><di:waypoint x="178" y="120" /><di:waypoint x="178" y="182" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_MF10_2" bpmnElement="MF10_2">
+        <di:waypoint x="765" y="410" /><di:waypoint x="765" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_MF10_3" bpmnElement="MF10_3">
+        <di:waypoint x="988" y="875" /><di:waypoint x="988" y="369" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_MF10_4" bpmnElement="MF10_4">
+        <di:waypoint x="1595" y="614" /><di:waypoint x="1595" y="895" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_MF10_5" bpmnElement="MF10_5">
+        <di:waypoint x="1875" y="970" /><di:waypoint x="1875" y="557" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_MF10_6" bpmnElement="MF10_6">
+        <di:waypoint x="2445" y="501" /><di:waypoint x="2445" y="120" /><di:waypoint x="1678" y="120" /><di:waypoint x="1678" y="81" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_MF10_7" bpmnElement="MF10_7">
+        <di:waypoint x="2079" y="660" /><di:waypoint x="2079" y="120" /><di:waypoint x="1888" y="120" /><di:waypoint x="1888" y="81" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Associations -->
+      <bpmndi:BPMNEdge id="Edge_Assoc10_SLA" bpmnElement="Assoc10_SLA">
+        <di:waypoint x="300" y="170" /><di:waypoint x="300" y="157" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Assoc10_Comp" bpmnElement="Assoc10_Comp">
+        <di:waypoint x="1321" y="583" /><di:waypoint x="1321" y="661" /><di:waypoint x="1410" y="661" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Data Associations -->
+      <bpmndi:BPMNEdge id="Edge_DA10_Invoice" bpmnElement="DA10_Invoice">
+        <di:waypoint x="480" y="170" /><di:waypoint x="480" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_DA10_Riwayat" bpmnElement="DA10_Riwayat">
+        <di:waypoint x="2160" y="539" /><di:waypoint x="2160" y="643" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

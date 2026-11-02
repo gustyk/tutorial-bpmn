@@ -1,7 +1,7 @@
 # SPEC — Tutorial BPMN 2.0 untuk Mahasiswa Sistem Informasi
 
 **Status:** AKTIF — sumber kebenaran tunggal proyek ini.
-**Versi:** 1.0 · **Tanggal:** 2026-11-01
+**Versi:** 1.1 · **Tanggal:** 2026-11-01 · **Perubahan v1.1:** amandemen S-01…S-04 dan keputusan D-01…D-03 (lihat Bagian 15)
 **Pemilik:** Tikno (tikno@uisi.ac.id), Universitas Internasional Semen Indonesia
 **Lisensi konten:** CC BY-NC-SA 4.0
 
@@ -354,6 +354,16 @@ Kosakata aturan yang perlu didukung:
 | `all-tokens-reach-end` | tidak ada jalur yang berakhir tanpa End Event |
 | `subprocess-start-event` | Embedded Subprocess memakai None Start Event |
 
+**Tiga mode pemeriksaan (mengikat).** `id` elemen pada model mahasiswa tidak dapat diprediksi, sehingga tidak semua kriteria dapat diperiksa dengan tingkat kepercayaan yang sama. Setiap kriteria wajib menyatakan modenya:
+
+| Mode | Cara kerja | Cara menyampaikan hasil |
+|---|---|---|
+| `auto` | Struktural, tidak bergantung pada label yang ditulis mahasiswa. Hasilnya dapat dipercaya. | "Terpenuhi" / "Belum terpenuhi" |
+| `assisted` | Memakai heuristik pencocokan nama elemen untuk menemukan activity yang dimaksud. | **Wajib** disampaikan sebagai dugaan, disertai catatan agar mahasiswa memastikan sendiri |
+| `manual` | Tidak diperiksa mesin. | "Perlu diperiksa sendiri", disertai pertanyaan pemandu |
+
+Setiap kasus wajib memuat **minimal 2 kriteria bermode `auto`**, supaya self-check punya nilai nyata dan bukan hanya daftar pertanyaan.
+
 **Kebijakan pelaporan (mengikat):** hasil disajikan sebagai **"kriteria terpenuhi / belum terpenuhi"** dengan tautan bacaan, **bukan** sebagai skor, persentase, nilai, atau putusan lulus/gagal. Kriteria yang tidak bisa diperiksa otomatis ditandai "perlu diperiksa sendiri" dan disertai pertanyaan pemandu. Pemeriksa ini alat belajar, bukan penilai.
 
 ---
@@ -396,6 +406,9 @@ Pergeseran dari mengenali ke memutuskan adalah inti kurikulum ini. Gabungan Sele
 /katalog/                 Indeks Katalog Referensi + tabel coverage
 /katalog/<slug>           Notasi Tier B (7 bagian) dan baris Tier C
 /katalog/matriks-event    Event Compatibility Matrix lengkap
+/referensi/token          Semantik token: bagaimana token bergerak
+/referensi/membaca-diagram  Cara membaca diagram BPMN
+/referensi/validitas      Tiga tingkat validitas: syntactic, semantic, pragmatic
 /referensi/anti-pattern   Katalog anti-pattern
 /referensi/review         Checklist review model 15 pertanyaan
 /referensi/penamaan       Konvensi penamaan
@@ -446,10 +459,11 @@ Menggantikan `prompt.md` §40.
 - Minimal 5 titik reuse negatif terpasang dan terdaftar.
 - Proporsi tipe soal memenuhi tabel 10.1 (±10 poin persen per sel).
 - Event Compatibility Matrix memuat seluruh kombinasi posisi×trigger dengan status OMG dan Camunda terpisah.
+- Minimal **72 file `.bpmn`** (12 model referensi + ≥24 variasi + ≥36 kesalahan) lolos `scripts/validate-bpmn.mjs` dan lolos render headless tanpa galat konsol.
 - Seluruh baris `inventory.json` berstatus `VERIFIED`; tidak ada `TODO`/`DRAFTED` yang tersisa.
 - `npm run build` sukses menghasilkan `dist/` statis; `node scripts/validate-bpmn.mjs` dan `node scripts/audit-coverage.mjs` hijau.
 - Lighthouse aksesibilitas ≥90; seluruh tautan internal hidup; navigasi keyboard berfungsi; callout tidak bergantung pada warna saja.
-- Terpasang di Vercel dan teruji juga di subfolder cPanel.
+- Terpasang di Vercel pada domain `bpmn.kodingno.com`, dan teruji juga di subfolder cPanel.
 
 ### 13.4 Fact-check gate per halaman
 
@@ -493,6 +507,13 @@ Sebelum status naik dari `DRAFTED` ke `VERIFIED`, periksa: kelengkapan bagian, k
 | 2026-11-01 | Alat menggambar mahasiswa: demo.bpmn.io |
 | 2026-11-01 | Fokus belajar mandiri; Panduan Dosen ditunda |
 | 2026-11-01 | OMG BPMN 2.0.2 normatif untuk semantik; Camunda primer untuk visual dan praktik |
+| 2026-11-01 | **S-01** Tambah rute `/referensi/token` dan `/referensi/membaca-diagram` (Bagian 11) |
+| 2026-11-01 | **S-02** Tambah rute `/referensi/validitas` (Bagian 11) |
+| 2026-11-01 | **S-03** Minimum 72 file `.bpmn` masuk Definition of Done (Bagian 13.3) |
+| 2026-11-01 | **S-04** Pemeriksa kriteria memakai tiga mode `auto`/`assisted`/`manual`; ≥2 kriteria `auto` per kasus (Bagian 9.3) |
+| 2026-11-01 | **D-01** Judul situs tetap "Tutorial BPMN by Pak Tik" |
+| 2026-11-01 | **D-02** Domain produksi: `bpmn.kodingno.com`; nilai `site` Astro mengikutinya |
+| 2026-11-01 | **D-03** `mermaid` dipertahankan untuk decision tree, wajib lazy-load dan wajib punya alternatif teks |
 
 ---
 

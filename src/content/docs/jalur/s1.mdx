@@ -1,6 +1,177 @@
 ---
-title: "Cabang S1 — Reservasi perjalanan"
-description: "Cabang lanjutan: compensation dan transaction."
+title: "Cabang S1 — Reservasi Perjalanan: Transaction dan Cancel"
+description: "Bacaan lanjutan: Transaction Subprocess (A15), Cancel Event (E10), dan Compensation dalam konteks all-or-nothing. Domain reservasi tiket + hotel."
 ---
 
-Halaman ini akan diisi saat modul terkait diterbitkan.
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
+:::note[Bacaan lanjutan — opsional]
+Cabang S1 memperkenalkan tiga notasi **Tier B** yang tidak ada di Jalur Belajar utama. Kerjakan setelah menyelesaikan Modul 9 atau Capstone. Notasi ini diperlukan dalam konteks tertentu tetapi terlalu khusus untuk diajarkan di semua modul.
+:::
+
+---
+
+## 1. Mengapa cabang ini ada
+
+Di Kasus 1–10, Compensation dipakai untuk membalik aktivitas ketika pembatalan terjadi setelah proses selesai. Compensation itu bekerja dengan baik.
+
+Tapi ada skenario lain: **aktivitas-aktivitas yang harus berhasil semuanya atau tidak ada yang berhasil**. Jika tiket pesawat berhasil dibooking tapi hotel tidak, kita tidak mau meninggalkan situasi "tiket dibooking, hotel tidak" — itu tidak berguna untuk customer.
+
+BPMN punya mekanisme khusus untuk ini: **Transaction Subprocess**.
+
+---
+
+## 2. Kasus bisnis
+
+Platform perjalanan sedang merancang ulang alur reservasi mereka:
+
+> "Customer kita selalu pesan tiket pesawat dan hotel bersamaan. Kalau salah satu tidak tersedia, kita harus batalkan keduanya — bukan hanya yang gagal. Selama ini kita tangani ini lewat kode program, tapi kita ingin modelnya terlihat jelas di diagram."
+
+Analis bertanya:
+> "Apakah ada mekanisme di BPMN yang bisa menyatakan 'semua aktivitas dalam blok ini harus berhasil — kalau satu gagal, batalkan semuanya'?"
+
+Jawabannya: **Transaction Subprocess**.
+
+---
+
+## 3. Tiga notasi yang diperkenalkan
+
+### A15 — Transaction Subprocess
+
+Transaction Subprocess adalah Subprocess biasa dengan **semantik all-or-nothing**: semua aktivitas di dalamnya harus berhasil. Jika satu aktivitas gagal karena alasan bisnis (*bukan* error teknis), seluruh transaction dibatalkan dan semua Compensation Handler di dalamnya dipanggil.
+
+| Aspek | Transaction Subprocess | Embedded Subprocess biasa |
+|---|---|---|
+| Kegagalan | Cancel Event memicu rollback seluruh transaksi | Error Boundary menangani satu kegagalan |
+| Completion | Semua path di dalam harus selesai | Bisa ada exception path |
+| Trigger rollback | Cancel End Event *di dalam* | Tidak ada mekanisme otomatis |
+| Boundary event tersedia | Cancel Boundary (setelah rollback selesai) | Error, Escalation, Timer, Message |
+
+**Cara mengenali di diagram:** Transaction Subprocess memiliki **border ganda** (dua garis tebal).
+
+**[PEDAGOGICAL SIMPLIFICATION]** Penjelasan di sini mengacu pada semantik BPMN 2.0 OMG §10.3.7 (Transaction Activities). Implementasi aktual di engine seperti Camunda memerlukan koordinasi dengan protokol transaksional eksternal (misalnya two-phase commit). Tanpa itu, Transaction Subprocess di Camunda berperilaku seperti Subprocess biasa. Penjelasan ini fokus pada semantik model, bukan implementasi engine.
+
+### E10 — Cancel Event
+
+Cancel Event hanya bermakna di dalam Transaction Subprocess. Ada dua posisi:
+
+**Cancel End Event (di dalam Transaction):**
+- Dipicu ketika aktivitas di dalam transaction gagal karena alasan bisnis
+- Mentrigger rollback: engine memanggil semua Compensation Handler yang terdaftar di dalam transaction
+- Setelah semua handler selesai, **Cancel Boundary Event** di luar transaction terpicu
+
+**Cancel Boundary Event (di luar Transaction):**
+- Dipasang pada Transaction Subprocess
+- Terpicu setelah rollback internal selesai
+- Alur berlanjut ke jalur penanganan pembatalan (refund, notifikasi, dll.)
+
+Cancel Event tidak bisa dipakai di luar Transaction Subprocess — semantiknya tidak ada.
+
+### Compensation dalam konteks Transaction
+
+Di Modul 9, Compensation Throw Event dipicu secara eksplisit dari jalur pembatalan. Di dalam Transaction Subprocess, rollback *otomatis* — kamu tidak perlu Compensation Throw Event tersendiri.
+
+Yang perlu dilakukan:
+1. Pasang **Compensation Boundary Event** pada setiap aktivitas yang harus dibalik jika transaction gagal
+2. Hubungkan dengan **Compensation Handler** (task dengan marker ◀◀)
+3. Ketika Cancel End Event terpicu, engine memanggil semua handler secara otomatis
+
+---
+
+## 4. Panduan analisis
+
+**Mengapa Transaction Subprocess, bukan Compensation biasa?**
+
+Di Modul 9, Compensation dipakai *setelah fakta*: pesanan sudah selesai, customer membatalkan, kita balik. Ada jeda waktu antara aktivitas selesai dan kompensasi dipicu.
+
+Transaction Subprocess berbeda: kompensasi dipicu *segera* di dalam proses yang sama, sebagai bagian dari alur normal ketika satu aktivitas di dalam transaction gagal.
+
+| | Compensation (Modul 9) | Transaction Subprocess (Cabang S1) |
+|---|---|---|
+| Kapan rollback terjadi | Setelah aktivitas selesai, dipicu secara eksplisit | Di dalam proses yang sama, dipicu oleh Cancel End Event |
+| Trigger | Intermediate Throw Compensation | Cancel End Event di dalam Transaction |
+| Boundary luar | Compensation Boundary pada aktivitas | Cancel Boundary pada Transaction Subprocess |
+| Use case | Pembatalan oleh customer setelah proses selesai | All-or-nothing: semua berhasil atau semua dibatalkan |
+
+**Mengapa domain reservasi perjalanan, bukan e-commerce?**
+
+Di e-commerce, stok habis ditangani dengan Error Boundary (exception teknis), bukan Cancel. Kegagalan booking tiket/hotel bukan exception teknis — itu adalah *hasil bisnis yang valid*: tiket tidak tersedia. Cancel End Event mengekspresikan kegagalan bisnis yang memerlukan rollback terkoordinasi.
+
+Memaksakan Transaction Subprocess ke domain e-commerce akan menghasilkan model yang artifisial. Sebagai gantinya, e-commerce lebih tepat menggunakan Error Boundary (seperti di Modul 8) dan Compensation terpisah (Modul 9).
+
+---
+
+## 5. Walkthrough model reservasi
+
+Berikut struktur model reservasi perjalanan dengan Transaction Subprocess:
+
+**Proses Customer:**
+1. Customer memilih paket perjalanan (tanggal, destinasi)
+2. Send Task — kirim permintaan reservasi
+
+**Proses Platform (dalam Transaction Subprocess):**
+
+Di dalam Transaction Subprocess "Reservasi Paket Perjalanan":
+- Task — Booking Tiket Pesawat
+  - Compensation Boundary Event → Compensation Handler "Batalkan Tiket"
+- Task — Reservasi Hotel
+  - Compensation Boundary Event → Compensation Handler "Batalkan Hotel"
+- XOR Gateway:
+  - Jika keduanya berhasil → Transaction End (normal completion)
+  - Jika tiket tidak tersedia → **Cancel End Event** (memicu rollback)
+  - Jika hotel tidak tersedia → **Cancel End Event** (memicu rollback)
+
+Di luar Transaction Subprocess:
+- **Cancel Boundary Event** (terpicu setelah rollback) → Task "Informasikan ketidaktersediaan" → Send Task "Refund" → End
+- Normal completion → Send Task "Kirim konfirmasi perjalanan" → End
+
+**Alur rollback ketika tiket tidak tersedia:**
+1. Task "Booking Tiket" gagal (tiket tidak tersedia)
+2. Cancel End Event terpicu di dalam Transaction
+3. Engine memeriksa: apakah ada aktivitas yang sudah selesai dengan Compensation Handler?
+   - Jika Hotel sudah direservasi sebelum tiket gagal → Handler "Batalkan Hotel" dipanggil
+   - Jika Hotel belum sempat diproses → tidak ada handler yang dipanggil
+4. Setelah semua handler selesai → Cancel Boundary Event di luar Transaction terpicu
+5. Alur menuju penanganan pembatalan
+
+---
+
+## 6. Kesalahan umum
+
+**Kesalahan 1: Cancel Event di luar Transaction Subprocess**
+
+*Gejala:* Cancel End Event dipakai di dalam Subprocess biasa (bukan Transaction) sebagai sinyal pembatalan.
+
+*Diagnosis:* Cancel Event hanya memiliki semantik rollback di dalam Transaction Subprocess. Di luar itu, Cancel End Event berperilaku seperti None End Event biasa — tidak ada rollback, tidak ada Cancel Boundary yang dipicu.
+
+*Perbaikan:* Ubah Subprocess menjadi Transaction Subprocess (border ganda). Atau, jika rollback tidak diperlukan, gunakan Error End Event untuk exception atau None End Event untuk penyelesaian biasa.
+
+**Kesalahan 2: Transaction Subprocess untuk semua subprocess berisi exception**
+
+*Gejala:* Setiap Subprocess yang bisa gagal dibungkus dengan Transaction Subprocess.
+
+*Diagnosis:* Transaction Subprocess memiliki overhead semantik dan implementasi yang signifikan. Untuk kegagalan teknis biasa (server down, timeout), Error Boundary Event sudah cukup. Transaction Subprocess dipakai hanya ketika ada kebutuhan rollback terkoordinasi di antara beberapa aktivitas — all-or-nothing.
+
+*Perbaikan:* Gunakan Error Boundary Event untuk exception teknis. Gunakan Transaction Subprocess hanya ketika beberapa aktivitas harus berhasil bersama atau rollback bersama.
+
+**Kesalahan 3: Compensation Handler dihubungkan dengan Sequence Flow**
+
+*Gejala:* Compensation Handler Task terhubung ke aktivitas berikutnya via Sequence Flow.
+
+*Diagnosis:* Compensation Handler hanya boleh terhubung ke Compensation Boundary Event via **Association** (bukan Sequence Flow). Engine menentukan kapan handler dieksekusi berdasarkan keterkaitan Compensation Boundary — bukan berdasarkan Sequence Flow.
+
+*Perbaikan:* Hapus Sequence Flow dari Compensation Handler. Gunakan Association (panah putus-putus tanpa panah di ujung, atau dengan panah di keduanya tergantung tool) untuk menghubungkan Compensation Boundary ke Handler.
+
+---
+
+## Ringkasan
+
+| Notasi | Kapan dipakai | Kapan jangan dipakai |
+|---|---|---|
+| **A15 Transaction Subprocess** | Aktivitas yang harus berhasil semua atau dibatalkan semua; konteks ACID bisnis | Exception teknis biasa; kegagalan satu aktivitas yang tidak mempengaruhi yang lain |
+| **E10 Cancel Event** | Di dalam Transaction Subprocess sebagai trigger rollback (Cancel End) atau penerima setelah rollback (Cancel Boundary) | Di luar Transaction Subprocess; sebagai sinyal pembatalan umum |
+| **Compensation dalam Transaction** | Rollback otomatis terkoordinasi ketika Cancel End Event terpicu | Ketika pembatalan terjadi dari luar proses (gunakan Compensation Throw terpisah seperti Modul 9) |
+
+---
+
+**← [Capstone Modul 10](/jalur/10/) · [Cabang S2: Pengaduan dan SLA](/jalur/s2/) →**
