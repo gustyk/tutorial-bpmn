@@ -96,7 +96,7 @@ Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y
 - [x] T-9.1 — Modul 7 · 2026-11-02 · case-07-order.bpmn (Subprocess/A13 collapsed, CallActivity/A16, MultiInstance/A11 sequential); criteria.json (6 kriteria); jalur/07.mdx (7 seksi, sebab-akibat padat→Subprocess eksplisit sesuai SPEC §5.4 butir 2, 2 reuse negatif); verify exit 0
 - [x] T-9.2 — Modul 8 · 2026-11-02 · case-08-order.bpmn (BoundaryError/E06 interrupting, TerminateEnd/E11); criteria.json (6 kriteria); jalur/08.mdx (7 seksi, boundary-vs-XOR, 3 kesalahan umum); verify exit 0
 - [x] T-9.3 — Modul 9 · 2026-11-02 · case-09-order.bpmn (Compensation E08+A12, EventSubprocess A14 non-interrupting, Signal E05); criteria.json (6 kriteria); jalur/09.mdx (7 seksi, Compensation vs task Refund biasa, 3 kesalahan umum); verify exit 0
-- [ ] T-9.4 — Cabang S2 (pengaduan dengan SLA)
+- [x] T-9.4 — Cabang S2 · 2026-11-02 · case-s2-complaint.bpmn (Boundary Timer non-interrupting PT45M, Subprocess dengan XOR internal, Lane Supervisor); criteria.json (6 kriteria C10-1..C10-6); jalur/s2.mdx (kasus bisnis eskalasi SLA, interrupting vs non-interrupting, Escalation vs Error, E04 Conditional sebagai pembanding, 3 kesalahan umum); verify exit 0
 - [x] T-9.5 — 10 halaman notasi · 2026-11-02 · A13/embedded-subprocess.mdx, A16/call-activity.mdx, A11/multi-instance.mdx, E06/error-event.mdx, E11/terminate-event.mdx, E08/compensation-event.mdx, A12/compensation-marker.mdx, A14/event-subprocess.mdx, E05/signal-event.mdx, E07/escalation-event.mdx; inventory.json docPath diperbarui; sidebar 10 entri baru; PeriksaModelApp case-07/08/09 ditambah; verify exit 0
 
 ## WP-10 · Modul 10 (Capstone) dan Cabang S1

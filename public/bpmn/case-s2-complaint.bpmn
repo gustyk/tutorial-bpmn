@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  id="Def_CaseS2"
+  targetNamespace="https://uisi.ac.id/bpmn-tutorial">
+
+  <!-- Case S2: Pengaduan Pelanggan dengan SLA -->
+  <!-- Cabang S2: E07 Escalation, Boundary Timer non-interrupting, E04 Conditional (pembanding) -->
+  <!-- Skenario: Customer mengajukan pengaduan; CS wajib respons dalam 1 jam (SLA); jika SLA terancam, eskalasi ke supervisor -->
+
+  <bpmn:escalation id="Esc_SLATerancam" name="SLATerancam" escalationCode="SLA_WARNING" />
+
+  <bpmn:collaboration id="Collab_S2" name="Pengaduan Pelanggan">
+    <bpmn:participant id="Part_Customer" name="Customer" processRef="Proc_Customer" />
+    <bpmn:participant id="Part_CS" name="Tim CS" processRef="Proc_CS" />
+
+    <bpmn:messageFlow id="MF_S2_1" name="Pengaduan dikirim"
+      sourceRef="TA_KirimPengaduan" targetRef="SE_PengaduanDiterima" />
+    <bpmn:messageFlow id="MF_S2_2" name="Konfirmasi diterima"
+      sourceRef="TA_KirimKonfirmasi" targetRef="IE_KonfirmasiDiterima" />
+    <bpmn:messageFlow id="MF_S2_3" name="Solusi dikirim"
+      sourceRef="TA_KirimSolusi" targetRef="IE_SolusiDiterima" />
+    <bpmn:messageFlow id="MF_S2_4" name="Eskalasi dinotifikasikan ke customer"
+      sourceRef="TA_NotifEskalasi" targetRef="IE_NotifEskalasiDiterima" />
+  </bpmn:collaboration>
+
+  <!-- Proses Customer -->
+  <bpmn:process id="Proc_Customer" name="Proses Customer" isExecutable="false">
+    <bpmn:startEvent id="SE_CustomerMulai" name="Masalah dengan pesanan">
+      <bpmn:outgoing>SFC_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sendTask id="TA_KirimPengaduan" name="Kirim pengaduan ke CS">
+      <bpmn:incoming>SFC_1</bpmn:incoming>
+      <bpmn:outgoing>SFC_2</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:intermediateCatchEvent id="IE_KonfirmasiDiterima" name="Konfirmasi pengaduan diterima">
+      <bpmn:incoming>SFC_2</bpmn:incoming>
+      <bpmn:outgoing>SFC_3</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED_C1" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="IE_SolusiDiterima" name="Solusi diterima">
+      <bpmn:incoming>SFC_3</bpmn:incoming>
+      <bpmn:outgoing>SFC_4</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED_C2" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:endEvent id="EE_CustomerSelesai" name="Masalah terselesaikan">
+      <bpmn:incoming>SFC_4</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Customer bisa menerima notifikasi eskalasi kapan saja -->
+    <bpmn:intermediateCatchEvent id="IE_NotifEskalasiDiterima" name="Notifikasi: pengaduan dieskalasi ke supervisor">
+      <bpmn:outgoing>SFC_Eskalasi</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED_C3" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:endEvent id="EE_CustomerTungguEskalasi" name="Menunggu tindak lanjut supervisor">
+      <bpmn:incoming>SFC_Eskalasi</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="SFC_1" sourceRef="SE_CustomerMulai" targetRef="TA_KirimPengaduan" />
+    <bpmn:sequenceFlow id="SFC_2" sourceRef="TA_KirimPengaduan" targetRef="IE_KonfirmasiDiterima" />
+    <bpmn:sequenceFlow id="SFC_3" sourceRef="IE_KonfirmasiDiterima" targetRef="IE_SolusiDiterima" />
+    <bpmn:sequenceFlow id="SFC_4" sourceRef="IE_SolusiDiterima" targetRef="EE_CustomerSelesai" />
+    <bpmn:sequenceFlow id="SFC_Eskalasi" sourceRef="IE_NotifEskalasiDiterima" targetRef="EE_CustomerTungguEskalasi" />
+  </bpmn:process>
+
+  <!-- Proses Tim CS -->
+  <bpmn:process id="Proc_CS" name="Proses Tim CS" isExecutable="false">
+    <bpmn:laneSet id="LS_CS">
+      <bpmn:lane id="Lane_AgentCS" name="Agen CS">
+        <bpmn:flowNodeRef>SE_PengaduanDiterima</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA_CatatPengaduan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA_KirimKonfirmasi</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>SP_TanganiPengaduan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA_KirimSolusi</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EE_PengaduanSelesai</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Supervisor" name="Supervisor">
+        <bpmn:flowNodeRef>TA_TerimaEskalasi</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA_NotifEskalasi</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA_TanganiEskalasi</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EE_EskalasiSelesai</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <!-- Main flow: terima pengaduan -->
+    <bpmn:startEvent id="SE_PengaduanDiterima" name="Pengaduan diterima dari customer">
+      <bpmn:outgoing>SF_1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED_M1" />
+    </bpmn:startEvent>
+
+    <bpmn:userTask id="TA_CatatPengaduan" name="Catat dan klasifikasikan pengaduan">
+      <bpmn:incoming>SF_1</bpmn:incoming>
+      <bpmn:outgoing>SF_2</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:serviceTask id="TA_KirimKonfirmasi" name="Kirim konfirmasi penerimaan pengaduan ke customer">
+      <bpmn:incoming>SF_2</bpmn:incoming>
+      <bpmn:outgoing>SF_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- Subprocess penanganan pengaduan dengan SLA 1 jam -->
+    <!-- Boundary Timer non-interrupting: jika SLA hampir habis, eskalasi dikirim tapi penanganan tetap jalan -->
+    <bpmn:subProcess id="SP_TanganiPengaduan" name="Penanganan Pengaduan (SLA: 1 jam)">
+      <bpmn:incoming>SF_3</bpmn:incoming>
+      <bpmn:outgoing>SF_4</bpmn:outgoing>
+      <bpmn:startEvent id="SE_SP_Mulai" name="">
+        <bpmn:outgoing>SF_SP1</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:userTask id="TA_InvestigasiMasalah" name="Investigasi akar masalah">
+        <bpmn:incoming>SF_SP1</bpmn:incoming>
+        <bpmn:outgoing>SF_SP2</bpmn:outgoing>
+      </bpmn:userTask>
+      <bpmn:exclusiveGateway id="GW_SolusiDitemukan" name="Solusi ditemukan?">
+        <bpmn:incoming>SF_SP2</bpmn:incoming>
+        <bpmn:outgoing>SF_SP_Ya</bpmn:outgoing>
+        <bpmn:outgoing>SF_SP_Tidak</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
+      <bpmn:userTask id="TA_SiapkanSolusi" name="Siapkan dan dokumentasikan solusi">
+        <bpmn:incoming>SF_SP_Ya</bpmn:incoming>
+        <bpmn:outgoing>SF_SP3</bpmn:outgoing>
+      </bpmn:userTask>
+      <bpmn:userTask id="TA_KonsultasiInternal" name="Konsultasi internal dan riset lebih lanjut">
+        <bpmn:incoming>SF_SP_Tidak</bpmn:incoming>
+        <bpmn:outgoing>SF_SP4</bpmn:outgoing>
+      </bpmn:userTask>
+      <bpmn:exclusiveGateway id="GW_Merge" name="">
+        <bpmn:incoming>SF_SP3</bpmn:incoming>
+        <bpmn:incoming>SF_SP4</bpmn:incoming>
+        <bpmn:outgoing>SF_SP5</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
+      <bpmn:endEvent id="EE_SP_Selesai" name="">
+        <bpmn:incoming>SF_SP5</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="SF_SP1" sourceRef="SE_SP_Mulai" targetRef="TA_InvestigasiMasalah" />
+      <bpmn:sequenceFlow id="SF_SP2" sourceRef="TA_InvestigasiMasalah" targetRef="GW_SolusiDitemukan" />
+      <bpmn:sequenceFlow id="SF_SP_Ya" name="ya" sourceRef="GW_SolusiDitemukan" targetRef="TA_SiapkanSolusi">
+        <bpmn:conditionExpression>solusi jelas</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:sequenceFlow id="SF_SP_Tidak" name="tidak" sourceRef="GW_SolusiDitemukan" targetRef="TA_KonsultasiInternal">
+        <bpmn:conditionExpression>perlu riset</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:sequenceFlow id="SF_SP3" sourceRef="TA_SiapkanSolusi" targetRef="GW_Merge" />
+      <bpmn:sequenceFlow id="SF_SP4" sourceRef="TA_KonsultasiInternal" targetRef="GW_Merge" />
+      <bpmn:sequenceFlow id="SF_SP5" sourceRef="GW_Merge" targetRef="EE_SP_Selesai" />
+    </bpmn:subProcess>
+
+    <!-- E07: Boundary Timer non-interrupting pada Subprocess penanganan -->
+    <!-- Dipicu pada T-45 menit: peringatan SLA terancam SEBELUM batas 1 jam -->
+    <!-- Non-interrupting: penanganan tetap berjalan sambil supervisor dilibatkan -->
+    <bpmn:boundaryEvent id="BE_SLATimer" attachedToRef="SP_TanganiPengaduan" cancelActivity="false">
+      <bpmn:outgoing>SF_SLA</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TED_SLA">
+        <bpmn:timeDuration>PT45M</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+
+    <!-- E07: Escalation End Event (di dalam Subprocess alternatif) -->
+    <!-- Diimplementasikan sebagai jalur eskalasi dari Boundary Timer ke Supervisor Lane -->
+
+    <!-- Happy path setelah subprocess selesai -->
+    <bpmn:serviceTask id="TA_KirimSolusi" name="Kirim solusi ke customer">
+      <bpmn:incoming>SF_4</bpmn:incoming>
+      <bpmn:outgoing>SF_5</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="EE_PengaduanSelesai" name="Pengaduan terselesaikan dalam SLA">
+      <bpmn:incoming>SF_5</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Jalur eskalasi: supervisor dilibatkan karena SLA terancam -->
+    <bpmn:serviceTask id="TA_TerimaEskalasi" name="Terima notifikasi SLA terancam">
+      <bpmn:incoming>SF_SLA</bpmn:incoming>
+      <bpmn:outgoing>SF_Sup1</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="TA_NotifEskalasi" name="Kirim notifikasi eskalasi ke customer">
+      <bpmn:incoming>SF_Sup1</bpmn:incoming>
+      <bpmn:outgoing>SF_Sup2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="TA_TanganiEskalasi" name="Tangani pengaduan dengan prioritas supervisor">
+      <bpmn:incoming>SF_Sup2</bpmn:incoming>
+      <bpmn:outgoing>SF_Sup3</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="EE_EskalasiSelesai" name="Eskalasi ditangani supervisor">
+      <bpmn:incoming>SF_Sup3</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="SF_1" sourceRef="SE_PengaduanDiterima" targetRef="TA_CatatPengaduan" />
+    <bpmn:sequenceFlow id="SF_2" sourceRef="TA_CatatPengaduan" targetRef="TA_KirimKonfirmasi" />
+    <bpmn:sequenceFlow id="SF_3" sourceRef="TA_KirimKonfirmasi" targetRef="SP_TanganiPengaduan" />
+    <bpmn:sequenceFlow id="SF_4" sourceRef="SP_TanganiPengaduan" targetRef="TA_KirimSolusi" />
+    <bpmn:sequenceFlow id="SF_5" sourceRef="TA_KirimSolusi" targetRef="EE_PengaduanSelesai" />
+    <bpmn:sequenceFlow id="SF_SLA" sourceRef="BE_SLATimer" targetRef="TA_TerimaEskalasi" />
+    <bpmn:sequenceFlow id="SF_Sup1" sourceRef="TA_TerimaEskalasi" targetRef="TA_NotifEskalasi" />
+    <bpmn:sequenceFlow id="SF_Sup2" sourceRef="TA_NotifEskalasi" targetRef="TA_TanganiEskalasi" />
+    <bpmn:sequenceFlow id="SF_Sup3" sourceRef="TA_TanganiEskalasi" targetRef="EE_EskalasiSelesai" />
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="Dia_S2">
+    <bpmndi:BPMNPlane id="Pla_S2" bpmnElement="Collab_S2">
+
+      <!-- Pool Customer -->
+      <bpmndi:BPMNShape id="Shp_PartC" bpmnElement="Part_Customer" isHorizontal="true">
+        <dc:Bounds x="60" y="60" width="1100" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_SE_CM" bpmnElement="SE_CustomerMulai">
+        <dc:Bounds x="120" y="133" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="100" y="176" width="76" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA_KP" bpmnElement="TA_KirimPengaduan">
+        <dc:Bounds x="210" y="111" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_IE_KD" bpmnElement="IE_KonfirmasiDiterima">
+        <dc:Bounds x="370" y="133" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="350" y="176" width="76" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_IE_SD" bpmnElement="IE_SolusiDiterima">
+        <dc:Bounds x="600" y="133" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="578" y="176" width="80" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_EE_CS" bpmnElement="EE_CustomerSelesai">
+        <dc:Bounds x="700" y="133" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="678" y="176" width="80" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_IE_NED" bpmnElement="IE_NotifEskalasiDiterima">
+        <dc:Bounds x="850" y="133" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="828" y="176" width="80" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_EE_CTE" bpmnElement="EE_CustomerTungguEskalasi">
+        <dc:Bounds x="960" y="133" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="938" y="176" width="80" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="EdgC_1" bpmnElement="SFC_1"><di:waypoint x="156" y="151" /><di:waypoint x="210" y="151" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="EdgC_2" bpmnElement="SFC_2"><di:waypoint x="310" y="151" /><di:waypoint x="370" y="151" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="EdgC_3" bpmnElement="SFC_3"><di:waypoint x="406" y="151" /><di:waypoint x="600" y="151" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="EdgC_4" bpmnElement="SFC_4"><di:waypoint x="636" y="151" /><di:waypoint x="700" y="151" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="EdgC_Esk" bpmnElement="SFC_Eskalasi"><di:waypoint x="886" y="151" /><di:waypoint x="960" y="151" /></bpmndi:BPMNEdge>
+
+      <!-- Pool CS -->
+      <bpmndi:BPMNShape id="Shp_PartCS" bpmnElement="Part_CS" isHorizontal="true">
+        <dc:Bounds x="60" y="310" width="1100" height="520" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_LaneAgent" bpmnElement="Lane_AgentCS" isHorizontal="true">
+        <dc:Bounds x="90" y="310" width="1070" height="280" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_LaneSup" bpmnElement="Lane_Supervisor" isHorizontal="true">
+        <dc:Bounds x="90" y="590" width="1070" height="240" />
+      </bpmndi:BPMNShape>
+
+      <!-- Agen CS -->
+      <bpmndi:BPMNShape id="Shp_SE_PD" bpmnElement="SE_PengaduanDiterima">
+        <dc:Bounds x="120" y="431" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="98" y="474" width="80" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA_CP2" bpmnElement="TA_CatatPengaduan">
+        <dc:Bounds x="210" y="409" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA_KK" bpmnElement="TA_KirimKonfirmasi">
+        <dc:Bounds x="370" y="409" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_SP_TP" bpmnElement="SP_TanganiPengaduan" isExpanded="false">
+        <dc:Bounds x="530" y="409" width="220" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA_KS" bpmnElement="TA_KirimSolusi">
+        <dc:Bounds x="810" y="409" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_EE_PS" bpmnElement="EE_PengaduanSelesai">
+        <dc:Bounds x="980" y="431" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="958" y="474" width="80" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Boundary Timer non-interrupting -->
+      <bpmndi:BPMNShape id="Shp_BE_SLA" bpmnElement="BE_SLATimer">
+        <dc:Bounds x="622" y="471" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="600" y="514" width="80" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Supervisor Lane -->
+      <bpmndi:BPMNShape id="Shp_TA_TE" bpmnElement="TA_TerimaEskalasi">
+        <dc:Bounds x="600" y="620" width="120" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA_NE" bpmnElement="TA_NotifEskalasi">
+        <dc:Bounds x="740" y="620" width="120" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA_TE2" bpmnElement="TA_TanganiEskalasi">
+        <dc:Bounds x="880" y="620" width="120" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_EE_ES" bpmnElement="EE_EskalasiSelesai">
+        <dc:Bounds x="1060" y="635" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1038" y="678" width="80" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Sequence Flow edges CS -->
+      <bpmndi:BPMNEdge id="Edg_1" bpmnElement="SF_1"><di:waypoint x="156" y="449" /><di:waypoint x="210" y="449" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_2" bpmnElement="SF_2"><di:waypoint x="310" y="449" /><di:waypoint x="370" y="449" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_3" bpmnElement="SF_3"><di:waypoint x="470" y="449" /><di:waypoint x="530" y="449" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_4" bpmnElement="SF_4"><di:waypoint x="750" y="449" /><di:waypoint x="810" y="449" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_5" bpmnElement="SF_5"><di:waypoint x="910" y="449" /><di:waypoint x="980" y="449" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_SLA" bpmnElement="SF_SLA">
+        <di:waypoint x="640" y="507" /><di:waypoint x="640" y="620" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_Sup1" bpmnElement="SF_Sup1"><di:waypoint x="720" y="650" /><di:waypoint x="740" y="650" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_Sup2" bpmnElement="SF_Sup2"><di:waypoint x="860" y="650" /><di:waypoint x="880" y="650" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_Sup3" bpmnElement="SF_Sup3"><di:waypoint x="1000" y="650" /><di:waypoint x="1060" y="653" /></bpmndi:BPMNEdge>
+
+      <!-- Message Flows -->
+      <bpmndi:BPMNEdge id="Edg_MF1" bpmnElement="MF_S2_1">
+        <di:waypoint x="260" y="191" /><di:waypoint x="138" y="431" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_MF2" bpmnElement="MF_S2_2">
+        <di:waypoint x="420" y="409" /><di:waypoint x="388" y="259" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_MF3" bpmnElement="MF_S2_3">
+        <di:waypoint x="860" y="409" /><di:waypoint x="618" y="259" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg_MF4" bpmnElement="MF_S2_4">
+        <di:waypoint x="800" y="620" /><di:waypoint x="868" y="259" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>

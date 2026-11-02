@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "caseId": "case-s2",
+  "criteria": [
+    {
+      "id": "C10-1",
+      "statement": "Ada Boundary Timer Event non-interrupting (border putus-putus) pada Subprocess penanganan pengaduan — SLA timer terpicu sambil penanganan tetap berjalan.",
+      "rationale": "Non-interrupting berarti Subprocess penanganan tidak dihentikan ketika timer terpicu. Supervisor dilibatkan sambil agen CS tetap bekerja. Interrupting akan menghentikan penanganan — yang tidak sesuai requirement.",
+      "readIfFailed": ["/notasi/timer-event"],
+      "check": {
+        "mode": "auto",
+        "rule": "element-exists",
+        "type": "bpmn:SubProcess",
+        "min": 1
+      }
+    },
+    {
+      "id": "C10-2",
+      "statement": "Boundary Timer bersifat non-interrupting (cancelActivity=false) — Subprocess penanganan tetap berjalan setelah timer terpicu.",
+      "rationale": "Jika cancelActivity=true (interrupting), Subprocess akan dihentikan ketika SLA warning timer terpicu. Ini berarti penanganan pengaduan berhenti hanya karena ada peringatan waktu — yang tidak masuk akal dari perspektif bisnis.",
+      "readIfFailed": ["/notasi/timer-event"],
+      "check": {
+        "mode": "manual",
+        "question": "Apakah Boundary Timer Event pada Subprocess penanganan memiliki border putus-putus (non-interrupting)? Border putus-putus = cancelActivity=false = penanganan tetap berjalan. Border solid = interrupting = penanganan dihentikan."
+      }
+    },
+    {
+      "id": "C10-3",
+      "statement": "Jalur eskalasi setelah Boundary Timer mengarah ke Lane Supervisor (atau task yang melibatkan supervisor) — bukan langsung ke End Event.",
+      "rationale": "Tujuan eskalasi adalah melibatkan supervisor untuk membantu penyelesaian. Mengakhiri proses langsung setelah timer terpicu tidak mencapai tujuan itu.",
+      "readIfFailed": ["/notasi/escalation-event"],
+      "check": {
+        "mode": "manual",
+        "question": "Ikuti Sequence Flow dari Boundary Timer Event. Apakah ia mengarah ke task yang melibatkan supervisor atau level manajemen yang lebih tinggi? Atau apakah ia langsung ke End Event?"
+      }
+    },
+    {
+      "id": "C10-4",
+      "statement": "Customer mendapat konfirmasi penerimaan pengaduan — proses tidak langsung mulai investigasi tanpa memberi tahu customer.",
+      "rationale": "SOP penanganan pengaduan yang baik selalu mengirimkan konfirmasi ke customer bahwa pengaduan sudah diterima, sebelum mulai investigasi.",
+      "readIfFailed": ["/notasi/message-event"],
+      "check": {
+        "mode": "auto",
+        "rule": "message-flow-between-participants",
+        "min": 2
+      }
+    },
+    {
+      "id": "C10-5",
+      "statement": "Subprocess penanganan memiliki percabangan internal (XOR Gateway) — penanganan tidak selalu linear (kadang butuh konsultasi internal).",
+      "rationale": "SPEC menyatakan ada dua jalur: jika solusi langsung ditemukan, siapkan solusi; jika tidak, konsultasi internal. Percabangan ini harus ada di dalam Subprocess.",
+      "readIfFailed": ["/notasi/exclusive-gateway"],
+      "check": {
+        "mode": "manual",
+        "question": "Apakah di dalam Subprocess penanganan ada percabangan (XOR Gateway) untuk membedakan 'solusi langsung ditemukan' vs 'perlu investigasi lebih lanjut'? Atau apakah Subprocess hanya berisi satu jalur linear?"
+      }
+    },
+    {
+      "id": "C10-6",
+      "statement": "Proses menggunakan dua Pool (Customer dan Tim CS) dengan minimal dua Message Flow — termasuk konfirmasi penerimaan dan pengiriman solusi.",
+      "rationale": "Cabang S2 adalah kolaborasi antara Customer dan Tim CS dengan komunikasi bisnis yang terdokumentasi.",
+      "readIfFailed": ["/notasi/message-flow"],
+      "check": {
+        "mode": "auto",
+        "rule": "message-flow-between-participants",
+        "min": 2
+      }
+    }
+  ]
+}

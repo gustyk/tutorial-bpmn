@@ -1,6 +1,219 @@
 ---
-title: "Cabang S2 — Pemrosesan klaim asuransi"
-description: "Cabang lanjutan: event-based gateway dan sinyal."
+title: "Cabang S2: Pengaduan Pelanggan dengan SLA"
+description: "Pahami Escalation Event dan Boundary Timer non-interrupting melalui kasus pengaduan customer dengan batas waktu penanganan yang harus ditegakkan."
 ---
 
-Halaman ini akan diisi saat modul terkait diterbitkan.
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+import CriteriaChecker from '../../../components/CriteriaChecker.astro';
+
+:::note[Cabang wajib]
+Cabang S2 wajib diselesaikan karena E07 Escalation adalah notasi Tier A. Cabang ini berdiri sendiri — tidak bergantung pada Modul 7–9.
+:::
+
+## 1. Konteks cabang ini
+
+Cabang S2 memperkenalkan skenario yang **berbeda domain** dari Jalur Belajar utama (pesanan). Bukan karena ada pesanan baru, tapi karena notasi yang tersisa — **Escalation Event** — paling alami dijelaskan dalam konteks SLA dan eskalasi manajerial.
+
+**Notasi baru:**
+
+| Kode | Nama | Peran |
+|------|------|-------|
+| E07 | Escalation Event | Mengeskalasi kondisi bisnis ke level manajemen lebih tinggi — subprocess tetap berjalan |
+| E03 | Boundary Timer non-interrupting | Pengingat: Timer juga bisa non-interrupting — tidak menghentikan aktivitas yang ditempeli |
+| E04 | Conditional Event | Pembanding: alternatif Timer untuk kondisi berbasis data, bukan waktu |
+
+**Yang sudah dipakai ulang:** E01, E02, P01/P02, C01, F02, F01, G01, A13.
+
+---
+
+## 2. Kasus bisnis
+
+Manajer pelayanan pelanggan membawa data ke rapat bulanan:
+
+> "Dari 200 pengaduan bulan lalu, 37 tidak mendapat respons dalam 1 jam SLA kita. Agen CS tidak selalu sadar waktu sudah hampir habis — tidak ada yang memberi tahu supervisor sampai customer sudah marah. Kita perlu sistem yang secara otomatis eskalasi ke supervisor **sebelum** SLA habis, sambil agen CS tetap bekerja."
+
+Analis bertanya:
+> "Kapan eskalasi harus terpicu? Dan ketika eskalasi terpicu, apakah penanganan agen CS harus berhenti?"
+
+Manajer: *"Eskalasi pada menit ke-45 dari 60 menit SLA. Agen CS tidak berhenti — supervisor hanya masuk membantu atau mengambil alih jika perlu."*
+
+---
+
+## 3. Requirement
+
+1. Customer mengajukan pengaduan → Tim CS menerima, mencatat, dan mengirim konfirmasi penerimaan.
+2. Penanganan dimulai dalam Subprocess dengan SLA **1 jam** (timer pada 45 menit sebagai peringatan awal).
+3. Jika timer 45 menit terpicu: **supervisor dilibatkan** dan **customer diberitahu** — penanganan agen CS **tidak dihentikan**.
+4. Penanganan memiliki dua jalur internal: jika solusi langsung ditemukan → siapkan solusi; jika tidak → konsultasi internal.
+5. Setelah solusi siap, kirim solusi ke customer.
+
+---
+
+## 4. Panduan analisis
+
+### Boundary Timer: interrupting vs. non-interrupting
+
+Boundary Timer biasanya kita kenal sebagai **interrupting** — ketika timer habis, aktivitas dihentikan. Tapi ada varian **non-interrupting** yang bekerja berbeda.
+
+| | Interrupting | Non-interrupting |
+|---|---|---|
+| Border Boundary Event | Solid | Putus-putus |
+| Aktivitas yang ditempeli | **Dihentikan** | **Tetap berjalan** |
+| Token dari Boundary | Menggantikan token aktivitas | Ditambahkan paralel |
+| Contoh | Task "Tunggu keputusan" dihentikan setelah 1 jam | Subprocess tetap berjalan, supervisor dilibatkan sebagai paralel |
+
+Dalam kasus pengaduan ini, kita perlu non-interrupting karena penanganan harus tetap berjalan sambil supervisor masuk secara paralel.
+
+### Escalation vs. Error: kapan masing-masing dipakai?
+
+Ada dua cara yang mungkin terpikirkan untuk mengeskalasi ke supervisor:
+
+*Opsi 1:* Gunakan Error Event — supervisor menangkap error dari Subprocess penanganan.
+
+*Opsi 2:* Gunakan Escalation Event — Subprocess memberi sinyal ke proses induk bahwa kondisi tertentu terjadi.
+
+Perbedaannya ada pada **apa yang terjadi**:
+
+- **Error** menyatakan: "Sesuatu yang tidak direncanakan dan tidak bisa dilanjutkan terjadi." Subprocess biasanya dihentikan.
+- **Escalation** menyatakan: "Kondisi bisnis yang direncanakan memerlukan perhatian dari level yang lebih tinggi." Subprocess bisa tetap berjalan (non-interrupting).
+
+"SLA hampir habis" adalah kondisi **yang direncanakan** — kita tahu SLA bisa hampir habis, dan kita punya prosedur untuk menanganinya: eskalasi ke supervisor sambil tetap mengerjakan penanganan. Ini adalah Escalation, bukan Error.
+
+### Reuse negatif #1 — Escalation dipakai untuk kegagalan teknis
+
+> *"Escalation dipakai untuk kegagalan sistem atau kondisi yang tidak bisa dilanjutkan."*
+
+Diagnosis: Jika sesuatu yang dimodelkan sebagai Escalation membuat proses **tidak bisa dilanjutkan** (database down, external API fail, kurir menolak), itu adalah Error, bukan Escalation. Escalation mengimplikasikan "kondisi ini bisa ditangani dengan melibatkan level yang lebih tinggi — proses tidak harus berhenti."
+
+### Reuse negatif #2 — Boundary Timer interrupting dipakai untuk eskalasi paralel
+
+> *"Boundary Timer interrupting dipakai padahal penanganan harus tetap berjalan."*
+
+Diagnosis: Jika Boundary Timer interrupting dipasang pada Subprocess penanganan, timer akan **menghentikan Subprocess** ketika terpicu. Agen CS dipaksa berhenti di tengah penanganan hanya karena ada peringatan waktu. Non-interrupting memungkinkan kedua token (penanganan dan eskalasi) berjalan bersamaan.
+
+### Conditional Event sebagai pembanding Timer (E04)
+
+Analis bisa bertanya: "Bagaimana jika eskalasi dipicu bukan berdasarkan waktu, tapi berdasarkan kondisi data — misalnya, jika 'kategori pengaduan = kritis', eskalasi langsung tanpa menunggu 45 menit?"
+
+Untuk itu ada **Conditional Event (E04)**: Boundary Conditional non-interrupting yang dipicu ketika kondisi tertentu bernilai `true`. Berbeda dari Timer yang berbasis waktu, Conditional berbasis data.
+
+| | Timer Event (E03) | Conditional Event (E04) |
+|---|---|---|
+| Dipicu oleh | Waktu berlalu | Kondisi data berubah menjadi true |
+| Contoh | "45 menit berlalu" | "Prioritas pengaduan berubah menjadi KRITIS" |
+| Kapan diketahui? | Dapat diprediksi | Bergantung pada data runtime |
+
+Modul ini tidak mengimplementasikan E04 dalam model referensi karena scope-nya hanya kasus pengaduan standar, tapi E04 adalah alat yang tepat untuk eskalasi berbasis kondisi.
+
+---
+
+## 5. Tugas
+
+Bangun model pengaduan pelanggan dengan SLA:
+
+1. Buat dua Pool: **"Customer"** dan **"Tim CS"** (dengan Lane "Agen CS" dan Lane "Supervisor").
+2. Di Pool Customer: Start Event → Task "Kirim pengaduan" → Message Flow ke Pool CS → menunggu konfirmasi dan solusi.
+3. Di Pool CS, Lane Agen CS: Message Start → Task "Catat dan klasifikasikan" → Task "Kirim konfirmasi" → **Subprocess "Penanganan Pengaduan (SLA: 1 jam)"** → Task "Kirim solusi" → End Event.
+4. Di dalam Subprocess: Start → XOR "Solusi ditemukan?" → dua jalur → XOR merge → End.
+5. Pada Subprocess: tambahkan **Boundary Timer non-interrupting** (border putus-putus, 45 menit) → jalur ke Lane Supervisor.
+6. Di Lane Supervisor: Task "Terima eskalasi" → Task "Notifikasi customer" → Task "Tangani eskalasi" → End Event.
+7. Verifikasi: apakah Boundary Timer berhasil menjadi non-interrupting (putus-putus)?
+
+:::tip[File referensi]
+Gunakan [`case-s2-complaint.bpmn`](/bpmn/case-s2-complaint.bpmn) sebagai referensi.
+:::
+
+---
+
+## 6. Pemeriksa kriteria
+
+<CriteriaChecker
+  criteriaSrc="/cases/case-s2/criteria.json"
+  title="Periksa model Cabang S2"
+/>
+
+---
+
+## 7. Kunci jawaban
+
+:::caution[Coba kerjakan dulu]
+Buka hanya setelah kamu selesai mengerjakan tugas dan memeriksa modelmu.
+:::
+
+<details>
+<summary>**Lihat kunci jawaban Cabang S2**</summary>
+
+### Lapis A — Model referensi
+
+<BpmnViewer src="/bpmn/case-s2-complaint.bpmn" title="Cabang S2 — Pengaduan Pelanggan dengan SLA dan Escalation" />
+
+**Walkthrough token (skenario SLA terancam):**
+
+1. Customer mengirim pengaduan → Message Start Event di Pool CS terpicu.
+2. Agen CS mencatat → mengirim konfirmasi → Subprocess "Penanganan" dimulai.
+3. Di dalam Subprocess: Investigasi → XOR "Solusi ditemukan?" → jalur yang sesuai → End Subprocess.
+4. Pada menit ke-45: **Boundary Timer non-interrupting** terpicu → token baru mengalir ke Lane Supervisor.
+5. Subprocess **tetap berjalan** (penanganan tidak berhenti).
+6. Supervisor: terima eskalasi → notifikasi customer → tangani prioritas → End.
+7. Jika Subprocess selesai lebih cepat: token utama melanjutkan ke "Kirim solusi" → End.
+8. Dua jalur (penanganan + eskalasi) berjalan **paralel** — ini adalah semantik non-interrupting.
+
+**Walkthrough token (skenario normal — selesai sebelum 45 menit):**
+
+1. Subprocess selesai sebelum Boundary Timer terpicu.
+2. Token dari Subprocess langsung ke "Kirim solusi" → konfirmasi ke customer → End.
+3. Boundary Timer tidak pernah terpicu — tidak ada jalur eskalasi yang berjalan.
+
+### Lapis B — Kriteria wajib
+
+1. **Boundary Timer non-interrupting** (border putus-putus) pada Subprocess penanganan.
+2. **Jalur eskalasi mengarah ke Supervisor** — bukan langsung End Event.
+3. **Customer mendapat konfirmasi penerimaan** sebelum penanganan dimulai.
+4. **Subprocess memiliki percabangan internal** (XOR Gateway).
+5. **Minimal dua Message Flow** antar Pool.
+
+### Lapis C — Variasi yang juga diterima
+
+**Variasi 1: Escalation End Event di dalam Subprocess**
+
+Alih-alih Boundary Timer non-interrupting pada Subprocess, bisa menggunakan Task "Cek SLA" di dalam Subprocess yang mengarah ke Escalation End Event. Proses induk menangkap dengan Boundary Escalation non-interrupting. Ini lebih eksplisit menggunakan E07, tapi lebih kompleks dalam implementasi.
+
+**Variasi 2: Timer dengan durasi berbeda**
+
+Kamu bisa menggunakan 30 menit atau nilai lain sebagai threshold SLA warning — yang penting lebih pendek dari SLA penuh (1 jam). Model referensi menggunakan PT45M.
+
+**Variasi 3: Conditional Event sebagai pengganti Timer**
+
+Jika kondisi eskalasi berbasis data ("kategori = KRITIS"), Conditional Boundary non-interrupting bisa digunakan. Semantiknya sama dengan Timer tapi dipicu oleh perubahan data, bukan waktu.
+
+### Lapis D — Kesalahan umum
+
+**Kesalahan 1: Boundary Timer interrupting pada Subprocess penanganan**
+
+*Gejala:* Boundary Timer memiliki border solid — Subprocess dihentikan ketika timer 45 menit terpicu.
+
+*Diagnosis semantik:* Agen CS berhenti bekerja di tengah penanganan hanya karena ada peringatan waktu. Pelanggan yang pengaduannya sedang ditangani tiba-tiba tidak ada yang menangani. Penanganan dan eskalasi harus berjalan **paralel** — itulah tujuan non-interrupting.
+
+*Perbaikan:* Ubah Boundary Timer ke non-interrupting (hapus centang "Interrupting" di properties, atau ubah `cancelActivity` ke `false`). Border harus berubah menjadi putus-putus.
+
+**Kesalahan 2: Error Event digunakan untuk "SLA hampir habis"**
+
+*Gejala:* Boundary Error pada Subprocess dengan label "SLA hampir habis."
+
+*Diagnosis semantik:* Error menyatakan kondisi yang tidak direncanakan dan tidak bisa dilanjutkan. "SLA hampir habis" adalah kondisi yang **direncanakan** — ada SOP yang menyatakan "jika 45 menit berlalu, eskalasi ke supervisor." Menggunakan Error mengimplikasikan sistem dalam keadaan darurat teknis, yang tidak akurat.
+
+*Perbaikan:* Gunakan Boundary Timer non-interrupting (untuk kondisi berbasis waktu) atau Boundary Escalation non-interrupting (untuk kondisi yang secara semantik ingin menyatakan "ini adalah eskalasi bisnis").
+
+**Kesalahan 3: Supervisor digambarkan sebagai Pool terpisah**
+
+*Gejala:* Ada tiga Pool: Customer, Agen CS, Supervisor. Supervisor terhubung ke Agen CS via Message Flow.
+
+*Diagnosis semantik:* Supervisor adalah bagian dari organisasi yang sama (Tim CS). Mereka berada di organisasi yang sama dan berkomunikasi secara internal — bukan melalui Message Flow antar-organisasi. Gunakan Lane (bukan Pool) untuk membedakan peran dalam organisasi yang sama. Message Flow hanya untuk komunikasi antar-organisasi.
+
+*Perbaikan:* Hapus Pool Supervisor. Tambahkan Lane "Supervisor" di dalam Pool "Tim CS". Hubungkan via Sequence Flow, bukan Message Flow.
+
+</details>
+
+---
+
+**← [Modul 8: Pengiriman Bisa Gagal](/jalur/08/) · [Modul 9: Pembatalan Setelah Pembayaran Ditarik](/jalur/09/) →**
