@@ -1,6 +1,63 @@
 ---
 title: "Sumber dan atribusi"
-description: "Referensi standar OMG, pustaka, dan atribusi konten."
+description: "Referensi standar OMG, dokumentasi platform, alat, dan atribusi konten yang digunakan dalam tutorial ini."
 ---
 
-Halaman ini akan diisi saat modul terkait diterbitkan.
+## Standar dan spesifikasi
+
+| Sumber | Versi | URL | Tanggal Diverifikasi |
+|---|---|---|---|
+| OMG BPMN — halaman standar | 2.0.2 | https://www.omg.org/spec/BPMN/2.0.2/ | TODO-VERIFY |
+| OMG BPMN — PDF normatif | 2.0.2 | https://www.omg.org/spec/BPMN/2.0.2/PDF | TODO-VERIFY |
+
+**[STANDARD]** Semua pernyataan semantik berlabel `[STANDARD]` dalam tutorial ini mengacu pada OMG BPMN 2.0.2 sebagai sumber normatif. Nomor bagian dan tabel yang disebut menggunakan format §X.Y (bagian) dan Tabel X.YZ (tabel). Beberapa lokator ditandai `TODO-VERIFY` karena nomor halaman/baris tepat tidak dapat diverifikasi tanpa akses ke PDF.
+
+---
+
+## Dokumentasi platform
+
+| Sumber | Versi | URL | Tanggal Diverifikasi |
+|---|---|---|---|
+| Camunda BPMN Reference | 8.9 | https://camunda.com/bpmn/reference/ | TODO-VERIFY |
+| Camunda 8 BPMN Coverage | 8.9 | https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/ | TODO-VERIFY |
+| Camunda 8 Data Flow | 8.9 | https://docs.camunda.io/docs/components/modeler/bpmn/data-flow/ | TODO-VERIFY |
+
+**[CAMUNDA]** Semua pernyataan berlabel `[CAMUNDA]` mengacu pada dokumentasi Camunda 8.9. Dukungan execution dapat berubah antar versi — selalu verifikasi pada halaman BPMN Coverage versi terkini.
+
+---
+
+## Alat
+
+| Alat | Versi | URL | Catatan |
+|---|---|---|---|
+| demo.bpmn.io | — | https://demo.bpmn.io/ | Editor BPMN online berbasis bpmn-js; dipakai sebagai alat referensi visual |
+| Camunda Modeler | — | https://camunda.com/download/modeler/ | Desktop editor dengan validasi executable |
+| bpmn-js | — | https://bpmn.io/toolkit/bpmn-js/ | Library JavaScript untuk render BPMN di browser; dipakai oleh komponen BpmnViewer tutorial ini |
+| bpmn-moddle | — | https://github.com/bpmn-io/bpmn-moddle | Library untuk parsing dan validasi BPMN XML; dipakai oleh `npm run validate:bpmn` |
+
+---
+
+## Atribusi font dan ikon
+
+Diagram dalam tutorial ini menggunakan notasi BPMN yang digambar ulang secara generik untuk tujuan pendidikan. Tidak ada aset grafis pihak ketiga yang dipakai secara langsung dalam komponen BpmnNotationGallery.
+
+Komponen render diagram (`BpmnViewer`) menggunakan bpmn-js yang dirilis di bawah lisensi MIT.
+
+---
+
+## Lisensi konten
+
+Materi asli tutorial ini ditujukan untuk lisensi **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)**.
+
+- **Atribusi:** Cantumkan "Tutorial BPMN 2.0 UISI oleh Tikno, Universitas Internasional Semen Indonesia"
+- **NonKomersial:** Tidak boleh digunakan untuk tujuan komersial
+- **BerbagiSerupa:** Adaptasi harus dirilis dengan lisensi yang sama
+- **Perubahan:** Cantumkan modifikasi yang dilakukan
+
+Lisensi pihak ketiga (OMG, Camunda) tetap berlaku untuk konten yang berasal dari sumber tersebut.
+
+---
+
+**Pengelola:** Tikno (tikno@uisi.ac.id), Universitas Internasional Semen Indonesia.
+
+Lihat juga: [Tentang dan Lisensi](/tentang/).

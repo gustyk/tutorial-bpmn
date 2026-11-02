@@ -1,6 +1,138 @@
 ---
 title: "Anti-pattern umum"
-description: "Pola yang sering tampak benar tapi menyesatkan."
+description: "Pola yang sering tampak benar tapi menyesatkan — gejala, alasan salah, risiko, dan perbaikan."
 ---
 
-Halaman ini akan diisi saat modul terkait diterbitkan.
+Anti-pattern adalah pola yang terlihat masuk akal tetapi menghasilkan model yang salah secara semantik atau sulit dianalisis. Setiap entri di bawah menyertakan gejala yang bisa dikenali, penjelasan mengapa pola itu salah, risiko jika dibiarkan, dan cara memperbaikinya.
+
+---
+
+## Alur dan Sequence Flow
+
+### AP-01 — Sequence Flow melintasi Pool
+
+**Gejala:** Ada panah Sequence Flow (panah penuh) yang menghubungkan elemen di satu Pool ke elemen di Pool lain.
+
+**Mengapa salah:** Sequence Flow mengekspresikan transfer token di dalam satu proses. Token setiap Pool adalah milik proses tersebut — tidak bisa berpindah ke proses lain. Model dengan SF lintas Pool mengatakan bahwa dua organisasi berbagi satu proses tunggal, yang biasanya tidak benar.
+
+**Risiko:** Engine akan menolak model. Ketika model dibuka di demo.bpmn.io atau Camunda Modeler, validator memperingatkan bahwa SF tidak bisa keluar dari Pool.
+
+**Perbaikan:** Ganti dengan Message Flow (panah putus-putus dengan ikon amplop). Setiap Pool memiliki Start/End Event-nya sendiri. Komunikasi antarpihak hanya lewat Message Flow.
+
+---
+
+### AP-02 — Sequence Flow dari atau ke Boundary Event yang salah
+
+**Gejala:** Sequence Flow masuk ke Boundary Event (bukan keluar), atau Boundary Event dihubungkan ke activity berikutnya via dua Sequence Flow sekaligus.
+
+**Mengapa salah:** Boundary Event hanya boleh memiliki Sequence Flow *keluar* (outgoing). Boundary Event menangkap trigger, lalu token mengalir keluar ke jalur exception. Tidak ada token yang "memasuki" Boundary Event.
+
+**Risiko:** Model tidak lolos validasi sintaksis. Semantik alur tidak dapat dianalisis karena titik masuk Boundary Event tidak terdefinisi.
+
+**Perbaikan:** Periksa semua Boundary Event — pastikan hanya ada outgoing SF, tidak ada incoming SF. Jika ingin menggabungkan jalur exception ke jalur normal, gunakan Gateway join setelah Boundary Event.
+
+---
+
+## Gateway
+
+### AP-03 — XOR join sebagai sinkronisasi paralel
+
+**Gejala:** Setelah Parallel Gateway split (tanda +), semua cabang bertemu di XOR Gateway (tanda X) join, bukan Parallel Gateway join.
+
+**Mengapa salah:** XOR merge hanya meneruskan token pertama yang tiba. Jika dua cabang paralel menghasilkan dua token, token kedua yang tiba di XOR merge akan *melewati* join dan menjalankan semua aktivitas hilir *dua kali* — satu untuk setiap token.
+
+**Risiko:** Task di hilir dijalankan lebih dari sekali. Di sistem produksi, ini bisa berarti email konfirmasi terkirim dua kali, atau record disimpan dua kali.
+
+**Perbaikan:** Pasangkan Parallel Gateway split dengan Parallel Gateway join (tanda + yang sama). Parallel join menunggu semua cabang aktif selesai sebelum meneruskan satu token.
+
+---
+
+### AP-04 — XOR Gateway untuk menunggu event eksternal
+
+**Gejala:** Setelah Send Task "Kirim Tagihan", ada XOR Gateway dengan kondisi "pembayaran berhasil" dan "timeout habis".
+
+**Mengapa salah:** Data "pembayaran berhasil" tidak ada ketika token tiba di XOR. XOR memilih berdasarkan data yang *sudah ada* saat token tiba. Jika data belum ada, token terjebak karena tidak ada kondisi yang bisa dievaluasi.
+
+**Risiko:** Proses macet di XOR Gateway karena kondisi tidak bisa dievaluasi. Model tidak merepresentasikan menunggu — ia hanya merepresentasikan memilih dari data yang sudah ada.
+
+**Perbaikan:** Ganti XOR Gateway dengan Event-Based Gateway. Tambahkan cabang Intermediate Message Catch (untuk konfirmasi pembayaran) dan Intermediate Timer Catch (untuk timeout). Event-Based Gateway menunggu event pertama yang terjadi.
+
+---
+
+### AP-05 — Parallel Gateway join dengan cabang yang sudah mati
+
+**Gejala:** Escalation Boundary Event interrupting mematikan Call Activity, tetapi alur dari Call Activity masih menuju Parallel Gateway join yang sama dengan jalur lain.
+
+**Mengapa salah:** Jika Boundary Event interrupting aktif, token di Call Activity *dimatikan* — tidak pernah mencapai join. Parallel join menunggu token dari *semua* incoming Sequence Flow selamanya.
+
+**Risiko:** Proses deadlock. Join tidak pernah meneruskan karena salah satu cabang tidak pernah mengirim token.
+
+**Perbaikan:** Gunakan Escalation Boundary Event *non-interrupting* agar Call Activity terus berjalan dan tokennya mencapai join. Atau pisahkan jalur eskalasi ke End Event tersendiri tanpa melewati join.
+
+---
+
+## Event
+
+### AP-06 — Cancel End Event di luar Transaction Subprocess
+
+**Gejala:** Cancel End Event dipakai di dalam Subprocess biasa (batas tipis tunggal) atau di proses utama sebagai sinyal "proses dibatalkan".
+
+**Mengapa salah:** Cancel Event hanya memiliki semantik rollback di dalam Transaction Subprocess (batas ganda). Di luar konteks itu, Cancel End Event berperilaku seperti None End Event biasa — tidak ada rollback, tidak ada Cancel Boundary yang dipicu.
+
+**Risiko:** Model tidak melakukan rollback meskipun digambar seolah-olah melakukannya. Compensation Handler tidak dipanggil.
+
+**Perbaikan:** Jika rollback diperlukan, bungkus aktivitas dalam Transaction Subprocess dan pakai Cancel End Event di dalamnya. Jika tidak ada kebutuhan rollback terkoordinasi, gunakan Error End Event untuk exception atau None End Event untuk penyelesaian normal dengan kondisi pembatalan.
+
+---
+
+### AP-07 — Timer Boundary interrupting untuk pengingat berkala
+
+**Gejala:** Timer Boundary Event (batas solid, interrupting) dipasang pada User Task "Proses Klaim" dengan durasi PT24H sebagai "pengingat".
+
+**Mengapa salah:** Interrupting Boundary Event *menghentikan* User Task yang dipasanginya ketika timer terpicu. "Pengingat" seharusnya tidak menghentikan pekerjaan yang sedang dilakukan — hanya membuka jalur notifikasi tambahan.
+
+**Risiko:** User Task dibatalkan setelah 24 jam meskipun pekerja sedang menyelesaikannya. Pekerjaan yang sudah dilakukan hilang.
+
+**Perbaikan:** Ubah ke Timer Boundary Event *non-interrupting* (batas putus-putus). Token pada User Task tetap aktif; jalur pengingat berjalan paralel dan berakhir di None End Event tersendiri.
+
+---
+
+### AP-08 — Terminate End Event di dalam Embedded Subprocess
+
+**Gejala:** Terminate End Event dipakai di dalam Embedded Subprocess untuk "menghentikan subprocess jika terjadi error".
+
+**Mengapa salah:** **[STANDARD]** Terminate End Event menghentikan *seluruh* alur aktif di scope proses tempatnya berada. Di dalam Subprocess, scopenya adalah proses induk, bukan hanya subprocess itu. Semua jalur paralel di proses induk juga dihentikan. (OMG BPMN 2.0.2 §10.4.5)
+
+**Risiko:** Jalur paralel lain yang sedang berjalan (misalnya pengiriman notifikasi bersamaan) ikut dihentikan tanpa peringatan.
+
+**Perbaikan:** Untuk menghentikan hanya subprocess, gunakan None End Event di dalam subprocess. Untuk exception, gunakan Error End Event di dalam subprocess yang ditangkap oleh Error Boundary Event di proses induk. Terminate End Event hanya layak di proses induk ketika memang ingin menghentikan semua cabang aktif.
+
+---
+
+## Subprocess dan scope
+
+### AP-09 — Compensation Handler dihubungkan dengan Sequence Flow
+
+**Gejala:** Compensation Handler Task (task dengan marker ◀◀) memiliki Sequence Flow masuk dari atau keluar ke task lain.
+
+**Mengapa salah:** Compensation Handler hanya boleh dihubungkan ke Compensation Boundary Event via *Association* (bukan Sequence Flow). Engine menentukan kapan handler dieksekusi berdasarkan keterkaitan Compensation Boundary, bukan berdasarkan urutan Sequence Flow. Handler yang punya incoming SF bisa dieksekusi dua kali: sekali lewat SF dan sekali lewat compensation trigger.
+
+**Risiko:** Handler dieksekusi di luar konteks kompensasi, atau model tidak lolos validasi.
+
+**Perbaikan:** Hapus semua Sequence Flow dari dan ke Compensation Handler. Gunakan Association untuk menghubungkan Compensation Boundary Event ke Handler. Handler tidak tampil di alur utama — ia adalah "aktivitas tersembunyi" yang hanya dipanggil engine saat compensation ditrigger.
+
+---
+
+### AP-10 — Event Subprocess interrupting untuk layanan paralel
+
+**Gejala:** Event Subprocess (batas solid, interrupting) menangani permintaan status dari customer yang bisa datang kapan saja selama proses berjalan.
+
+**Mengapa salah:** Interrupting Event Subprocess *menghentikan* proses induk ketika triggered. Jika customer meminta status saat item sedang dikemas, pengemasan dihentikan. Jika 100 customer meminta status bersamaan, proses induk tidak pernah selesai.
+
+**Risiko:** Proses utama terganggu oleh request sampingan. SLA fulfillment tidak bisa dipenuhi.
+
+**Perbaikan:** Ubah ke Event Subprocess *non-interrupting* (batas putus-putus). Proses utama terus berjalan tidak peduli berapa kali Event Subprocess diaktifkan. Event Subprocess non-interrupting berjalan paralel, menghasilkan responsnya, lalu selesai — tanpa mempengaruhi proses utama.
+
+---
+
+**Lihat juga:** [Pola BPMN Lanjutan](/advanced/) untuk contoh pola yang benar, [Matriks Kompatibilitas Event](/katalog/matriks-event/) untuk validasi posisi event.

@@ -1,0 +1,49 @@
+---
+title: "Cancel Event (E10)"
+description: "Event yang hanya bermakna di dalam Transaction Subprocess — memicu rollback terkoordinasi semua aktivitas dalam transaksi."
+---
+
+import BpmnNotationGallery from '../../../components/BpmnNotationGallery.astro';
+
+## 1. Identitas
+
+**ID:** E10 · **Slug:** `cancel-event` · **Tier:** B · **Kategori:** Event
+
+Cancel Event adalah event yang secara eksklusif digunakan dalam konteks Transaction Subprocess. Cancel End Event di dalam subprocess memicu pembatalan seluruh transaksi dan memanggil semua Compensation Handler yang terdaftar. Setelah rollback selesai, Cancel Boundary Event di luar subprocess terpicu untuk melanjutkan alur penanganan pembatalan.
+
+Notasi ini dibahas lebih lengkap dalam konteks penggunaannya di [Cabang S1 — Reservasi Perjalanan](/jalur/s1/).
+
+## 2. Gambar Notasi
+
+<BpmnNotationGallery
+  title="Cancel Event"
+  items={[
+    { kind: 'event', trigger: 'cancel', position: 'end', label: 'Cancel End Event', description: 'Tanda silang (X) tebal di dalam lingkaran akhir. Hanya valid di dalam Transaction Subprocess.' }
+  ]}
+/>
+
+## 3. Apa Artinya
+
+**[STANDARD]** Cancel End Event menyatakan bahwa transaksi yang sedang berjalan harus dibatalkan. Ketika terpicu, engine memanggil semua Compensation Handler untuk aktivitas yang sudah selesai di dalam Transaction Subprocess secara terbalik. Setelah semua handler selesai, Cancel Boundary Event di luar Transaction terpicu. [OMG BPMN 2.0.2 §10.4.6] TODO-VERIFY: lokator klausa tepat.
+
+Cancel Boundary Event (bukan Cancel End Event) dipasang pada Transaction Subprocess dari luar, dan terpicu setelah rollback internal selesai. Alur berlanjut dari sini ke penanganan pasca-pembatalan.
+
+## 4. Kapan Digunakan
+
+**Situasi yang tepat:** di dalam Transaction Subprocess ketika satu atau lebih aktivitas gagal karena alasan bisnis dan seluruh transaksi perlu dibatalkan — misalnya booking tiket+hotel di mana salah satu tidak tersedia, atau reservasi sumber daya yang saling bergantung.
+
+**Mengapa jarang digunakan:** Cancel Event hanya bermakna di dalam Transaction Subprocess, yang sendiri jarang digunakan (lihat [Transaction Subprocess](/katalog/transaction-subprocess)). Kegagalan bisnis biasa lebih sering ditangani dengan Error Boundary Event atau XOR Gateway. Cancel Event menjadi relevan hanya ketika benar-benar dibutuhkan rollback terkoordinasi all-or-nothing.
+
+## 5. Sering Tertukar Dengan
+
+**[Error Event (E06)](/notasi/error-event)** — Error Event menangani kegagalan teknis (exception). Cancel Event menangani kegagalan bisnis dalam konteks transaksi (kondisi yang menyebabkan transaksi tidak dapat dilanjutkan). Gunakan Error untuk exception teknis, Cancel untuk pembatalan bisnis di dalam Transaction.
+
+**[Terminate End Event (E11)](/notasi/terminate-event)** — Terminate menghentikan seluruh proses. Cancel menghentikan transaksi dan memicu rollback, lalu mengalihkan alur ke Cancel Boundary di luar Transaction. Setelah Cancel Boundary terpicu, proses tetap berjalan di jalur pembatalan.
+
+## 6. Status Camunda
+
+**[CAMUNDA]** Cancel Event dapat dimodelkan di Camunda Modeler dalam konteks Transaction Subprocess. Dukungan eksekusi tergantung pada implementasi Transaction Subprocess. TODO-VERIFY: verifikasi di [Camunda BPMN coverage](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/).
+
+## 7. Ringkasan
+
+Cancel Event memicu rollback terkoordinasi di dalam Transaction Subprocess — digunakan hanya dalam konteks all-or-nothing, dan tidak memiliki semantik di luar Transaction Subprocess.

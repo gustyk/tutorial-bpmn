@@ -1,6 +1,92 @@
 ---
 title: "Checklist review model"
-description: "15 pertanyaan untuk memeriksa model BPMN sebelum diserahkan."
+description: "15 pertanyaan untuk memeriksa model BPMN sebelum diserahkan atau dipresentasikan."
 ---
 
-Halaman ini akan diisi saat modul terkait diterbitkan.
+Checklist ini membantu menangkap kesalahan umum sebelum model diperiksa orang lain. Untuk setiap pertanyaan, jawab "ya" (lanjut) atau "tidak" (perlu diperbaiki dulu).
+
+---
+
+## Struktur dasar
+
+**1. Apakah setiap pihak eksternal ada di Pool terpisah, dan setiap tim internal ada di Lane dalam satu Pool?**
+
+Batas Pool = batas organisasi atau sistem yang memiliki proses mandiri. Tim internal (CS, Keuangan, Operasional) tidak punya proses sendiri — mereka adalah Lane di dalam Pool organisasi.
+
+**2. Apakah tidak ada Sequence Flow yang melintasi batas Pool?**
+
+Sequence Flow hanya boleh bergerak di dalam satu Pool (atau satu proses). Komunikasi antara Pool hanya boleh lewat Message Flow (panah putus-putus dengan ikon amplop).
+
+**3. Apakah setiap jalur aktif berakhir di End Event?**
+
+Semua Sequence Flow harus berakhir — tidak boleh ada panah yang menggantung tanpa End Event. Jalur exception dari Boundary Event juga harus memiliki End Event.
+
+**4. Apakah setiap Gateway split memiliki pasangan join yang sesuai?**
+
+- Parallel split (+) → Parallel join (+)
+- Inclusive split (○) → Inclusive join (○)
+- XOR split (×) → XOR join (×) atau langsung ke End Event
+
+XOR join boleh tanpa pasangan split jika hanya menggabungkan jalur tanpa sinkronisasi.
+
+**5. Apakah setiap Task memiliki label yang informatif?**
+
+Label Task harus berupa kata kerja + objek ("Verifikasi data pesanan"), bukan kata benda saja ("Verifikasi") atau deskripsi antarmuka ("Klik tombol simpan").
+
+---
+
+## Semantik event
+
+**6. Apakah setiap titik menunggu event menggunakan Event-Based Gateway, bukan XOR Gateway?**
+
+Jika proses menunggu salah satu dari beberapa kejadian yang belum terjadi (misalnya pembayaran diterima *atau* timeout habis), gunakan Event-Based Gateway. XOR hanya cocok ketika data untuk membuat keputusan *sudah ada* saat token tiba.
+
+**7. Apakah Boundary Event yang menghentikan activity menggunakan tipe interrupting, dan yang tidak menghentikan menggunakan non-interrupting?**
+
+Timer Boundary untuk pengingat = non-interrupting (batas putus-putus). Timer Boundary untuk deadline yang membatalkan pekerjaan = interrupting (batas solid). Periksa setiap Boundary Event dan pastikan `cancelActivity` sesuai dengan kebutuhan bisnis.
+
+**8. Apakah semua Timer Event menggunakan format ISO 8601?**
+
+Durasi: `PT24H` (24 jam), `P7D` (7 hari), `PT30M` (30 menit). Tanggal: `2026-12-31T09:00:00`. Siklus: `R3/PT1H` (ulangi 3 kali tiap jam). Bukan: "24 jam", "besok", "satu minggu".
+
+**9. Apakah tidak ada Message Flow yang digambar sebagai Sequence Flow?**
+
+Jika dua elemen dari Pool berbeda tampak terhubung dengan panah penuh (bukan putus-putus), itu Sequence Flow lintas Pool — salah. Periksa semua panah yang melintasi batas Pool.
+
+---
+
+## Subprocess dan exception
+
+**10. Apakah setiap Embedded Subprocess memiliki None Start Event di dalamnya?**
+
+**[STANDARD]** Embedded Subprocess harus dimulai dengan None Start Event (lingkaran tipis tanpa ikon). Message Start, Timer Start, atau Signal Start tidak boleh ada di dalam Embedded Subprocess — itu hanya valid di Event Subprocess atau proses top-level.
+
+**11. Apakah exception teknis (server error, data tidak valid, koneksi gagal) ditangani dengan Error Boundary Event, bukan dengan XOR Gateway?**
+
+XOR Gateway cocok untuk keputusan bisnis berdasarkan data yang sudah ada. Error Boundary Event cocok untuk exception yang terjadi *di dalam* eksekusi activity dan tidak bisa diprediksi saat token tiba.
+
+**12. Apakah setiap Compensation Boundary Event memiliki Compensation Handler yang terhubung via Association?**
+
+Compensation Boundary Event tanpa Handler = token kompensasi tidak punya tujuan. Handler harus berupa task dengan marker ◀◀ (isForCompensation=true), dihubungkan ke Boundary Event dengan Association (bukan Sequence Flow).
+
+---
+
+## Keterbacaan
+
+**13. Apakah semua label elemen mengikuti konvensi kata kerja + objek untuk task, dan kondisi untuk gateway?**
+
+Task: "Verifikasi pesanan" ✓, "Pesanan diverifikasi" ✗, "Verifikasi" ✗.
+Gateway XOR: "Data lengkap?" ✓, "Cek data" ✗.
+Lihat [konvensi penamaan lengkap](/referensi/penamaan/).
+
+**14. Apakah alur proses berjalan dari kiri ke kanan (atau atas ke bawah) secara konsisten?**
+
+Alur yang bersilangan atau mundur ke kiri membuat diagram sulit dibaca. Jika ada alur mundur karena loop, pertimbangkan untuk menggunakan Loop Marker pada Task alih-alih menggambar panah mundur.
+
+**15. Apakah tidak ada elemen yang saling bertumpuk atau terlalu dekat sehingga sulit dibedakan?**
+
+Boundary Event harus jelas terlihat menempel pada tepi activity. Gateway dan event harus punya jarak yang cukup dari elemen lain. Uji keterbacaan dengan membuka diagram di layar 1024px lebar.
+
+---
+
+**Lihat juga:** [Anti-pattern umum](/referensi/anti-pattern/) untuk penjelasan lebih dalam tentang pola yang sering salah, [Konvensi penamaan](/referensi/penamaan/) untuk aturan label elemen.

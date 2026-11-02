@@ -1,0 +1,49 @@
+---
+title: "Script Task (A06)"
+description: "Task yang dieksekusi oleh engine menggunakan skrip yang tertanam langsung di dalam model."
+---
+
+import BpmnNotationGallery from '../../../components/BpmnNotationGallery.astro';
+
+## 1. Identitas
+
+**ID:** A06 · **Slug:** `script-task` · **Tier:** B · **Kategori:** Task Type
+
+Script Task adalah task yang dieksekusi oleh Business Process Engine dengan menjalankan skrip yang didefinisikan di dalam model. Skrip berjalan sepenuhnya di sisi engine tanpa interaksi manusia dan tanpa memanggil layanan eksternal — logikanya tertanam di elemen itu sendiri.
+
+## 2. Gambar Notasi
+
+<BpmnNotationGallery
+  title="Script Task"
+  items={[
+    { kind: 'task', variant: 'script', label: 'Script Task', description: 'Ikon gulungan kertas di sudut kiri atas. Engine menjalankan skrip yang tertanam saat token tiba.' }
+  ]}
+/>
+
+## 3. Apa Artinya
+
+**[STANDARD]** Script Task adalah Activity yang dieksekusi oleh Business Process Engine. Perancang proses mendefinisikan skrip dalam bahasa yang dimengerti engine. Saat task dimulai, engine menjalankan skrip; ketika skrip selesai, task selesai. [OMG BPMN 2.0.2 §10.3.3]
+
+Script Task berbeda dari Service Task: Service Task memanggil layanan eksternal (REST, SOAP, dll.), sedangkan Script Task menjalankan logika yang tertanam di model itu sendiri. Bergantung pada engine, bahasa skrip yang didukung bervariasi (JavaScript, Groovy, FEEL, dll.).
+
+Script Task tidak memiliki interaksi manusia dan tidak memiliki sistem eksternal sebagai target. Ia sepenuhnya dikendalikan engine.
+
+## 4. Kapan Digunakan
+
+**Situasi yang tepat:** transformasi data sederhana (format tanggal, kalkulasi nilai, pemetaan field), logika routing yang terlalu kecil untuk dijadikan service tersendiri, atau prototipe awal sebelum logika dipindah ke Service Task.
+
+**Mengapa jarang digunakan:** Script Task menyematkan logika bisnis di dalam model BPMN, sehingga sulit diuji secara terpisah, sulit di-version, dan sulit dirawat tanpa membuka model. Praktik terbaik merekomendasikan memindahkan logika ke service eksternal (via Service Task) sehingga kode dan model bisa dikelola secara independen. Script Task juga terikat pada bahasa skrip engine tertentu — tidak portabel antara engine yang berbeda.
+
+## 5. Sering Tertukar Dengan
+
+**[Service Task](/notasi/service-task)** — Service Task juga dieksekusi otomatis oleh engine, tapi memanggil logika di luar model (API, worker, connector). Jika logikanya ada di sistem eksternal, gunakan Service Task. Script Task hanya untuk logika yang memang harus tertanam di model.
+
+**[Business Rule Task](/notasi/business-rule-task)** — Business Rule Task memanggil decision engine (DMN table, rules engine). Jika logikanya adalah aturan bisnis terstruktur, Business Rule Task lebih tepat karena aturannya bisa diubah tanpa mengubah model proses.
+
+## 6. Status Camunda
+
+**[CAMUNDA]** Camunda 8 mendukung Script Task untuk eksekusi. Bahasa skrip yang didukung di Camunda 8 adalah FEEL (Friendly Enough Expression Language) dan JavaScript (tergantung konfigurasi engine). Lihat [Camunda BPMN coverage](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/).
+
+## 7. Ringkasan
+
+Script Task adalah task yang dijalankan langsung oleh engine menggunakan skrip yang tertanam di model — berguna untuk logika kecil, tapi sebaiknya dihindari untuk logika bisnis yang serius karena menyulitkan pemeliharaan dan pengujian.

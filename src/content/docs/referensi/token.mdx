@@ -1,6 +1,74 @@
 ---
 title: "Semantik token"
-description: "Bagaimana token bergerak melalui proses BPMN."
+description: "Bagaimana token bergerak melalui proses BPMN — referensi cepat untuk empat perilaku kunci."
 ---
 
-Halaman ini akan diisi saat modul terkait diterbitkan.
+import TokenSimV2 from '../../../components/TokenSimV2.astro';
+
+Token adalah model mental untuk mengikuti kemajuan alur. Bayangkan token sebagai penanda yang bergerak melalui Sequence Flow, menunggu di event, bercabang di gateway, dan berakhir di End Event. Token bukan objek fisik yang secara literal dikirim engine — ia adalah abstraksi untuk menalar alur kontrol.
+
+> **[PEDAGOGICAL SIMPLIFICATION]** Token membantu menalar alur kontrol. Aturan eksekusi BPMN formal menggunakan konsep *token count* dan *flow node activation*. Untuk keperluan pemodelan dan review, abstraksi token sudah mencukupi.
+
+---
+
+## Simulasi
+
+<TokenSimV2
+  src="/tokensim/fondasi-token-demo.json"
+  title="Ikuti token pada alur paralel"
+/>
+
+---
+
+## Empat perilaku kunci
+
+### 1. Branching
+
+Satu token membuat beberapa jalur aktif (AND/Parallel) atau memilih satu jalur (XOR/Exclusive) berdasarkan kondisi atau event yang terjadi.
+
+- **Parallel split (+):** token dipecah menjadi N token, satu untuk setiap cabang keluar. Semua cabang aktif bersamaan.
+- **XOR split (×):** token memilih satu cabang berdasarkan kondisi. Cabang lain tidak aktif.
+- **Inclusive split (○):** token mengaktifkan satu atau lebih cabang berdasarkan kondisi. Minimal satu cabang harus aktif.
+- **Event-Based Gateway:** token menunggu sampai salah satu event terjadi, lalu mengikuti cabang event tersebut.
+
+### 2. Waiting
+
+Catch Event menahan kemajuan sampai pemicu datang. Token "terparkir" di Catch Event dan tidak bergerak sampai:
+- Pesan masuk (Message Catch)
+- Waktu yang ditentukan tiba (Timer Catch)
+- Signal dikirim (Signal Catch)
+- Kondisi terpenuhi (Conditional Catch)
+
+### 3. Synchronization
+
+Gateway join menunggu token dari cabang yang aktif sebelum melepas token ke jalur berikutnya.
+
+| Gateway join | Kondisi meneruskan token |
+|---|---|
+| Parallel (+) | Menunggu *semua* cabang aktif mengirim token |
+| XOR (×) | Meneruskan token pertama yang tiba; tidak menunggu cabang lain |
+| Inclusive (○) | Menunggu semua cabang yang *diaktifkan* saat split mengirim token |
+
+Kesalahan umum: memakai XOR join untuk menyinkronkan Parallel split. Hasilnya: task hilir dieksekusi dua kali.
+
+### 4. Interruption
+
+Boundary Event mengubah perilaku token di activity yang dipasanginya:
+
+- **Interrupting (batas solid):** ketika Boundary Event terpicu, token di activity *dihentikan* dan dipindahkan ke jalur Boundary. Activity dibatalkan.
+- **Non-interrupting (batas putus-putus):** ketika Boundary Event terpicu, token di activity *tetap berjalan*. Jalur Boundary dibuka secara paralel dengan activity.
+
+---
+
+## Tabel ringkasan perilaku gateway
+
+| Gateway | Split: token keluar | Join: kondisi meneruskan |
+|---|---|---|
+| XOR Exclusive (×) | 1 token ke 1 cabang | Pertama yang tiba |
+| Parallel (+) | N token ke N cabang | Semua N cabang selesai |
+| Inclusive (○) | 1–N token ke 1–N cabang | Semua cabang yang diaktifkan selesai |
+| Event-Based | 1 token menunggu | Event pertama yang terjadi |
+
+---
+
+**Lihat juga:** [Cara membaca diagram BPMN](/referensi/membaca-diagram/) untuk panduan langkah-per-langkah, [Anti-pattern umum](/referensi/anti-pattern/) untuk kesalahan gateway yang sering terjadi.

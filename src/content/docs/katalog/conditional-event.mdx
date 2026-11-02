@@ -1,0 +1,53 @@
+---
+title: "Conditional Event (E04)"
+description: "Event yang terpicu ketika suatu kondisi bisnis menjadi benar — tanpa ada pesan, timer, atau sinyal eksternal."
+---
+
+import BpmnNotationGallery from '../../../components/BpmnNotationGallery.astro';
+
+## 1. Identitas
+
+**ID:** E04 · **Slug:** `conditional-event` · **Tier:** B · **Kategori:** Event
+
+Conditional Event terpicu ketika sebuah kondisi bisnis yang dinyatakan sebagai ekspresi menjadi bernilai benar (*true*). Berbeda dari Timer (yang dipicu oleh waktu) atau Message (yang dipicu oleh pesan dari luar), Conditional Event dipicu oleh perubahan status data internal atau lingkungan yang memenuhi kondisi tertentu.
+
+## 2. Gambar Notasi
+
+<BpmnNotationGallery
+  title="Conditional Event"
+  items={[
+    { kind: 'event', trigger: 'conditional', position: 'start', label: 'Conditional Start Event', description: 'Ikon garis-garis horizontal (seperti daftar) menandai Conditional Event. Terpicu saat kondisi bisnis menjadi benar.' }
+  ]}
+/>
+
+## 3. Apa Artinya
+
+**[STANDARD]** Conditional Event menyatakan bahwa proses menunggu atau dimulai ketika suatu kondisi bisnis terpenuhi. Kondisi dinyatakan sebagai ekspresi formal yang dievaluasi engine. Event terpicu ketika evaluasi kondisi berubah dari false menjadi true. [OMG BPMN 2.0.2 §10.4.4] TODO-VERIFY: lokator klausa tepat.
+
+Conditional Event dapat muncul di beberapa posisi:
+- **Start Event:** proses dimulai ketika kondisi menjadi benar
+- **Intermediate Catch:** proses menunggu kondisi menjadi benar
+- **Boundary Event (interrupting/non-interrupting):** dipasang pada activity; memantau kondisi selama activity berjalan
+- **Event Subprocess Start (interrupting/non-interrupting)**
+
+## 4. Kapan Digunakan
+
+**Situasi yang tepat:** proses yang harus dimulai atau bereaksi ketika data bisnis mencapai ambang tertentu — misalnya "mulai proses pengadaan ketika stok di bawah ambang minimum" atau "eskalasikan tiket ketika status berubah menjadi 'belum direspons 24 jam'."
+
+**Mengapa jarang digunakan:** Conditional Event bergantung pada engine yang secara aktif memantau kondisi data — kemampuan ini tidak dimiliki semua engine dan memerlukan integrasi data yang ketat. Dalam praktik, kondisi data lebih sering dipantau oleh sistem eksternal yang kemudian mengirimkan Message atau Signal ke proses, sehingga Message/Signal Event lebih umum digunakan. Conditional Event juga membuat dependensi implisit antara model proses dan struktur data yang sulit dikelola.
+
+## 5. Sering Tertukar Dengan
+
+**[Timer Event (E03)](/notasi/timer-event)** — Timer dipicu oleh waktu yang telah ditentukan. Conditional dipicu oleh kondisi data yang berubah. Keduanya bisa memiliki tampilan yang mirip dalam konteks "menunggu sesuatu," tapi trigger-nya berbeda.
+
+**[Signal Event (E05)](/notasi/signal-event)** — Dalam praktik, Signal sering dipakai sebagai pengganti Conditional: sistem eksternal memantau kondisi dan mengirim sinyal ketika kondisi terpenuhi. Ini memisahkan pemantauan kondisi dari model proses.
+
+**[Message Event (E02)](/notasi/message-event)** — Jika kondisi dipantau oleh sistem lain yang mengirim pesan saat kondisi terpenuhi, gunakan Message Event, bukan Conditional.
+
+## 6. Status Camunda
+
+**[CAMUNDA]** Conditional Event didukung di Camunda 8 untuk beberapa posisi. TODO-VERIFY: verifikasi posisi mana yang executable di [Camunda BPMN coverage](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/).
+
+## 7. Ringkasan
+
+Conditional Event terpicu ketika kondisi bisnis menjadi benar — konsep yang tepat secara semantik, tapi jarang dipakai karena memerlukan engine yang memantau data secara aktif, yang lebih sering digantikan dengan Signal atau Message dari sistem eksternal.

@@ -1,6 +1,112 @@
 ---
 title: "Glosarium"
-description: "Definisi istilah BPMN dan terminologi tutorial ini."
+description: "Definisi istilah BPMN dan terminologi tutorial ini, satu definisi per istilah, diurutkan alfabet."
 ---
 
-Halaman ini akan diisi saat modul terkait diterbitkan.
+Setiap istilah hanya memiliki satu definisi di halaman ini. Jika istilah dijelaskan lebih dalam di bagian lain tutorial, entri di sini menyertakan tautan ke halaman tersebut.
+
+---
+
+**Activity** — Elemen BPMN yang merepresentasikan pekerjaan yang dilakukan di dalam proses; mencakup Task dan Subprocess.
+
+**Ad-hoc Subprocess** — Subprocess di mana aktivitas di dalamnya tidak memiliki urutan yang ditentukan dan dapat dieksekusi dalam urutan apapun oleh pelaku proses.
+
+**Association** — Koneksi non-direktional atau direktional yang menghubungkan Artifact (seperti Text Annotation atau Data Object) ke elemen alur; tidak membawa token.
+
+**Boundary Event** — Event yang dipasang pada tepi Activity; ketika terpicu, mengarahkan token keluar dari Activity. Dapat bersifat interrupting (membatalkan Activity) atau non-interrupting (membuka jalur paralel).
+
+**BPMN** — Business Process Model and Notation; standar OMG untuk memodelkan proses bisnis secara visual dengan semantik yang terdefinisi.
+
+**Business Rule Task** — Task yang menjalankan aturan bisnis dari Business Rule Engine (BRE); direpresentasikan dengan ikon tabel di pojok kiri atas.
+
+**Call Activity** — Activity yang memanggil dan mengeksekusi proses global (reusable) yang terdefinisi di luar proses saat ini; direpresentasikan dengan batas tebal.
+
+**Cancel Event** — Event yang hanya valid di dalam Transaction Subprocess; Cancel End Event memicu rollback semua Compensation Handler di dalam transaksi, Cancel Boundary Event terpicu setelah rollback selesai.
+
+**Collaboration** — Diagram BPMN yang menampilkan dua atau lebih Pool yang berkomunikasi via Message Flow.
+
+**Compensation** — Mekanisme BPMN untuk membalikkan efek bisnis dari Activity yang sudah selesai; diimplementasikan dengan Compensation Boundary Event dan Compensation Handler (task dengan marker ◀◀).
+
+**Conditional Event** — Event yang terpicu ketika kondisi bisnis tertentu menjadi benar; jarang dipakai karena sulit mendefinisikan kondisi secara formal di luar engine.
+
+**Data Association** — Koneksi dari atau ke Data Object/Data Store yang menunjukkan data dibaca atau ditulis oleh Activity.
+
+**Data Object** — Artefak yang merepresentasikan data yang dibuat, digunakan, atau diubah oleh Activity; tidak membawa token.
+
+**Data Store** — Artefak yang merepresentasikan repositori data persisten (database, file) yang dapat diakses dari berbagai Activity.
+
+**Default flow** — Sequence Flow dari XOR Gateway yang diikuti ketika tidak ada kondisi lain yang terpenuhi; ditandai dengan garis miring kecil di ujung dekat Gateway.
+
+**Delta** — Perbedaan notasi antara dua modul berurutan; elemen baru yang diperkenalkan dan elemen lama yang dipakai ulang.
+
+**End Event** — Elemen yang menandai berakhirnya alur dalam proses; tipe menentukan apa yang terjadi saat proses selesai (None, Message, Error, Terminate, dll.).
+
+**Error Event** — Event yang merepresentasikan exception atau kegagalan teknis; Error End Event melempar error, Error Boundary Event menangkapnya dari Activity.
+
+**Escalation Event** — Event yang mengangkat kondisi bisnis untuk ditangani scope yang lebih tinggi tanpa menyatakan kegagalan; berbeda dari Error yang mengindikasikan kegagalan teknis.
+
+**Event-Based Gateway** — Gateway yang menunggu salah satu dari beberapa event untuk menentukan jalur; berbeda dari XOR Gateway yang memilih berdasarkan data yang sudah ada.
+
+**Event Subprocess** — Subprocess khusus yang dipicu oleh event di dalam proses induk; tidak memiliki incoming Sequence Flow. Non-interrupting berarti proses induk tetap berjalan; interrupting menghentikannya.
+
+**Exclusive Gateway (XOR)** — Gateway yang memilih tepat satu jalur dari beberapa jalur berdasarkan kondisi atau event; sering disebut XOR karena logikanya eksklusif.
+
+**Gateway** — Elemen kontrol alur berbentuk diamond yang menentukan bagaimana token dibagi atau digabungkan; tipe: XOR, Parallel, Inclusive, Event-Based, Complex.
+
+**Group** — Artefak berbentuk persegi panjang dengan sudut membulat dan batas putus-putus yang mengelompokkan elemen secara visual tanpa mempengaruhi alur; tidak membawa token.
+
+**Happy path** — Jalur utama dalam proses yang berjalan tanpa exception atau pembatalan; jalur yang paling sering dilalui dalam kondisi normal.
+
+**Inclusive Gateway (OR)** — Gateway yang mengaktifkan satu atau lebih jalur berdasarkan kondisi; join-nya menunggu semua jalur yang diaktifkan selesai.
+
+**Lane** — Subdivisi di dalam Pool yang merepresentasikan pembagian tanggung jawab di dalam satu organisasi; tidak menciptakan batas proses.
+
+**Loop Marker** — Marker pada Activity (simbol panah melingkar) yang menandakan Activity dapat dieksekusi berulang kali berdasarkan kondisi; berbeda dari Multi-instance yang membutuhkan koleksi.
+
+**Manual Task** — Task yang dilakukan oleh manusia tanpa bantuan sistem atau aplikasi; direpresentasikan dengan ikon tangan.
+
+**Message Flow** — Koneksi yang merepresentasikan komunikasi antara Pool berbeda; berbeda dari Sequence Flow yang bergerak di dalam satu Pool.
+
+**Multi-instance Marker** — Marker pada Activity (garis vertikal paralel) yang menandakan Activity dieksekusi sekali untuk setiap item dalam koleksi; paralel (|||) atau sequential (≡).
+
+**None Task (Undefined Task)** — Task tanpa tipe spesifik; digunakan ketika tipe eksekusi tidak relevan untuk tujuan pemodelan.
+
+**OMG** — Object Management Group; organisasi standar yang menerbitkan spesifikasi BPMN 2.0.
+
+**Parallel Gateway (AND)** — Gateway yang mengaktifkan semua jalur keluar secara bersamaan (split) atau menunggu semua jalur aktif selesai (join).
+
+**Pool** — Elemen yang merepresentasikan participant dalam Collaboration; memiliki batas proses tersendiri. Pool white-box memiliki alur internal; Pool black-box tidak.
+
+**Receive Task** — Task yang menunggu pesan masuk dari proses atau participant lain; berbeda dari Message Catch Event karena merepresentasikan pekerjaan aktif (menerima dan memproses pesan).
+
+**Script Task** — Task yang dieksekusi oleh engine menggunakan script yang tertanam dalam model (bukan layanan eksternal); jarang dipakai karena mengikat model ke bahasa script tertentu.
+
+**Send Task** — Task yang mengirim pesan ke participant atau proses lain; sering dipasangkan dengan Message Flow.
+
+**Sequence Flow** — Koneksi yang menunjukkan urutan alur token di dalam satu proses; tidak bisa melintasi batas Pool.
+
+**Service Task** — Task yang dieksekusi oleh sistem secara otomatis (memanggil API, layanan web, atau logika sistem); direpresentasikan dengan ikon roda gigi.
+
+**Signal Event** — Event yang dipicu oleh sinyal yang di-broadcast ke seluruh proses atau Collaboration; berbeda dari Message yang ditujukan ke participant tertentu.
+
+**Start Event** — Elemen yang menandai dimulainya alur dalam proses; tipe menentukan apa yang memicu proses (None, Message, Timer, Signal, dll.).
+
+**Subprocess** — Activity yang menyembunyikan proses internal yang lebih kompleks; dapat ditampilkan collapsed (tersembunyi) atau expanded (terbuka). Lihat juga: Event Subprocess, Transaction Subprocess.
+
+**Text Annotation** — Artefak teks yang dihubungkan ke elemen via Association untuk memberikan informasi tambahan; tidak mempengaruhi alur.
+
+**Terminate End Event** — End Event yang menghentikan semua alur aktif dalam scope proses saat ini ketika token tiba; berbeda dari None End Event yang hanya menyelesaikan jalur saat ini.
+
+**Tier A** — Kategori 35 notasi BPMN yang diajarkan penuh di Jalur Belajar utama; frekuensi tinggi, nilai ajar tinggi.
+
+**Tier B** — Kategori 10 notasi yang tersedia di Katalog sebagai referensi; frekuensi lebih rendah atau membutuhkan konteks khusus.
+
+**Tier C** — Kategori 3 notasi yang jarang dipakai; hanya tersedia sebagai baris di Katalog dengan penjelasan minimal.
+
+**Timer Event** — Event yang dipicu berdasarkan waktu; dapat berupa tanggal (ISO 8601), durasi (PT24H), atau siklus (R3/PT1H).
+
+**Token** — Model mental yang merepresentasikan kemajuan alur di dalam proses BPMN; token bergerak melalui Sequence Flow, menunggu di Catch Event, bercabang di Gateway, dan berakhir di End Event.
+
+**Transaction Subprocess** — Subprocess dengan semantik all-or-nothing; jika satu Activity di dalamnya gagal karena alasan bisnis, semua Compensation Handler di dalamnya dipanggil. Direpresentasikan dengan batas ganda.
+
+**User Task** — Task yang harus dilakukan oleh manusia dengan bantuan aplikasi atau sistem workflow; direpresentasikan dengan ikon orang.

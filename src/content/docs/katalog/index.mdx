@@ -1,6 +1,57 @@
 ---
-title: "Katalog referensi"
-description: "Indeks notasi Tier B, Tier C, matriks event, dan tabel cakupan."
+title: "Katalog Referensi"
+description: "Indeks notasi Tier B, baris Tier C, matriks kompatibilitas event, dan tabel cakupan seluruh notasi."
 ---
 
-Halaman ini akan diisi saat modul terkait diterbitkan.
+import CoverageTable from '../../../components/CoverageTable.astro';
+
+Katalog ini adalah referensi cepat untuk semua notasi BPMN yang ada dalam tutorial ini.
+
+- **Tier A (35 notasi):** diajarkan bertahap di [Jalur Belajar](/jalur/01/) — setiap notasi punya halaman 19 bagian di [/notasi/](/notasi/).
+- **Tier B (10 notasi):** notasi valid BPMN yang lebih jarang digunakan — setiap notasi punya halaman 7 bagian di katalog ini.
+- **Tier C (3 notasi):** notasi yang ada di standar OMG tapi di luar cakupan tutorial — hanya baris ringkasan.
+
+---
+
+## Tabel cakupan
+
+<CoverageTable />
+
+---
+
+## Notasi Tier B
+
+Notasi Tier B adalah elemen BPMN yang sah menurut standar tapi jarang digunakan dalam pemodelan bisnis sehari-hari. Masing-masing punya kasus penggunaan yang spesifik — dan halaman ini menjelaskan kapan tepat dan kapan sebaiknya dihindari.
+
+| ID | Notasi | Kategori | Halaman |
+|---|---|---|---|
+| A06 | Script Task | Task Type | [/katalog/script-task/](/katalog/script-task/) |
+| A10 | Loop Marker | Activity Marker | [/katalog/loop-marker/](/katalog/loop-marker/) |
+| A15 | Transaction Subprocess | Subprocess | [/katalog/transaction-subprocess/](/katalog/transaction-subprocess/) |
+| A17 | Ad-hoc Subprocess | Subprocess Marker | [/katalog/adhoc-subprocess/](/katalog/adhoc-subprocess/) |
+| G05 | Complex Gateway | Gateway | [/katalog/complex-gateway/](/katalog/complex-gateway/) |
+| D02 | Data Input | Data | [/katalog/data-input/](/katalog/data-input/) |
+| D03 | Data Output | Data | [/katalog/data-output/](/katalog/data-output/) |
+| R02 | Group | Artifact | [/katalog/group/](/katalog/group/) |
+| E04 | Conditional Event | Event | [/katalog/conditional-event/](/katalog/conditional-event/) |
+| E10 | Cancel Event | Event | [/katalog/cancel-event/](/katalog/cancel-event/) |
+
+---
+
+## Notasi Tier C
+
+Tier C adalah notasi yang ada di standar OMG BPMN 2.0.2 tetapi berada di luar cakupan tutorial ini karena sangat jarang digunakan di luar konteks teknis yang spesifik.
+
+| ID | Notasi | Arti singkat | Mengapa tidak dibahas |
+|---|---|---|---|
+| E09 | Link Event | Pasangan Intermediate Event (Throw + Catch) yang berfungsi sebagai "goto" dalam satu halaman diagram — menghindari Sequence Flow yang panjang. | Hanya membantu keterbacaan diagram besar; tidak menambahkan semantik eksekusi baru; dapat digantikan dengan tata letak diagram yang baik. Sumber: [OMG BPMN 2.0.2 §10.4.x](https://www.omg.org/spec/BPMN/2.0.2/) TODO-VERIFY, [Camunda Reference](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/). |
+| E12 | Multiple Event | Event yang memiliki lebih dari satu trigger — untuk catching, terpicu saat salah satu trigger terjadi; untuk throwing, semua trigger dikirim. | Kombinasi trigger yang kompleks jarang diperlukan dalam proses bisnis nyata; biasanya dapat difaktorisasi menjadi beberapa event terpisah yang lebih mudah dibaca. Sumber: [OMG BPMN 2.0.2 §10.4.x](https://www.omg.org/spec/BPMN/2.0.2/) TODO-VERIFY, [Camunda Reference](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/). |
+| E13 | Parallel Multiple Event | Seperti Multiple Event tetapi untuk catching saja — terpicu hanya setelah *semua* trigger terpenuhi, bukan hanya salah satu. | Semantik "tunggu semua trigger sekaligus" sangat jarang diperlukan; Parallel Gateway sudah cukup untuk sinkronisasi beberapa event. Sumber: [OMG BPMN 2.0.2 §10.4.x](https://www.omg.org/spec/BPMN/2.0.2/) TODO-VERIFY, [Camunda Reference](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/). |
+
+---
+
+## Matriks kompatibilitas event
+
+Tabel 13 trigger × 8 posisi yang menunjukkan kombinasi mana yang sah menurut standar OMG.
+
+**[→ Lihat Matriks Kompatibilitas Event](/katalog/matriks-event/)**

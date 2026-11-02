@@ -1,0 +1,47 @@
+---
+title: "Data Output (D03)"
+description: "Elemen yang menyatakan data yang dihasilkan proses dan dikembalikan ke pemanggil."
+---
+
+import BpmnNotationGallery from '../../../components/BpmnNotationGallery.astro';
+
+## 1. Identitas
+
+**ID:** D03 · **Slug:** `data-output` · **Tier:** B · **Kategori:** Data
+
+Data Output menyatakan data yang dihasilkan oleh seluruh proses dan dikembalikan ke pemanggil atau sistem luar. Seperti Data Input, Data Output adalah antarmuka formal proses — ia menunjukkan apa yang bisa diharapkan pemanggil sebagai hasil setelah proses selesai.
+
+## 2. Gambar Notasi
+
+<BpmnNotationGallery
+  title="Data Output"
+  items={[
+    { kind: 'data', variant: 'output', label: 'Data Output', description: 'Dokumen dengan sudut terlipat dan panah keluar. Menandai output formal proses ke luar.' }
+  ]}
+/>
+
+## 3. Apa Artinya
+
+**[STANDARD]** Data Output adalah spesifikasi data yang dihasilkan proses. Ia merepresentasikan satu set output (*OutputSet*) yang tersedia bagi pemanggil setelah proses selesai. Beberapa Data Output dapat dikelompokkan ke dalam OutputSet. [OMG BPMN 2.0.2 §10.4.1] TODO-VERIFY: lokator klausa tepat.
+
+Data Output biasanya ditempatkan di akhir proses dan dihubungkan dari aktivitas menggunakan Data Association (F04). Penanda visualnya adalah dokumen dengan sudut terlipat dan ikon panah yang menunjuk ke luar.
+
+## 4. Kapan Digunakan
+
+**Situasi yang tepat:** model sebagai spesifikasi teknis di mana kontrak antara proses dan pemanggil perlu dinyatakan secara eksplisit — misalnya dalam definisi API proses, atau saat memodelkan proses yang dipanggil oleh Call Activity dan harus mengembalikan nilai.
+
+**Mengapa jarang digunakan:** sama dengan Data Input, kebanyakan model bisnis tidak memerlukan formalitas ini. Hasil proses biasanya sudah cukup dikomunikasikan melalui Message Event, Data Object, atau implicit melalui konteks. Data Output berguna untuk kontrak teknis, bukan pemodelan proses bisnis umum.
+
+## 5. Sering Tertukar Dengan
+
+**[Data Object (D01)](/notasi/data-object)** — Data Object merepresentasikan data yang beredar *di dalam* proses. Data Output merepresentasikan data yang *keluar* dari proses ke pemanggil. Jika data hanya digunakan di dalam proses, gunakan Data Object.
+
+**[Data Input (D02)](/katalog/data-input)** — Pasangan dari Data Output: menyatakan parameter yang diterima proses dari pemanggil.
+
+## 6. Status Camunda
+
+**[CAMUNDA]** Data Output adalah elemen pemodelan saja di Camunda 8 — dapat digambar tetapi tidak dieksekusi. Lihat [Camunda BPMN coverage](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/).
+
+## 7. Ringkasan
+
+Data Output menyatakan data yang dikembalikan proses ke pemanggil setelah selesai — berguna untuk kontrak teknis dan model callable, tapi jarang diperlukan dalam pemodelan bisnis biasa dan tidak executable di Camunda 8.

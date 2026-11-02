@@ -1,0 +1,47 @@
+---
+title: "Ad-hoc Subprocess (A17)"
+description: "Subprocess tanpa urutan aktivitas yang tetap — aktivitas di dalamnya dapat dieksekusi dalam urutan bebas."
+---
+
+import BpmnNotationGallery from '../../../components/BpmnNotationGallery.astro';
+
+## 1. Identitas
+
+**ID:** A17 · **Slug:** `adhoc-subprocess` · **Tier:** B · **Kategori:** Subprocess Marker
+
+Ad-hoc Subprocess adalah Subprocess di mana aktivitas-aktivitas di dalamnya tidak harus dieksekusi dalam urutan tertentu. Pelaksana dapat memilih dan mengeksekusi aktivitas dalam urutan yang mereka anggap sesuai. Subprocess selesai ketika kondisi penyelesaian (*completion condition*) terpenuhi atau ketika semua aktivitas telah dieksekusi.
+
+## 2. Gambar Notasi
+
+<BpmnNotationGallery
+  title="Ad-hoc Subprocess"
+  items={[
+    { kind: 'subprocess', variant: 'adhoc', label: 'Ad-hoc Subprocess', description: 'Tanda tilde (~) di bawah subprocess menandai sifat ad-hoc: aktivitas di dalamnya tidak harus berurutan.' }
+  ]}
+/>
+
+## 3. Apa Artinya
+
+**[STANDARD]** Ad-hoc Subprocess menyatakan bahwa aktivitas-aktivitas di dalamnya dapat dieksekusi dalam urutan apa pun, dieksekusi lebih dari sekali, atau bahkan tidak dieksekusi sama sekali. Tidak ada Sequence Flow yang menghubungkan aktivitas di dalam Ad-hoc Subprocess — urutannya diserahkan kepada pelaksana atau engine berdasarkan kondisi saat itu. [OMG BPMN 2.0.2 §10.3.5]
+
+Penanda visual adalah simbol tilde (~) di bagian bawah Subprocess.
+
+## 4. Kapan Digunakan
+
+**Situasi yang tepat:** proses case management atau knowledge work di mana urutan pekerjaan tidak bisa ditentukan lebih dulu — misalnya investigasi insiden (analis memilih langkah mana yang relevan), onboarding karyawan baru (beberapa formulir bisa diselesaikan dalam urutan bebas), atau review dokumen kompleks.
+
+**Mengapa jarang digunakan:** Ad-hoc Subprocess memerlukan engine yang mendukung case management atau model yang berbeda dari BPMN sekuensial biasa. Sebagian besar engine BPMN dioptimalkan untuk alur yang terstruktur. Ad-hoc juga sulit diaudit — tidak ada urutan eksekusi yang konsisten untuk dilacak. Dalam praktik, sering diganti dengan Task/Subprocess biasa yang cukup fleksibel.
+
+## 5. Sering Tertukar Dengan
+
+**[Embedded Subprocess](/notasi/embedded-subprocess)** — Embedded Subprocess biasa tetap memiliki urutan internal yang ditentukan. Ad-hoc menghilangkan urutan itu. Gunakan Subprocess biasa jika urutan aktivitas sudah diketahui, bahkan jika ada beberapa jalur kondisional.
+
+**[Inclusive Gateway (OR)](/notasi/inclusive-gateway)** — Inclusive Gateway juga bisa mengaktifkan beberapa jalur, tapi masih dalam konteks urutan yang ditentukan. Ad-hoc benar-benar membebaskan urutan dari model.
+
+## 6. Status Camunda
+
+**[CAMUNDA]** Ad-hoc Subprocess tidak didukung untuk eksekusi di Camunda 8. Ini adalah elemen pemodelan saja (*modeling only*). Lihat [Camunda BPMN coverage](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/).
+
+## 7. Ringkasan
+
+Ad-hoc Subprocess menyatakan bahwa aktivitas-aktivitas di dalamnya bebas dieksekusi dalam urutan apa pun — berguna untuk memodelkan case management, tapi tidak didukung eksekusi di Camunda 8 dan jarang dipakai di proses bisnis terstruktur.

@@ -1,0 +1,47 @@
+---
+title: "Group (R02)"
+description: "Artefak visual untuk mengelompokkan elemen BPMN tanpa mempengaruhi alur atau semantik proses."
+---
+
+import BpmnNotationGallery from '../../../components/BpmnNotationGallery.astro';
+
+## 1. Identitas
+
+**ID:** R02 · **Slug:** `group` · **Tier:** B · **Kategori:** Artifact
+
+Group adalah artefak visual yang mengelompokkan elemen-elemen BPMN dalam satu bingkai dengan label kategori. Group tidak mempengaruhi alur token, tidak memiliki semantik eksekusi, dan tidak membatasi Sequence Flow. Ia murni untuk keterbacaan dan dokumentasi diagram.
+
+## 2. Gambar Notasi
+
+<BpmnNotationGallery
+  title="Group"
+  items={[
+    { kind: 'group', label: 'Group', description: 'Bingkai persegi dengan garis putus-putus dan label di sudut. Mengelompokkan elemen secara visual tanpa efek semantik.' }
+  ]}
+/>
+
+## 3. Apa Artinya
+
+**[STANDARD]** Group adalah Artifact yang memberikan mekanisme untuk mengelompokkan elemen-elemen proses secara visual. Group tidak mempengaruhi alur Sequence atau Message. Group dapat menggabungkan elemen dari beberapa Pool atau Lane berbeda. [OMG BPMN 2.0.2 §10.7] TODO-VERIFY: lokator klausa tepat.
+
+Perbedaan kunci dari Lane: Lane membagi Pool secara struktural dan berdampak pada siapa yang bertanggung jawab atas aktivitas. Group tidak mengubah tanggung jawab — hanya memberikan label visual.
+
+## 4. Kapan Digunakan
+
+**Situasi yang tepat:** menandai fase atau kategori aktivitas dalam diagram besar — misalnya "Fase Validasi", "Aktivitas SLA Kritis", atau "Proses Refund" — tanpa harus merestrukturisasi Pool dan Lane. Group juga berguna saat ingin mengelompokkan elemen lintas Pool (misalnya menandai semua aktivitas yang terkait regulasi tertentu).
+
+**Mengapa jarang digunakan:** Group tidak memberikan semantik tambahan — ia hanya visual. Jika tujuannya adalah menyatakan tanggung jawab, Lane lebih tepat. Jika tujuannya adalah menyembunyikan kompleksitas, Subprocess lebih tepat. Group adalah pelengkap dokumentasi, bukan alat pemodelan utama.
+
+## 5. Sering Tertukar Dengan
+
+**[Lane (P02)](/notasi/lane)** — Lane membagi Pool secara struktural dan menyatakan tanggung jawab. Group hanya menandai elemen secara visual tanpa mengubah struktur. Jika ingin menyatakan "Tim X bertanggung jawab atas aktivitas ini," gunakan Lane.
+
+**[Embedded Subprocess (A13)](/notasi/embedded-subprocess)** — Subprocess menyembunyikan kompleksitas dan membatasi scope event. Group tidak melakukan keduanya. Jika ingin mengelompokkan aktivitas yang bisa dikollaps, gunakan Subprocess.
+
+## 6. Status Camunda
+
+**[CAMUNDA]** Group dapat dimodelkan di Camunda Modeler. Sebagai artefak visual tanpa semantik eksekusi, ia tidak relevan untuk runtime. Lihat [Camunda BPMN coverage](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/).
+
+## 7. Ringkasan
+
+Group adalah bingkai visual dengan label untuk mengelompokkan elemen BPMN tanpa mempengaruhi alur atau semantik — berguna untuk dokumentasi diagram besar, tapi bukan alat pemodelan utama karena tidak menambahkan informasi eksekusi.

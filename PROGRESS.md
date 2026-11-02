@@ -2,7 +2,7 @@
 
 Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y — judul` → `- [x] T-x.y — judul · 2026-11-xx · catatan satu baris`.
 
-**Acuan:** [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) v1.1 · [SPEC.md](SPEC.md) v1.1 · **Status keseluruhan:** WP-10 selesai
+**Acuan:** [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) v1.1 · [SPEC.md](SPEC.md) v1.1 · **Status keseluruhan:** WP-11 selesai
 **Keputusan pemilik:** S-01…S-04 dan D-01…D-03 sudah dijawab 2026-11-01 · G1 disetujui 2026-11-02 · G2 disetujui 2026-11-02
 **Gerbang berikutnya:** G3 — persetujuan rilis. Hentikan dan tunjukkan ke pemilik setelah WP-11 (katalog) dan WP-12 (QA).
 
@@ -109,16 +109,16 @@ Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y
 
 ## WP-11 · Katalog Tier B/C, referensi, lampiran
 
-- [ ] T-11.1 — 10 halaman Katalog Tier B
-- [ ] T-11.2 — 3 baris Tier C
-- [ ] T-11.3 — `/katalog/matriks-event` dari data
-- [ ] T-11.4 — `/katalog/` indeks + `CoverageTable`
-- [ ] T-11.5 — `/referensi/anti-pattern`
-- [ ] T-11.6 — `/referensi/review` (15 pertanyaan)
-- [ ] T-11.7 — `/referensi/penamaan`
-- [ ] T-11.8 — `/referensi/token`, `/membaca-diagram`, `/validitas`
-- [ ] T-11.9 — `/lampiran/glosarium`
-- [ ] T-11.10 — `/lampiran/sumber`
+- [x] T-11.1 — 10 halaman Katalog Tier B · 2026-11-02 · script-task/loop-marker/transaction-subprocess/adhoc-subprocess/complex-gateway/data-input/data-output/group/conditional-event/cancel-event; 7 heading masing-masing; inventory.json docPath diperbarui; A4 PASS
+- [x] T-11.2 — 3 baris Tier C · 2026-11-02 · E09/E12/E13 dalam tabel di katalog/index.mdx; format SPEC §7.3 (gambar+arti+alasan tidak dibahas+tautan)
+- [x] T-11.3 — `/katalog/matriks-event` dari data · 2026-11-02 · tabel 13×8 dari event-matrix.json; ✓/✗; kolom OMG dan Camunda dipisah
+- [x] T-11.4 — `/katalog/` indeks + `CoverageTable` · 2026-11-02 · pengantar + CoverageTable + tabel Tier B (10 tautan) + tabel Tier C + link matriks
+- [x] T-11.5 — `/referensi/anti-pattern` · 2026-11-02 · 10 anti-pattern dalam 4 kategori (AP-01–AP-10); format gejala→mengapa→risiko→perbaikan; dipanen dari advanced/index.mdx
+- [x] T-11.6 — `/referensi/review` (15 pertanyaan) · 2026-11-02 · 15 pertanyaan dalam 4 kelompok (struktur dasar, semantik event, subprocess/exception, keterbacaan)
+- [x] T-11.7 — `/referensi/penamaan` · 2026-11-02 · konvensi label SPEC §7.4 + tabel prefix ID per kategori elemen
+- [x] T-11.8 — `/referensi/token`, `/membaca-diagram`, `/validitas` · 2026-11-02 · token: 4 perilaku + tabel gateway + TokenSimV2; membaca-diagram: 7 langkah; validitas: 3 tingkat + tabel ringkasan
+- [x] T-11.9 — `/lampiran/glosarium` · 2026-11-02 · 42 istilah diurutkan alfabet; satu definisi per istilah
+- [x] T-11.10 — `/lampiran/sumber` · 2026-11-02 · tabel OMG + Camunda + alat + lisensi; pecah dari about.mdx
 
 ## WP-12 · QA, aksesibilitas, performa
 

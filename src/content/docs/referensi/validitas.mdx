@@ -1,6 +1,83 @@
 ---
 title: "Tiga tingkat validitas"
-description: "Syntactic, semantic, dan pragmatic dalam menilai model BPMN."
+description: "Syntactic, semantic, dan pragmatic — cara menilai kualitas model BPMN secara bertingkat."
 ---
 
-Halaman ini akan diisi saat modul terkait diterbitkan.
+Sebuah diagram BPMN bisa lolos pengecekan otomatis tetapi masih salah secara logika. Dan bisa benar secara logika tetapi tetap sulit dipahami oleh orang lain. Tiga tingkat validitas di bawah membantu menilai kualitas model secara lengkap.
+
+---
+
+## Tingkat 1 — Syntactic validity
+
+**Definisi:** Bentuk dan koneksi elemen diperbolehkan oleh spesifikasi BPMN.
+
+Syntactic validity bisa diperiksa oleh tool secara otomatis. Model yang tidak valid secara sintaksis biasanya tidak bisa dibuka atau dieksekusi.
+
+**Contoh pelanggaran:**
+- Sequence Flow dari Pool A ke Pool B (SF tidak boleh melintasi Pool)
+- Boundary Event dengan incoming Sequence Flow (Boundary Event hanya punya outgoing SF)
+- Parallel Gateway join tanpa incoming Sequence Flow
+- Event Subprocess dengan None Start Event yang bersifat interrupting (None Start di Event Subprocess harus non-interrupting jika ada proses lain yang harus tetap berjalan)
+- Cancel End Event di luar Transaction Subprocess
+
+**Tool yang bisa membantu:**
+- demo.bpmn.io — memperingatkan koneksi yang tidak valid
+- Camunda Modeler — memperingatkan elemen yang tidak executable
+- `npm run validate:bpmn` di tutorial ini
+
+---
+
+## Tingkat 2 — Semantic validity
+
+**Definisi:** Token dan event menghasilkan perilaku sesuai kebutuhan bisnis.
+
+Semantic validity tidak bisa sepenuhnya diperiksa otomatis. Model bisa lolos syntactic check tetapi memiliki alur yang macet, task yang dieksekusi dua kali, atau event yang tidak pernah terpicu.
+
+**Contoh pelanggaran:**
+- XOR Gateway join setelah Parallel Gateway split → task hilir dieksekusi dua kali
+- XOR Gateway untuk menunggu event eksternal → token macet karena kondisi tidak bisa dievaluasi
+- Parallel Gateway join menunggu cabang yang sudah dimatikan oleh Boundary Event interrupting → deadlock
+- Compensation Handler tanpa Association ke Compensation Boundary → kompensasi tidak pernah dipanggil
+- Timer Boundary interrupting pada task yang seharusnya hanya diberi pengingat → task dibatalkan saat pengingat terpicu
+
+**Cara memeriksa:**
+- Simulasi token: ikuti token dari setiap Start Event ke End Event secara mental
+- Periksa setiap gateway join — apakah semua cabang yang aktif bisa mengirim token ke join?
+- Periksa setiap Boundary Event — apakah konsekuensinya (interrupting/non-interrupting) sesuai kebutuhan bisnis?
+
+---
+
+## Tingkat 3 — Pragmatic quality
+
+**Definisi:** Manusia dapat memahami diagram dengan mudah dan cepat.
+
+Model yang secara syntactic dan semantic valid masih bisa menghasilkan diagram yang sulit dibaca, mengelirukan, atau tidak mencerminkan pemahaman bersama tim.
+
+**Contoh masalah:**
+- Label tidak informatif: "Task 1", "Gateway", "End" — tidak ada informasi bisnis
+- Alur bersilangan berulang kali karena elemen tidak diatur dengan baik
+- Subprocess yang terlalu dalam (lebih dari 3 level) membuat pembaca kehilangan konteks
+- Terlalu banyak elemen dalam satu halaman tanpa pemisahan yang jelas
+- Nama Pool menggunakan nama sistem teknis ("ERP", "CRM") bukan nama peran bisnis ("Tim Penjualan", "Customer")
+- Boundary Event tidak terlihat jelas menempel pada activity karena terlalu kecil atau tumpang tindih
+
+**Cara memeriksa:**
+- Minta seseorang yang belum tahu konteksnya membaca diagram dalam 5 menit — apa yang tidak mereka mengerti?
+- Periksa apakah diagram bisa dibaca dari kiri ke kanan tanpa bolak-balik
+- Periksa apakah semua label mengikuti konvensi kata kerja + objek
+
+---
+
+## Tabel ringkasan
+
+| Tingkat | Apa yang diperiksa | Tool yang bisa membantu | Contoh masalah |
+|---|---|---|---|
+| Syntactic | Bentuk dan koneksi diperbolehkan BPMN | demo.bpmn.io, Camunda Modeler, validator | SF lintas Pool, Boundary Event dengan incoming SF |
+| Semantic | Token dan event menghasilkan perilaku yang benar | Simulasi token manual, CriteriaChecker | XOR join setelah Parallel split, deadlock di join |
+| Pragmatic | Manusia memahami diagram dengan mudah | Peer review, presentasi ke non-modeler | Label tidak informatif, alur bersilangan, terlalu dalam |
+
+---
+
+**Catatan penting:** Model yang lolos semua ketiga tingkat ini masih bisa salah jika requirement-nya salah sejak awal. Validitas model BPMN mengasumsikan bahwa requirement yang dimodelkan sudah benar — ini adalah tanggung jawab analisis bisnis, bukan tanggung jawab model.
+
+**Lihat juga:** [Cara membaca diagram BPMN](/referensi/membaca-diagram/), [Anti-pattern umum](/referensi/anti-pattern/), [Checklist review model](/referensi/review/).

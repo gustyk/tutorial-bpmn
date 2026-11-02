@@ -1,6 +1,82 @@
 ---
-title: "Matriks kompatibilitas event"
-description: "104 kombinasi trigger dan posisi: valid, tidak valid, bersyarat."
+title: "Matriks Kompatibilitas Event"
+description: "104 kombinasi trigger dan posisi event BPMN — mana yang sah menurut standar OMG dan mana yang tidak."
 ---
 
-Halaman ini akan diisi saat modul terkait diterbitkan.
+Tabel ini menunjukkan kombinasi **trigger** (jenis event) dan **posisi** (di mana event ditempatkan dalam proses) yang sah menurut standar OMG BPMN 2.0.2.
+
+**Legenda:**
+- **✓** — Sah menurut standar OMG
+- **✗** — Tidak sah / tidak ada semantiknya
+- **?** — Dukungan eksekusi Camunda belum diverifikasi (TODO-VERIFY)
+
+Kolom posisi disingkat untuk keterbacaan: **Start** = Start Event, **I.Catch** = Intermediate Catch, **I.Throw** = Intermediate Throw, **Bdry-Int** = Boundary Interrupting, **Bdry-Non** = Boundary Non-interrupting, **End** = End Event, **EvSP-Int** = Event Subprocess Interrupting, **EvSP-Non** = Event Subprocess Non-interrupting.
+
+---
+
+## Matriks OMG (valid/invalid)
+
+| Trigger | Start | I.Catch | I.Throw | Bdry-Int | Bdry-Non | End | EvSP-Int | EvSP-Non |
+|---|---|---|---|---|---|---|---|---|
+| None | ✓ | ✗ | ✓ | ✗ | ✗ | ✓ | ✗ | ✗ |
+| Message | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Timer | ✓ | ✓ | ✗ | ✓ | ✓ | ✗ | ✓ | ✓ |
+| Error | ✗ | ✗ | ✗ | ✓ | ✗ | ✓ | ✓ | ✗ |
+| Escalation | ✗ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Signal | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Conditional | ✓ | ✓ | ✗ | ✓ | ✓ | ✗ | ✓ | ✓ |
+| Link | ✗ | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ |
+| Compensation | ✗ | ✗ | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ |
+| Cancel | ✗ | ✗ | ✗ | ✓ | ✗ | ✓ | ✗ | ✗ |
+| Multiple | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| ParallelMultiple | ✓ | ✓ | ✗ | ✓ | ✓ | ✗ | ✓ | ✓ |
+| Terminate | ✗ | ✗ | ✗ | ✗ | ✗ | ✓ | ✗ | ✗ |
+
+**[STANDARD]** Data di atas berasal dari OMG BPMN 2.0.2 §10.4.x, tabel 10.84–10.92. Status TODO-VERIFY: lokator baris tepat belum diverifikasi per sel.
+
+---
+
+## Catatan penting per trigger
+
+**None:** Tidak ada variasi Intermediate Catch atau Boundary — "menunggu none" tidak memiliki semantik. Intermediate Throw None berfungsi sebagai penanda *milestone*.
+
+**Error:** Hanya tiga posisi yang sah — Boundary Interrupting, End, dan EventSubprocess Interrupting. Error tidak punya Intermediate Throw standar; Escalation Throw digunakan untuk melempar kondisi ke scope atas.
+
+**Escalation:** Satu-satunya event yang bisa di-*throw* secara intermediate (bukan hanya di End). Escalation Boundary bisa interrupting atau non-interrupting.
+
+**Link:** Hanya Intermediate Catch dan Throw — berfungsi sebagai pasangan "lompatan dalam halaman" (goto). Tidak ada Link Start, Boundary, atau End.
+
+**Compensation:** Compensation Boundary hanya ada dalam satu bentuk (dipicu setelah activity selesai, bukan saat berjalan). Tidak ada Compensation Boundary Non-interrupting dalam arti konvensional.
+
+**Cancel:** Hanya sah sebagai Cancel End (di dalam Transaction Subprocess) dan Cancel Boundary (di luar Transaction Subprocess). Tidak ada Cancel Intermediate atau Cancel Start.
+
+**Terminate:** Hanya sah sebagai End Event. Tidak ada Terminate Intermediate, Boundary, atau Start.
+
+**Multiple/ParallelMultiple:** Multiple menunggu salah satu dari beberapa trigger. ParallelMultiple menunggu semua trigger terpenuhi. Keduanya hanya *catching* — tidak ada Multiple Throw kecuali End.
+
+---
+
+## Status Camunda (TODO-VERIFY)
+
+Dukungan eksekusi Camunda 8.9 belum diverifikasi per sel dalam matriks ini. Kolom "?" di tabel OMG mencerminkan hal ini. Untuk memverifikasi:
+
+1. Buka [Camunda BPMN coverage](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/)
+2. Cari trigger dan posisi yang relevan
+3. Perhatikan perbedaan antara *supported for modeling* dan *supported for execution*
+
+Beberapa pola umum yang **tidak** executable di Camunda 8 (berdasarkan informasi publik yang tersedia, TODO-VERIFY):
+- Complex Gateway
+- Ad-hoc Subprocess
+- Data Input / Data Output
+- Multiple Event dan Parallel Multiple Event (sebagian posisi)
+
+---
+
+## Cara menggunakan matriks ini
+
+Sebelum menambahkan event ke diagram, verifikasi dua hal:
+
+1. **Apakah kombinasi trigger+posisi sah?** Gunakan tabel di atas.
+2. **Apakah kombinasi ini executable di engine target?** Verifikasi di Camunda coverage jika menggunakan Camunda.
+
+Kesalahan umum: menggambar event yang terlihat masuk akal secara visual (misalnya Error Start Event) tanpa memeriksa bahwa kombinasi itu tidak sah menurut standar.

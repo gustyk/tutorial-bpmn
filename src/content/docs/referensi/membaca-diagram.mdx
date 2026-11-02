@@ -1,6 +1,113 @@
 ---
 title: "Cara membaca diagram BPMN"
-description: "Panduan membaca model BPMN dari Start Event ke End Event."
+description: "Panduan tujuh langkah untuk membaca model BPMN dari Start Event ke End Event."
 ---
 
-Halaman ini akan diisi saat modul terkait diterbitkan.
+Membaca diagram BPMN bukan hanya mengikuti panah dari kiri ke kanan. Untuk memahami model secara penuh — termasuk siapa yang terlibat, kapan proses menunggu, dan apa yang terjadi saat ada kegagalan — ikuti tujuh langkah di bawah secara berurutan.
+
+---
+
+## Langkah 1 — Identifikasi Pool dan Lane
+
+Mulai dari luar ke dalam. Pool = batas organisasi atau sistem. Lane = pembagian tanggung jawab di dalam satu organisasi.
+
+Yang perlu ditanya:
+- Ada berapa pihak yang terlibat?
+- Siapa yang memiliki proses utama (Pool white-box dengan alur) dan siapa yang hanya berkomunikasi (Pool black-box tanpa alur)?
+- Di dalam Pool utama, bagaimana tanggung jawab dibagi (Lane)?
+
+Jika diagram tidak punya Pool atau Lane, semua aktivitas ada di satu proses — cocok untuk proses sederhana tanpa batas organisasi.
+
+---
+
+## Langkah 2 — Temukan semua Start Event
+
+Start Event adalah titik masuk proses. Setiap Pool white-box memiliki minimal satu Start Event.
+
+Yang perlu ditanya:
+- Apa yang memulai proses? (permintaan customer, jadwal rutin, event eksternal?)
+- Tipe Start Event apa? (None = manual/konvensional, Message = dipicu pesan masuk, Timer = dipicu waktu, Signal = dipicu sinyal)
+- Apakah ada Event Subprocess dengan Start Event tambahan? (bisa dipicu kapan saja)
+
+---
+
+## Langkah 3 — Ikuti Sequence Flow
+
+Ikuti panah Sequence Flow dari Start Event ke End Event. Di setiap task, tanyakan:
+- Siapa yang mengerjakan? (Lane mana)
+- Apa inputnya dan apa outputnya?
+- Tipe task apa? (User = manusia, Service = otomatis, Send/Receive = komunikasi)
+
+Jangan ikuti panah Message Flow dulu — simpan untuk langkah 6.
+
+---
+
+## Langkah 4 — Periksa setiap Gateway
+
+Di setiap gateway, identifikasi tipe dan maknanya:
+
+| Tanda di gateway | Tipe | Arti |
+|---|---|---|
+| X | XOR/Exclusive | Pilih satu cabang berdasarkan kondisi atau default |
+| + | Parallel | Aktifkan semua cabang bersamaan |
+| ○ | Inclusive | Aktifkan satu atau lebih cabang berdasarkan kondisi |
+| Lingkaran dalam | Event-Based | Tunggu event pertama yang terjadi |
+
+Untuk gateway split:
+- Baca label kondisi di setiap outgoing Sequence Flow
+- Apakah ada jalur default (panah dengan garis miring)?
+- Apakah semua kemungkinan sudah tertutup?
+
+Untuk gateway join:
+- Apa tipenya? Apakah sesuai dengan split-nya?
+- Kapan token diteruskan?
+
+---
+
+## Langkah 5 — Periksa setiap Event
+
+Untuk setiap event di luar Start dan End:
+
+**Intermediate Catch Event** (batas ganda tipis):
+- Apa trigger-nya? Apa yang ditunggu?
+- Apakah event ini berdiri sendiri di alur utama, atau menempel sebagai Boundary Event?
+
+**Intermediate Throw Event** (batas ganda tebal):
+- Apa yang dikirim/dipicu? (pesan, sinyal, kompensasi, eskalasi)
+
+**Boundary Event** (menempel pada activity):
+- Interrupting (batas solid) atau non-interrupting (batas putus-putus)?
+- Jalur exception berakhir di End Event mana?
+
+**End Event** (lingkaran tebal):
+- Tipe apa? None (alur selesai), Message (kirim pesan saat selesai), Error (selesai karena exception), Terminate (hentikan semua cabang aktif)?
+
+---
+
+## Langkah 6 — Periksa Message Flow antar-Pool
+
+Message Flow (panah putus-putus dengan ikon amplop) menunjukkan komunikasi antarpihak. Untuk setiap Message Flow:
+- Siapa pengirim dan siapa penerima?
+- Apa yang dikirim? (data, instruksi, konfirmasi)
+- Apakah ada pasangan? (request dan response)
+- Apakah penerima punya Catch Event yang menunggu pesan ini?
+
+---
+
+## Langkah 7 — Verifikasi semua token mencapai End Event
+
+Lakukan simulasi mental: bayangkan token berjalan dari setiap Start Event.
+
+Checklist:
+- Apakah token dari setiap Start Event bisa mencapai End Event di semua jalur?
+- Apakah ada Gateway join yang menunggu token dari cabang yang tidak pernah aktif? (deadlock)
+- Apakah ada Task tanpa outgoing Sequence Flow? (token terjebak)
+- Apakah token dari jalur exception (Boundary Event, Error) juga mencapai End Event?
+
+Jika ada jalur yang macet, model memiliki kesalahan semantik meskipun tampak benar secara visual.
+
+---
+
+**Latihan cepat:** Ambil model BPMN mana saja dari Jalur Belajar, tutup labelnya, dan coba identifikasi tipe setiap elemen hanya dari bentuk simbolnya. Kemudian buka label dan verifikasi apakah tipe yang kamu identifikasi sudah sesuai dengan nama elemennya.
+
+**Lihat juga:** [Semantik token](/referensi/token/) untuk memahami bagaimana token bergerak, [Tiga tingkat validitas](/referensi/validitas/) untuk menilai kualitas model.

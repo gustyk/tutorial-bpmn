@@ -1,0 +1,47 @@
+---
+title: "Data Input (D02)"
+description: "Elemen yang menyatakan data yang diperlukan sebagai input untuk seluruh proses — bukan hanya satu aktivitas."
+---
+
+import BpmnNotationGallery from '../../../components/BpmnNotationGallery.astro';
+
+## 1. Identitas
+
+**ID:** D02 · **Slug:** `data-input` · **Tier:** B · **Kategori:** Data
+
+Data Input menyatakan data yang dibutuhkan oleh seluruh proses sebagai input dari luar. Berbeda dari Data Object yang merepresentasikan data yang beredar di dalam proses, Data Input adalah antarmuka formal proses terhadap dunia luar — ia menunjukkan apa yang harus disediakan pemanggil sebelum proses dapat dimulai.
+
+## 2. Gambar Notasi
+
+<BpmnNotationGallery
+  title="Data Input"
+  items={[
+    { kind: 'data', variant: 'input', label: 'Data Input', description: 'Dokumen dengan sudut terlipat dan panah masuk. Menandai input formal proses dari luar.' }
+  ]}
+/>
+
+## 3. Apa Artinya
+
+**[STANDARD]** Data Input adalah spesifikasi data yang diperlukan oleh proses. Ia merepresentasikan satu set input (*InputSet*) yang harus tersedia agar proses dapat dieksekusi. Beberapa Data Input dapat dikelompokkan ke dalam satu InputSet. [OMG BPMN 2.0.2 §10.4.1] TODO-VERIFY: lokator klausa tepat.
+
+Data Input biasanya ditempatkan di awal proses dan dihubungkan ke aktivitas atau proses menggunakan Data Association (F04). Penanda visualnya adalah dokumen dengan sudut terlipat dan ikon panah yang menunjuk ke dalam.
+
+## 4. Kapan Digunakan
+
+**Situasi yang tepat:** dokumentasi antarmuka formal proses dalam model yang berfungsi sebagai spesifikasi teknis — misalnya dalam kontrak antara sistem pemanggil dan proses yang dipanggil, atau saat memodelkan proses callable (proses yang dipanggil oleh Call Activity).
+
+**Mengapa jarang digunakan:** Sebagian besar model BPMN di level business analysis tidak memerlukan spesifikasi input yang formal. Data yang masuk ke proses sudah cukup diekspresikan melalui Data Object (D01) atau implicit melalui konteks message. Data Input berguna untuk spesifikasi teknis yang ketat, bukan untuk pemodelan proses bisnis biasa.
+
+## 5. Sering Tertukar Dengan
+
+**[Data Object (D01)](/notasi/data-object)** — Data Object merepresentasikan data yang beredar *di dalam* proses. Data Input merepresentasikan data yang datang *dari luar* proses sebagai parameter. Jika data dibuat atau dimodifikasi di dalam proses, gunakan Data Object.
+
+**[Data Output (D03)](/katalog/data-output)** — Pasangan dari Data Input: menyatakan data yang dihasilkan proses dan dikembalikan ke pemanggil.
+
+## 6. Status Camunda
+
+**[CAMUNDA]** Data Input adalah elemen pemodelan saja di Camunda 8 — dapat digambar tetapi tidak dieksekusi. Lihat [Camunda BPMN coverage](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/).
+
+## 7. Ringkasan
+
+Data Input menyatakan parameter input formal proses dari pemanggil — berguna untuk spesifikasi teknis dan model callable, tapi jarang diperlukan dalam pemodelan bisnis biasa dan tidak executable di Camunda 8.

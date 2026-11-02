@@ -1,0 +1,47 @@
+---
+title: "Loop Marker (A10)"
+description: "Marker pada Activity yang menyatakan aktivitas diulang selama kondisi tertentu terpenuhi."
+---
+
+import BpmnNotationGallery from '../../../components/BpmnNotationGallery.astro';
+
+## 1. Identitas
+
+**ID:** A10 · **Slug:** `loop-marker` · **Tier:** B · **Kategori:** Activity Marker
+
+Loop Marker adalah penanda pada Task atau Subprocess yang menyatakan aktivitas tersebut dieksekusi berulang kali berdasarkan kondisi yang dievaluasi sebelum atau setelah setiap iterasi. Berbeda dari Multi-instance yang menjalankan instansi paralel atau sekuensial untuk koleksi item, Loop Marker menjalankan satu instansi yang sama berulang kali hingga kondisi terpenuhi.
+
+## 2. Gambar Notasi
+
+<BpmnNotationGallery
+  title="Loop Marker"
+  items={[
+    { kind: 'task', variant: 'none', marker: 'loop', label: 'Loop Marker', description: 'Panah melingkar di bawah task. Aktivitas diulang selama kondisi loop terpenuhi.' }
+  ]}
+/>
+
+## 3. Apa Artinya
+
+**[STANDARD]** Loop Marker menyatakan bahwa Activity dieksekusi berulang kali. Ada dua mode: *testBefore* (kondisi dievaluasi sebelum eksekusi — seperti while loop) dan *testAfter* (kondisi dievaluasi setelah eksekusi — seperti do-while loop). Loop berhenti ketika kondisi tidak terpenuhi atau ketika nilai `loopMaximum` tercapai. [OMG BPMN 2.0.2 §10.3.2]
+
+Satu token masuk ke task. Token tetap di task selama loop berlangsung. Ketika loop selesai, satu token keluar. Ini berbeda dari Multi-instance yang membuat beberapa token sekaligus.
+
+## 4. Kapan Digunakan
+
+**Situasi yang tepat:** aktivitas yang harus diulang sampai kondisi bisnis terpenuhi — misalnya "coba kirim notifikasi hingga customer merespons" atau "lakukan rekonsiliasi data sampai tidak ada perbedaan".
+
+**Mengapa jarang digunakan:** kondisi loop di dalam model sulit dibaca dan diuji. Dalam praktik, pengulangan lebih sering dimodelkan dengan Sequence Flow yang kembali ke gateway sebelumnya (retry loop eksplisit), sehingga kondisi terlihat jelas di diagram. Loop Marker juga jarang didukung penuh di semua engine, dan kondisi loop tersembunyi di properti task — tidak terlihat di diagram.
+
+## 5. Sering Tertukar Dengan
+
+**[Multi-instance Marker](/notasi/multi-instance)** — Multi-instance menjalankan aktivitas satu kali untuk setiap item dalam koleksi (misalnya: proses setiap baris order). Loop Marker mengulangi aktivitas yang sama sampai kondisi terpenuhi tanpa koleksi tetap. Jika kamu tahu jumlah iterasi atau punya koleksi, gunakan Multi-instance.
+
+**Retry loop via Sequence Flow** — Dalam praktik pemodelan, banyak perancang lebih memilih memodelkan pengulangan secara eksplisit: End Event palsu dihilangkan, diganti dengan Sequence Flow kembali ke XOR Gateway yang mengevaluasi kondisi lanjut/berhenti. Pendekatan ini lebih terbaca tapi lebih verbose.
+
+## 6. Status Camunda
+
+**[CAMUNDA]** Loop Marker dapat dimodelkan di Camunda Modeler tapi dukungan eksekusi di Camunda 8 bervariasi. TODO-VERIFY: verifikasi dukungan execution di [Camunda BPMN coverage](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/) sebelum menggunakan di proses yang dieksekusi.
+
+## 7. Ringkasan
+
+Loop Marker menyatakan bahwa suatu aktivitas diulang berdasarkan kondisi — berguna secara konseptual, tapi dalam praktik sering diganti dengan loop eksplisit via Sequence Flow karena lebih mudah dibaca dan diuji.

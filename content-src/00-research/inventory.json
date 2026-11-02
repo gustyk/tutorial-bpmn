@@ -442,7 +442,8 @@
       "slug": "script-task",
       "introducedIn": null,
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "katalog/script-task.mdx"
     },
     {
       "id": "A07",
@@ -501,7 +502,8 @@
       "slug": "loop-marker",
       "introducedIn": null,
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "katalog/loop-marker.mdx"
     },
     {
       "id": "A11",
@@ -575,7 +577,8 @@
       "slug": "transaction-subprocess",
       "introducedIn": null,
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "katalog/transaction-subprocess.mdx"
     },
     {
       "id": "A16",
@@ -604,7 +607,8 @@
       "slug": "adhoc-subprocess",
       "introducedIn": null,
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "katalog/adhoc-subprocess.mdx"
     },
     {
       "id": "G01",
@@ -678,7 +682,8 @@
       "slug": "complex-gateway",
       "introducedIn": null,
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "katalog/complex-gateway.mdx"
     },
     {
       "id": "D01",
@@ -707,7 +712,8 @@
       "slug": "data-input",
       "introducedIn": null,
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "katalog/data-input.mdx"
     },
     {
       "id": "D03",
@@ -721,7 +727,8 @@
       "slug": "data-output",
       "introducedIn": null,
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "katalog/data-output.mdx"
     },
     {
       "id": "D04",
@@ -765,7 +772,8 @@
       "slug": "group",
       "introducedIn": null,
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "katalog/group.mdx"
     },
     {
       "id": "E01",
@@ -824,7 +832,8 @@
       "slug": "conditional-event",
       "introducedIn": null,
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "katalog/conditional-event.mdx"
     },
     {
       "id": "E05",
@@ -912,7 +921,8 @@
       "slug": "cancel-event",
       "introducedIn": null,
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "katalog/cancel-event.mdx"
     },
     {
       "id": "E11",

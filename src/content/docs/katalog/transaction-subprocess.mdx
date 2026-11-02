@@ -1,0 +1,51 @@
+---
+title: "Transaction Subprocess (A15)"
+description: "Subprocess dengan semantik all-or-nothing: semua aktivitas di dalamnya harus berhasil, atau semuanya dibatalkan."
+---
+
+import BpmnNotationGallery from '../../../components/BpmnNotationGallery.astro';
+
+## 1. Identitas
+
+**ID:** A15 · **Slug:** `transaction-subprocess` · **Tier:** B · **Kategori:** Subprocess
+
+Transaction Subprocess adalah Subprocess khusus dengan semantik *all-or-nothing*: semua aktivitas di dalamnya harus berhasil. Jika satu aktivitas gagal karena alasan bisnis (bukan error teknis), seluruh subprocess dibatalkan dan semua Compensation Handler yang terdaftar di dalamnya dipanggil secara otomatis. Setelah rollback selesai, Cancel Boundary Event di luar subprocess terpicu.
+
+Notasi ini dibahas lebih lengkap dalam konteks penggunaannya di [Cabang S1 — Reservasi Perjalanan](/jalur/s1/).
+
+## 2. Gambar Notasi
+
+<BpmnNotationGallery
+  title="Transaction Subprocess"
+  items={[
+    { kind: 'subprocess', variant: 'transaction', label: 'Transaction Subprocess', description: 'Border ganda (dua garis tebal) membedakan Transaction Subprocess dari Subprocess biasa.' }
+  ]}
+/>
+
+## 3. Apa Artinya
+
+**[STANDARD]** Transaction Subprocess menyatakan bahwa semua aktivitas di dalamnya merupakan satu unit bisnis atomis. Rollback dipicu oleh Cancel End Event di dalam subprocess, yang kemudian mengeksekusi semua Compensation Handler yang aktif. Setelah rollback selesai, Cancel Boundary Event (bukan Error Boundary) di luar subprocess terpicu untuk melanjutkan alur penanganan. [OMG BPMN 2.0.2 §10.3.7]
+
+Cara membedakan dengan Subprocess biasa: Transaction Subprocess memiliki **border ganda** (dua garis), sedangkan Subprocess biasa hanya satu garis.
+
+**[PEDAGOGICAL SIMPLIFICATION]** Implementasi aktual di engine seperti Camunda memerlukan koordinasi protokol transaksional eksternal (misalnya two-phase commit) untuk rollback yang benar-benar atomis. Tanpa itu, Transaction Subprocess di Camunda berperilaku seperti Subprocess biasa. Semantik di sini mengacu pada model, bukan implementasi engine.
+
+## 4. Kapan Digunakan
+
+**Situasi yang tepat:** booking paket perjalanan (tiket + hotel harus berhasil bersama), reservasi sumber daya yang saling bergantung, atau transaksi keuangan multi-langkah yang harus all-or-nothing dari sudut pandang bisnis.
+
+**Mengapa jarang digunakan:** kebanyakan proses bisnis tidak memerlukan atomisitas bisnis yang ketat. Exception teknis biasa (server down, timeout) sudah cukup ditangani dengan Error Boundary Event. Transaction Subprocess menambah kompleksitas model dan implementasi yang tidak sepadan untuk kasus-kasus sederhana.
+
+## 5. Sering Tertukar Dengan
+
+**[Embedded Subprocess](/notasi/embedded-subprocess)** — Subprocess biasa juga bisa punya Compensation Handler, tapi tidak punya semantik all-or-nothing. Jika hanya perlu mengelompokkan aktivitas atau menangani error, gunakan Subprocess biasa.
+
+**[Cancel Event](/katalog/cancel-event)** — Cancel End Event hanya bermakna di dalam Transaction Subprocess. Jangan gunakan Cancel Event di luar Transaction Subprocess — ia tidak memiliki semantik rollback di luar konteks ini.
+
+## 6. Status Camunda
+
+**[CAMUNDA]** Transaction Subprocess dapat dimodelkan di Camunda Modeler. Untuk eksekusi dengan semantik rollback penuh, diperlukan konfigurasi tambahan. TODO-VERIFY: verifikasi dukungan di [Camunda BPMN coverage](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/).
+
+## 7. Ringkasan
+
+Transaction Subprocess menyatakan bahwa sekelompok aktivitas harus berhasil semua atau dibatalkan semua — berguna untuk booking multi-komponen, tapi memerlukan dukungan engine dan koordinasi Compensation Handler yang eksplisit.

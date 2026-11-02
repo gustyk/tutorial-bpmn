@@ -1,0 +1,47 @@
+---
+title: "Complex Gateway (G05)"
+description: "Gateway untuk kondisi percabangan dan penggabungan yang tidak dapat diekspresikan dengan XOR, AND, atau OR Gateway."
+---
+
+import BpmnNotationGallery from '../../../components/BpmnNotationGallery.astro';
+
+## 1. Identitas
+
+**ID:** G05 · **Slug:** `complex-gateway` · **Tier:** B · **Kategori:** Gateway
+
+Complex Gateway adalah gateway yang digunakan ketika aturan percabangan atau penggabungan alur tidak dapat diekspresikan dengan Exclusive (XOR), Parallel (AND), atau Inclusive (OR) Gateway. Aturan kompleks didefinisikan secara eksplisit di properti gateway dan dapat mencakup kombinasi kondisi, jumlah token yang diharapkan, atau logika kustom lainnya.
+
+## 2. Gambar Notasi
+
+<BpmnNotationGallery
+  title="Complex Gateway"
+  items={[
+    { kind: 'gateway', variant: 'complex', label: 'Complex Gateway', description: 'Diamond dengan asterisk (*) di tengah. Digunakan untuk kondisi yang terlalu kompleks untuk XOR/AND/OR.' }
+  ]}
+/>
+
+## 3. Apa Artinya
+
+**[STANDARD]** Complex Gateway menyediakan mekanisme percabangan dan penggabungan yang tidak dapat dimodelkan dengan gateway lain. Perilakunya sepenuhnya ditentukan oleh *activationCondition* dan *activationCount* yang didefinisikan oleh perancang proses. [OMG BPMN 2.0.2 §13.2.3] TODO-VERIFY: lokator klausa tepat.
+
+Penggunaan Complex Gateway yang salah sering terjadi: perancang memakai Complex Gateway karena tidak tahu perbedaan XOR/AND/OR, padahal salah satu dari tiga gateway standar sudah cukup.
+
+## 4. Kapan Digunakan
+
+**Situasi yang tepat:** aturan seperti "lanjutkan jika minimal 2 dari 3 persetujuan diterima" atau "gabungkan alur ketika token dari jalur A atau jalur B tiba, tetapi tidak keduanya, kecuali kondisi C terpenuhi." Kondisi semacam ini tidak bisa diekspresikan dengan gateway standar.
+
+**Mengapa jarang digunakan:** Complex Gateway memerlukan definisi kondisi yang detail dan biasanya tidak terlihat di diagram — tersembunyi di properti. Ini membuat diagram sulit dibaca dan diaudit. Dalam praktik, kondisi kompleks sering difaktorisasi ke dalam beberapa gateway standar yang dikombinasikan, atau dipindahkan ke logika Business Rule Task yang lebih transparan.
+
+## 5. Sering Tertukar Dengan
+
+**[Inclusive Gateway (OR)](/notasi/inclusive-gateway)** — Inclusive Gateway sudah cukup untuk "aktifkan satu atau lebih jalur berdasarkan kondisi." Gunakan Complex Gateway hanya jika Inclusive Gateway tidak bisa mengekspresikan aturannya.
+
+**[Exclusive Gateway (XOR)](/notasi/exclusive-gateway)** — Jika hanya satu jalur yang bisa aktif, XOR sudah cukup. Complex Gateway bukan "XOR yang lebih canggih."
+
+## 6. Status Camunda
+
+**[CAMUNDA]** Complex Gateway dapat dimodelkan di Camunda Modeler tetapi tidak didukung untuk eksekusi di Camunda 8. Lihat [Camunda BPMN coverage](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/).
+
+## 7. Ringkasan
+
+Complex Gateway digunakan untuk aturan percabangan yang tidak bisa diekspresikan dengan gateway standar — berguna untuk kasus tepi yang sangat spesifik, tapi sebaiknya hindari karena tidak transparan, sulit dibaca, dan tidak executable di Camunda 8.

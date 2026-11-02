@@ -1,6 +1,105 @@
 ---
 title: "Konvensi penamaan"
-description: "Aturan penamaan elemen BPMN di seluruh tutorial ini."
+description: "Aturan penamaan elemen dan ID BPMN yang ditegakkan di semua diagram tutorial ini."
 ---
 
-Halaman ini akan diisi saat modul terkait diterbitkan.
+Nama elemen yang konsisten memudahkan pembacaan diagram, memfasilitasi otomasi (delta antar diagram), dan mencegah ambiguitas interpretasi. Konvensi ini berlaku di semua diagram tutorial, mulai Kasus 1.
+
+---
+
+## Label elemen (teks di dalam/di bawah simbol)
+
+Semua label dalam diagram berbahasa Indonesia, kecuali nama notasi teknis yang dipakai di demo.bpmn.io (seperti "Sequence Flow", "Boundary Event").
+
+### Tabel konvensi label
+
+| Elemen | Pola label | Contoh benar | Contoh salah |
+|---|---|---|---|
+| Task (semua tipe) | Kata kerja + objek | "Verifikasi data pesanan" | "Verifikasi", "Data pesanan", "Klik simpan" |
+| Start Event | Kondisi/pemicu yang sudah terjadi | "Pesanan diterima" | "Mulai", "Start" |
+| End Event | Keadaan akhir yang sudah tercapai | "Pesanan terkirim" | "Selesai", "End" |
+| XOR Gateway | Pertanyaan pilihan | "Pembayaran valid?" | "Cek pembayaran", "Gateway" |
+| Outgoing SF dari XOR | Jawaban singkat | "ya" / "tidak" / "valid" | tanpa label, "kalau iya" |
+| Parallel Gateway | Tanpa label (atau label netral) | — | "Keputusan", "AND" |
+| Inclusive Gateway | Tanpa label (atau keterangan singkat) | "Pilih notifikasi" | "OR", "Inclusive" |
+| Event-Based Gateway | Tanpa label (atau keterangan singkat) | "Tunggu respons" | "EBG", "Gateway event" |
+| Pool | Peran atau nama organisasi | "Customer", "Payment Provider" | "Proses pembayaran", "Pool 1" |
+| Lane | Peran internal | "Tim Gudang", "CS" | "Gudang mengemas barang" |
+| Data Object | Nama dokumen/data | "Invoice" | "Data", "File" |
+| Data Store | Nama sistem/repositori | "Riwayat Pesanan" | "Database", "DB" |
+| Text Annotation | Keterangan singkat | "SLA: maks. 2 jam" | kalimat panjang |
+
+### Granularitas task
+
+Satu task = satu unit kerja bermakna bagi bisnis, dikerjakan oleh satu peran dalam satu rentang waktu.
+
+- Terlalu kecil: "Klik tombol Simpan", "Isi field nama" → ini interaksi antarmuka, bukan unit kerja bisnis
+- Terlalu besar: "Proses seluruh pesanan" → ini lebih cocok menjadi Subprocess
+- Tepat: "Verifikasi kelengkapan dokumen", "Kirim notifikasi konfirmasi"
+
+---
+
+## Konvensi ID elemen
+
+ID dipakai untuk identifikasi teknis dan tidak tampil di diagram. ID harus stabil antarversi agar delta antar kasus dapat dihitung.
+
+### Format umum
+
+```
+<PREFIX><CaseCode>_<NamaElemen>
+```
+
+Contoh: `SE10_PesananMasuk`, `GW10_DataLengkap`, `TA10_VerifikasiPesanan`
+
+### Tabel prefix
+
+| Kategori | Prefix | Contoh |
+|---|---|---|
+| Start Event | `SE` | `SE10_PesananMasuk` |
+| End Event | `EE` | `EE10_PesananSelesai` |
+| Intermediate Catch Event | `ICE` | `ICE10_BayarDiterima` |
+| Intermediate Throw Event | `ITE` | `ITE10_BatalkanSemua` |
+| Boundary Event | `BE` | `BE10_ErrorFulfillment` |
+| Task (semua tipe) | `TA` | `TA10_VerifikasiPesanan` |
+| Subprocess (Embedded) | `SubProc` | `SubProc10_Fulfillment` |
+| Event Subprocess | `EVSP` | `EVSP10_StatusQuery` |
+| Call Activity | `CA` | `CA10_LayananPengiriman` |
+| XOR Gateway | `GW` | `GW10_DataLengkap` |
+| Parallel Gateway | `GW` | `GW10_ParalelSplit` |
+| Inclusive Gateway | `GW` | `GW10_NotifikasiSplit` |
+| Event-Based Gateway | `EBG` | `EBG10_TungguBayar` |
+| Sequence Flow | `SF` | `SF10_M1` |
+| Message Flow | `MF` | `MF10_1` |
+| Association | `Assoc` | `Assoc10_SLA` |
+| Data Association | `DA` | `DA10_Invoice` |
+| Data Object | `DO` | `DO10_Invoice` |
+| Data Object Reference | `DOR` | `DOR10_Invoice` |
+| Data Store Reference | `DS` | `DS10_RiwayatPesanan` |
+| Pool/Participant | `P` | `P10_Customer` |
+| Lane | `Lane` | `Lane10_CS` |
+| Text Annotation | `Anno` | `Anno10_SLA` |
+| Collaboration | `Collab` | `Collab_Cap10` |
+
+### Aturan ID
+
+1. Tidak ada spasi — gunakan camelCase atau underscore
+2. Prefix harus tepat sesuai tabel di atas
+3. Nama deskriptif setelah prefix — tidak boleh "Element1", "Task2"
+4. ID stabil: jangan ubah ID elemen antar versi diagram yang berurutan
+
+---
+
+## Catatan khusus untuk Boundary Event
+
+Label Boundary Event menjelaskan *kondisi yang ditangkap*, bukan tipe teknisnya:
+
+- Benar: "Batas waktu habis" (Timer Boundary), "Stok tidak tersedia" (Error Boundary)
+- Salah: "Timer Boundary Event", "Error", "Catch"
+
+Untuk Compensation Boundary Event, label biasanya menjelaskan aktivitas yang dibalik:
+
+- Benar: "Kompensasi fulfillment", "Batalkan booking tiket"
+
+---
+
+**Lihat juga:** [Checklist review model](/referensi/review/) — pertanyaan 13 memeriksa konsistensi penamaan.
