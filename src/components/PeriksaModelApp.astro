@@ -1,14 +1,7 @@
 ---
-/**
- * PeriksaModelApp — case picker + BpmnViewer referensi + CriteriaChecker berdampingan.
- * Daftar kasus ditambah lewat KASUS_TERSEDIA saat WP-7+.
- * Tanpa backend; seluruh pemrosesan di browser.
- */
+import BpmnViewer from './BpmnViewer.astro';
+import CriteriaChecker from './CriteriaChecker.astro';
 
-/**
- * Tambah entri di sini saat WP-7+ membuat criteria.json:
- * { id: 'case-01', label: 'Kasus 1 — Pesanan toko daring', bpmnSrc: '/bpmn/case-01-order.bpmn', criteriaSrc: '/criteria/case-01/criteria.json' }
- */
 const KASUS_TERSEDIA: Array<{ id: string; label: string; bpmnSrc: string; criteriaSrc: string }> = [
   {
     id: 'case-01',
@@ -77,7 +70,7 @@ const KASUS_TERSEDIA: Array<{ id: string; label: string; bpmnSrc: string; criter
   {KASUS_TERSEDIA.length === 0 ? (
     <div class="pma__empty">
       <p>
-        Kasus latihan belum tersedia — akan ditambahkan saat modul diterbitkan (WP-7+).
+        Kasus latihan belum tersedia — akan ditambahkan saat modul diterbitkan.
         Pantau halaman ini saat modul baru muncul di sidebar.
       </p>
     </div>
@@ -88,71 +81,36 @@ const KASUS_TERSEDIA: Array<{ id: string; label: string; bpmnSrc: string; criter
         <select id="pma-case-select" class="pma__select" data-case-select>
           <option value="">— pilih kasus —</option>
           {KASUS_TERSEDIA.map((k) => (
-            <option value={k.id} data-bpmn-src={k.bpmnSrc} data-criteria-src={k.criteriaSrc}>
-              {k.label}
-            </option>
+            <option value={k.id}>{k.label}</option>
           ))}
         </select>
       </div>
 
-      <div class="pma__layout" data-layout hidden>
-        <div class="pma__viewer-col">
-          <h4 class="pma__col-title">Model referensi</h4>
-          <div class="pma__viewer-wrap" data-viewer-wrap>
-            {/* BpmnViewer diinjeksi oleh JS saat kasus dipilih */}
+      {KASUS_TERSEDIA.map((k) => (
+        <div class="pma__layout" data-case-panel={k.id} hidden>
+          <div class="pma__viewer-col">
+            <h4 class="pma__col-title">Model referensi</h4>
+            <BpmnViewer src={k.bpmnSrc} title="Model referensi" height="clamp(20rem, 50vh, 36rem)" />
+          </div>
+          <div class="pma__checker-col">
+            <h4 class="pma__col-title">Periksa model Anda</h4>
+            <CriteriaChecker criteriaSrc={k.criteriaSrc} />
           </div>
         </div>
-        <div class="pma__checker-col">
-          <h4 class="pma__col-title">Periksa model Anda</h4>
-          <div class="pma__checker-wrap" data-checker-wrap>
-            {/* CriteriaChecker diinjeksi oleh JS saat kasus dipilih */}
-          </div>
-        </div>
-      </div>
+      ))}
     </>
   )}
 </div>
 
 <script>
-// Wiring dinamis: saat kasus dipilih, tampilkan viewer + checker.
-// Saat ini hanya berjalan jika KASUS_TERSEDIA tidak kosong (tidak ada elemen data-case-select).
 document.querySelectorAll<HTMLElement>('[data-periksa-app]').forEach((root) => {
   const select = root.querySelector<HTMLSelectElement>('[data-case-select]');
   if (!select) return;
 
-  const layout = root.querySelector<HTMLElement>('[data-layout]')!;
-  const viewerWrap = root.querySelector<HTMLElement>('[data-viewer-wrap]')!;
-  const checkerWrap = root.querySelector<HTMLElement>('[data-checker-wrap]')!;
-
   select.addEventListener('change', () => {
-    const opt = select.selectedOptions[0];
-    const bpmnSrc = opt?.dataset.bpmnSrc ?? '';
-    const criteriaSrc = opt?.dataset.criteriaSrc ?? '';
-
-    if (!bpmnSrc || !criteriaSrc) {
-      layout.hidden = true;
-      return;
-    }
-
-    // Buat BpmnViewer untuk referensi
-    viewerWrap.innerHTML = `<div class="bpmn-viewer-host" data-bpmn-viewer
-      data-src="${bpmnSrc}"
-      data-title="Model referensi"
-      data-height="clamp(20rem, 50vh, 36rem)"
-      ></div>`;
-
-    // Buat CriteriaChecker untuk kasus ini
-    checkerWrap.innerHTML = `<div class="cc-host" data-criteria-checker
-      data-criteria-src="${criteriaSrc}"
-      aria-label="Periksa model Anda"
-      ></div>`;
-
-    layout.hidden = false;
-
-    // Re-init komponen (mereka sudah terdaftar via querySelectorAll di masing-masing script)
-    // Untuk BpmnViewer: re-dispatch custom init
-    viewerWrap.querySelectorAll('[data-bpmn-viewer]').forEach((el) => {
-      el.dispatchEvent(new CustomEvent('bpmn-init', { bubbles: true }));
+    const selected = select.value;
+    root.querySelectorAll<HTMLElement>('[data-case-panel]').forEach((panel) => {
+      panel.hidden = panel.dataset.casePanel !== selected;
     });
   });
 });
@@ -186,5 +144,4 @@ document.querySelectorAll<HTMLElement>('[data-periksa-app]').forEach((root) => {
   .pma__layout { grid-template-columns: 1fr; }
 }
 .pma__col-title { margin: 0 0 .5rem; font-size: .9rem; font-weight: 600; }
-.pma__viewer-wrap, .pma__checker-wrap { min-height: 10rem; }
 </style>
