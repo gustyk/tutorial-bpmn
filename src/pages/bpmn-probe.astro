@@ -1,0 +1,49 @@
+---
+// Halaman probe headless untuk render test T-12.7
+// Merender BPMN file apa pun berdasarkan ?file=slug.bpmn
+---
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>BPMN Probe</title>
+  <style>
+    body { margin: 0; }
+    #canvas { width: 100%; height: 400px; }
+    #status { font-family: monospace; padding: 8px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div id="canvas"></div>
+  <div id="status" class="viewer-status">Memuat...</div>
+
+  <script>
+    import 'bpmn-js/dist/assets/diagram-js.css';
+    import 'bpmn-js/dist/assets/bpmn-js.css';
+    import 'bpmn-js/dist/assets/bpmn-font/css/bpmn.css';
+
+    const params = new URLSearchParams(location.search);
+    const file = params.get('file');
+    const statusEl = document.getElementById('status')!;
+
+    if (!file) {
+      statusEl.textContent = 'Tidak ada file';
+    } else {
+      (async () => {
+        try {
+          const { default: NavigatedViewer } = await import('bpmn-js/lib/NavigatedViewer');
+          const viewer = new NavigatedViewer({ container: '#canvas' });
+          const resp = await fetch('/bpmn/' + file);
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+          const xml = await resp.text();
+          await viewer.importXML(xml);
+          statusEl.textContent = 'loaded';
+        } catch (e: any) {
+          statusEl.textContent = 'tidak dapat dimuat: ' + (e?.message ?? String(e));
+          console.error(e);
+        }
+      })();
+    }
+  </script>
+</body>
+</html>

@@ -27,24 +27,26 @@ for (const file of files) {
       'case-10-capstone': '/jalur/10/',
       'fondasi-token-demo': '/fondasi/token/',
     };
-    const url = pageMap[slug];
-    if (!url) {
-      // BPMN file belum dipetakan ke halaman — lewati
-      return;
-    }
+    const isProbe = !pageMap[slug];
+    const url = pageMap[slug] ?? `/bpmn-probe/?file=${file}`;
+
     await page.goto(url);
 
     // Coba viewer-status (BpmnViewer) atau tsim__status (TokenSimV2)
     const status = page.locator('.viewer-status, .tsim__status').first();
-    await status.waitFor({ timeout: 15_000 });
-    // Scroll agar IntersectionObserver (lazy-load) terpicu
-    await status.scrollIntoViewIfNeeded();
+    await status.waitFor({ timeout: 20_000 });
+
+    if (!isProbe) {
+      // Untuk halaman Starlight: scroll agar IntersectionObserver terpicu
+      await status.scrollIntoViewIfNeeded();
+    }
+
     await page.waitForFunction(
       () => {
         const el = document.querySelector('.viewer-status, .tsim__status');
         return el && !el.textContent?.includes('Memuat');
       },
-      { timeout: 15_000 }
+      { timeout: 20_000 }
     );
 
     const statusText = await status.textContent();

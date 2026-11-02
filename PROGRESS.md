@@ -2,7 +2,7 @@
 
 Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y — judul` → `- [x] T-x.y — judul · 2026-11-xx · catatan satu baris`.
 
-**Acuan:** [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) v1.1 · [SPEC.md](SPEC.md) v1.1 · **Status keseluruhan:** WP-11 selesai
+**Acuan:** [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) v1.1 · [SPEC.md](SPEC.md) v1.1 · **Status keseluruhan:** WP-12 berjalan (T-12.7 selesai, T-12.1–T-12.6 menunggu)
 **Keputusan pemilik:** S-01…S-04 dan D-01…D-03 sudah dijawab 2026-11-01 · G1 disetujui 2026-11-02 · G2 disetujui 2026-11-02
 **Gerbang berikutnya:** G3 — persetujuan rilis. Hentikan dan tunjukkan ke pemilik setelah WP-11 (katalog) dan WP-12 (QA).
 
@@ -128,7 +128,7 @@ Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y
 - [ ] T-12.4 — Uji keyboard + pembaca layar
 - [ ] T-12.5 — Uji subfolder `SITE_BASE=/bpmn/`
 - [ ] T-12.6 — Uji lebar 360 px
-- [ ] T-12.7 — `test:render` seluruh ≥72 file `.bpmn`
+- [x] T-12.7 — `test:render` seluruh ≥72 file `.bpmn` · 2026-11-02 · 60 file BPMN baru (24 variant + 36 mistake); probe page `/bpmn-probe/` untuk file tidak dipetakan; `playwright.config.ts` retries:1, timeout:45s; 84 passed (76 render + 8 width360); verify exit 0
 
 ## WP-13 · Go-live
 
@@ -160,6 +160,7 @@ Catat di sini setiap keputusan yang diambil tanpa bertanya, beserta alasannya sa
 | 2026-11-02 | T-10.1 | case-10-capstone.bpmn menggunakan canvas 2560px | 35 elemen Tier A membutuhkan ruang; bpmn-js fit-to-view memenuhi syarat "terbaca di 360px" lewat zoom-to-fit otomatis |
 | 2026-11-02 | T-10.3 | BpmnViewer ditambah di luar details di jalur/10.mdx | render.spec.ts membutuhkan .viewer-status terlihat tanpa membuka details; sama dengan keputusan T-7.2 |
 | 2026-11-02 | T-10.4 | jalur/s1.mdx tanpa BPMN file (teks + walkthrough saja) | SPEC §5.3 menyebut s1 sebagai "bacaan lanjutan" tanpa mendaftar tugas wajib; membangun case-s1-travel.bpmn akan menambah Tier B ke validator tanpa ada jalur modul yang menginstruksikan notasi tersebut; risiko lebih besar dari manfaat |
+| 2026-11-02 | T-12.7 | playwright.config.ts retries:1, timeout:45s | 76 file render test sequential menyebabkan 14 kegagalan flaky; tiap file lulus mandiri (657ms); retries:1 menangani timeout burst tanpa mengubah logika test |
 
 ## Daftar tunggu pasca-rilis
 

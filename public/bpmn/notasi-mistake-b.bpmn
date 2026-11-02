@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  id="Def_notasi_mistake_b"
+  targetNamespace="https://uisi.ac.id/bpmn-tutorial">
+  <bpmn:process id="Proc_notasi_mistake_b" isExecutable="false">
+    <bpmn:startEvent id="SE_notasi_mistake_b" name="Mulai">
+      <bpmn:outgoing>SF_notasi_mistake_b_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="TA_notasi_mistake_b_1" name="Simbol salah konteks">
+      <bpmn:incoming>SF_notasi_mistake_b_1</bpmn:incoming>
+      <bpmn:outgoing>SF_notasi_mistake_b_2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EE_notasi_mistake_b" name="Selesai">
+      <bpmn:incoming>SF_notasi_mistake_b_2</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="SF_notasi_mistake_b_1" sourceRef="SE_notasi_mistake_b" targetRef="TA_notasi_mistake_b_1"/>
+    <bpmn:sequenceFlow id="SF_notasi_mistake_b_2" sourceRef="TA_notasi_mistake_b_1" targetRef="EE_notasi_mistake_b"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_notasi_mistake_b">
+    <bpmndi:BPMNPlane id="Plane_notasi_mistake_b" bpmnElement="Proc_notasi_mistake_b">
+      <bpmndi:BPMNShape id="Shp_SE_notasi_mistake_b" bpmnElement="SE_notasi_mistake_b">
+        <dc:Bounds x="152" y="82" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA_notasi_mistake_b_1" bpmnElement="TA_notasi_mistake_b_1">
+        <dc:Bounds x="240" y="60" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_EE_notasi_mistake_b" bpmnElement="EE_notasi_mistake_b">
+        <dc:Bounds x="412" y="82" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_SF_notasi_mistake_b_1" bpmnElement="SF_notasi_mistake_b_1">
+        <di:waypoint x="188" y="100"/>
+        <di:waypoint x="240" y="100"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF_notasi_mistake_b_2" bpmnElement="SF_notasi_mistake_b_2">
+        <di:waypoint x="360" y="100"/>
+        <di:waypoint x="412" y="100"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

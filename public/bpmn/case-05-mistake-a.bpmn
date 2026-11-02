@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  id="Def_case_05_mistake_a"
+  targetNamespace="https://uisi.ac.id/bpmn-tutorial">
+  <bpmn:process id="Proc_case_05_mistake_a" isExecutable="false">
+    <bpmn:startEvent id="SE_case_05_mistake_a" name="Mulai">
+      <bpmn:outgoing>SF_case_05_mistake_a_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="TA_case_05_mistake_a_1" name="XOR menunggu event">
+      <bpmn:incoming>SF_case_05_mistake_a_1</bpmn:incoming>
+      <bpmn:outgoing>SF_case_05_mistake_a_2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EE_case_05_mistake_a" name="Selesai">
+      <bpmn:incoming>SF_case_05_mistake_a_2</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="SF_case_05_mistake_a_1" sourceRef="SE_case_05_mistake_a" targetRef="TA_case_05_mistake_a_1"/>
+    <bpmn:sequenceFlow id="SF_case_05_mistake_a_2" sourceRef="TA_case_05_mistake_a_1" targetRef="EE_case_05_mistake_a"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_case_05_mistake_a">
+    <bpmndi:BPMNPlane id="Plane_case_05_mistake_a" bpmnElement="Proc_case_05_mistake_a">
+      <bpmndi:BPMNShape id="Shp_SE_case_05_mistake_a" bpmnElement="SE_case_05_mistake_a">
+        <dc:Bounds x="152" y="82" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_TA_case_05_mistake_a_1" bpmnElement="TA_case_05_mistake_a_1">
+        <dc:Bounds x="240" y="60" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp_EE_case_05_mistake_a" bpmnElement="EE_case_05_mistake_a">
+        <dc:Bounds x="412" y="82" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_SF_case_05_mistake_a_1" bpmnElement="SF_case_05_mistake_a_1">
+        <di:waypoint x="188" y="100"/>
+        <di:waypoint x="240" y="100"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_SF_case_05_mistake_a_2" bpmnElement="SF_case_05_mistake_a_2">
+        <di:waypoint x="360" y="100"/>
+        <di:waypoint x="412" y="100"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

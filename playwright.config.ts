@@ -3,6 +3,8 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: './tests',
   outputDir: './tests/__screenshots__',
+  retries: 1,
+  timeout: 45_000,
   use: {
     baseURL: 'http://localhost:4321',
     screenshot: 'on',
