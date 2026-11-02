@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  id="Def_Case08"
+  targetNamespace="https://uisi.ac.id/bpmn-tutorial">
+
+  <!-- Case 08: Pengiriman bisa gagal -->
+  <!-- Modul 8: superset Case 07 + E06 (Boundary Error, Error End Event), E11 (Terminate End Event) -->
+  <!-- Reuse negatif: Error dipakai untuk hasil bisnis normal; Terminate menutup satu cabang -->
+
+  <bpmn:error id="Err08_KurirTolak" name="KurirMenolakPaket" errorCode="KURIR_TOLAK" />
+
+  <bpmn:collaboration id="Collab_Case08" name="Pesanan Kasus 8">
+    <bpmn:participant id="Part08_Customer" name="Customer" processRef="Proc08_Customer" />
+    <bpmn:participant id="Part08_Merchant" name="Merchant" processRef="Proc08_Merchant" />
+
+    <bpmn:messageFlow id="MF08_PesananDikirim" name="Pesanan dikirim"
+      sourceRef="TA08_BuatPesanan" targetRef="SE08_PesananDiterima" />
+    <bpmn:messageFlow id="MF08_InstruksiBayar" name="Instruksi pembayaran"
+      sourceRef="TA08_KirimInstruksiBayar" targetRef="IE08_InstruksiBayarDiterima" />
+    <bpmn:messageFlow id="MF08_KonfirmasiBayar" name="Konfirmasi pembayaran"
+      sourceRef="TA08_KirimBuktiBayar" targetRef="IE08_KonfirmasiBayarDiterima" />
+    <bpmn:messageFlow id="MF08_KonfirmasiPesanan" name="Konfirmasi pesanan"
+      sourceRef="TA08_KirimKonfirmasi" targetRef="IE08_KonfirmasiDiterima" />
+    <bpmn:messageFlow id="MF08_PemberitahuanGagal" name="Pemberitahuan pengiriman gagal"
+      sourceRef="TA08_BeritahuCustomer" targetRef="IE08_GagalDiterima" />
+  </bpmn:collaboration>
+
+  <!-- Proses Customer -->
+  <bpmn:process id="Proc08_Customer" name="Proses Customer" isExecutable="false">
+    <bpmn:startEvent id="SE08_CustomerMulai" name="Kebutuhan barang muncul">
+      <bpmn:outgoing>SF08_C1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sendTask id="TA08_BuatPesanan" name="Buat dan kirim pesanan">
+      <bpmn:incoming>SF08_C1</bpmn:incoming>
+      <bpmn:outgoing>SF08_C2</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:intermediateCatchEvent id="IE08_InstruksiBayarDiterima" name="Instruksi pembayaran diterima">
+      <bpmn:incoming>SF08_C2</bpmn:incoming>
+      <bpmn:outgoing>SF08_C3</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED08_C1" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:userTask id="TA08_LakukanPembayaran" name="Lakukan pembayaran">
+      <bpmn:incoming>SF08_C3</bpmn:incoming>
+      <bpmn:outgoing>SF08_C4</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sendTask id="TA08_KirimBuktiBayar" name="Kirim bukti pembayaran">
+      <bpmn:incoming>SF08_C4</bpmn:incoming>
+      <bpmn:outgoing>SF08_C5</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:intermediateCatchEvent id="IE08_KonfirmasiDiterima" name="Konfirmasi pesanan diterima">
+      <bpmn:incoming>SF08_C5</bpmn:incoming>
+      <bpmn:outgoing>SF08_C6</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED08_C2" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:endEvent id="EE08_CustomerSelesai" name="Pesanan dikonfirmasi">
+      <bpmn:incoming>SF08_C6</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Customer menerima pemberitahuan gagal -->
+    <bpmn:intermediateCatchEvent id="IE08_GagalDiterima" name="Pemberitahuan pengiriman gagal diterima">
+      <bpmn:outgoing>SF08_C_Gagal</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED08_C3" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:endEvent id="EE08_CustomerGagal" name="Pesanan tidak terkirim">
+      <bpmn:incoming>SF08_C_Gagal</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="SF08_C1" sourceRef="SE08_CustomerMulai" targetRef="TA08_BuatPesanan" />
+    <bpmn:sequenceFlow id="SF08_C2" sourceRef="TA08_BuatPesanan" targetRef="IE08_InstruksiBayarDiterima" />
+    <bpmn:sequenceFlow id="SF08_C3" sourceRef="IE08_InstruksiBayarDiterima" targetRef="TA08_LakukanPembayaran" />
+    <bpmn:sequenceFlow id="SF08_C4" sourceRef="TA08_LakukanPembayaran" targetRef="TA08_KirimBuktiBayar" />
+    <bpmn:sequenceFlow id="SF08_C5" sourceRef="TA08_KirimBuktiBayar" targetRef="IE08_KonfirmasiDiterima" />
+    <bpmn:sequenceFlow id="SF08_C6" sourceRef="IE08_KonfirmasiDiterima" targetRef="EE08_CustomerSelesai" />
+    <bpmn:sequenceFlow id="SF08_C_Gagal" sourceRef="IE08_GagalDiterima" targetRef="EE08_CustomerGagal" />
+  </bpmn:process>
+
+  <!-- Proses Merchant -->
+  <bpmn:process id="Proc08_Merchant" name="Proses Merchant" isExecutable="false">
+    <bpmn:laneSet id="LS08_Merchant">
+      <bpmn:lane id="Lane08_CS" name="Tim CS">
+        <bpmn:flowNodeRef>SE08_PesananDiterima</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA08_CatatPesanan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA08_VerifikasiData</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW08_DataValid</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EE08_PesananDitolak</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA08_KirimInstruksiBayar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW08_TungguBayar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>IE08_KonfirmasiBayarDiterima</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>IE08_TimerHabis</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EE08_BatasWaktuHabis</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA08_KirimKonfirmasi</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EE08_MerchantSelesai</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA08_BeritahuCustomer</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EE08_PengirimanGagalTerminate</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane08_Gudang" name="Tim Gudang">
+        <bpmn:flowNodeRef>SP08_Pemenuhan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>TA08_SerahkanKurir</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <!-- Start Event (Message) -->
+    <bpmn:startEvent id="SE08_PesananDiterima" name="Pesanan diterima dari customer">
+      <bpmn:outgoing>SF08_M1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED08_M1" />
+    </bpmn:startEvent>
+
+    <bpmn:userTask id="TA08_CatatPesanan" name="Catat data pesanan">
+      <bpmn:incoming>SF08_M1</bpmn:incoming>
+      <bpmn:outgoing>SF08_M2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="TA08_VerifikasiData" name="Verifikasi data pesanan">
+      <bpmn:incoming>SF08_M2</bpmn:incoming>
+      <bpmn:outgoing>SF08_M3</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="GW08_DataValid" name="Data valid?">
+      <bpmn:incoming>SF08_M3</bpmn:incoming>
+      <bpmn:outgoing>SF08_M_Ya</bpmn:outgoing>
+      <bpmn:outgoing>SF08_M_Tidak</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="EE08_PesananDitolak" name="Pesanan ditolak">
+      <bpmn:incoming>SF08_M_Tidak</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="TA08_KirimInstruksiBayar" name="Kirim instruksi pembayaran ke customer">
+      <bpmn:incoming>SF08_M_Ya</bpmn:incoming>
+      <bpmn:outgoing>SF08_M4</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:eventBasedGateway id="GW08_TungguBayar" name="Tunggu hasil pembayaran">
+      <bpmn:incoming>SF08_M4</bpmn:incoming>
+      <bpmn:outgoing>SF08_M_Bayar</bpmn:outgoing>
+      <bpmn:outgoing>SF08_M_Timer</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+    <bpmn:intermediateCatchEvent id="IE08_KonfirmasiBayarDiterima" name="Bukti pembayaran diterima">
+      <bpmn:incoming>SF08_M_Bayar</bpmn:incoming>
+      <bpmn:outgoing>SF08_M5</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MED08_M2" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="IE08_TimerHabis" name="24 jam berlalu tanpa pembayaran">
+      <bpmn:incoming>SF08_M_Timer</bpmn:incoming>
+      <bpmn:outgoing>SF08_M_Cancel</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TED08_M1">
+        <bpmn:timeDuration>PT24H</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:endEvent id="EE08_BatasWaktuHabis" name="Pesanan dibatalkan — batas waktu habis">
+      <bpmn:incoming>SF08_M_Cancel</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Subprocess (dari Modul 7) -->
+    <bpmn:subProcess id="SP08_Pemenuhan" name="Pemenuhan Pesanan">
+      <bpmn:incoming>SF08_M5</bpmn:incoming>
+      <bpmn:outgoing>SF08_M6</bpmn:outgoing>
+      <bpmn:startEvent id="SE08_SP_Mulai" name="">
+        <bpmn:outgoing>SF08_SP1</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:task id="TA08_ProsesItem" name="Proses satu item pesanan">
+        <bpmn:incoming>SF08_SP1</bpmn:incoming>
+        <bpmn:outgoing>SF08_SP2</bpmn:outgoing>
+        <bpmn:multiInstanceLoopCharacteristics isSequential="true" />
+      </bpmn:task>
+      <bpmn:endEvent id="EE08_SP_Selesai" name="">
+        <bpmn:incoming>SF08_SP2</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="SF08_SP1" sourceRef="SE08_SP_Mulai" targetRef="TA08_ProsesItem" />
+      <bpmn:sequenceFlow id="SF08_SP2" sourceRef="TA08_ProsesItem" targetRef="EE08_SP_Selesai" />
+    </bpmn:subProcess>
+
+    <!-- E06: Boundary Error Event pada task "Serahkan ke kurir" -->
+    <!-- Kurir menolak paket → Error terpicu, interrupt task -->
+    <bpmn:task id="TA08_SerahkanKurir" name="Serahkan paket ke kurir">
+      <bpmn:incoming>SF08_M6</bpmn:incoming>
+      <bpmn:outgoing>SF08_M7</bpmn:outgoing>
+    </bpmn:task>
+
+    <!-- Boundary Error Event: kurir menolak paket -->
+    <bpmn:boundaryEvent id="BE08_KurirTolak" name="Kurir menolak paket" attachedToRef="TA08_SerahkanKurir" cancelActivity="true">
+      <bpmn:outgoing>SF08_Error</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="EED08_1" errorRef="Err08_KurirTolak" />
+    </bpmn:boundaryEvent>
+
+    <!-- Error handling: beritahu customer, kemudian Terminate End Event -->
+    <bpmn:serviceTask id="TA08_BeritahuCustomer" name="Kirim pemberitahuan pengiriman gagal ke customer">
+      <bpmn:incoming>SF08_Error</bpmn:incoming>
+      <bpmn:outgoing>SF08_M_Gagal</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <!-- E11: Terminate End Event — hentikan seluruh proses, bukan hanya satu token -->
+    <bpmn:endEvent id="EE08_PengirimanGagalTerminate" name="Pengiriman gagal — proses dihentikan">
+      <bpmn:incoming>SF08_M_Gagal</bpmn:incoming>
+      <bpmn:terminateEventDefinition id="TED08_Term" />
+    </bpmn:endEvent>
+
+    <!-- Happy path: konfirmasi dan selesai -->
+    <bpmn:serviceTask id="TA08_KirimKonfirmasi" name="Kirim konfirmasi pesanan ke customer">
+      <bpmn:incoming>SF08_M7</bpmn:incoming>
+      <bpmn:outgoing>SF08_M8</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="EE08_MerchantSelesai" name="Pesanan dikirim">
+      <bpmn:incoming>SF08_M8</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="SF08_M1" sourceRef="SE08_PesananDiterima" targetRef="TA08_CatatPesanan" />
+    <bpmn:sequenceFlow id="SF08_M2" sourceRef="TA08_CatatPesanan" targetRef="TA08_VerifikasiData" />
+    <bpmn:sequenceFlow id="SF08_M3" sourceRef="TA08_VerifikasiData" targetRef="GW08_DataValid" />
+    <bpmn:sequenceFlow id="SF08_M_Ya" name="ya" sourceRef="GW08_DataValid" targetRef="TA08_KirimInstruksiBayar">
+      <bpmn:conditionExpression>data lengkap</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="SF08_M_Tidak" name="tidak" sourceRef="GW08_DataValid" targetRef="EE08_PesananDitolak">
+      <bpmn:conditionExpression>data tidak lengkap</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="SF08_M4" sourceRef="TA08_KirimInstruksiBayar" targetRef="GW08_TungguBayar" />
+    <bpmn:sequenceFlow id="SF08_M_Bayar" sourceRef="GW08_TungguBayar" targetRef="IE08_KonfirmasiBayarDiterima" />
+    <bpmn:sequenceFlow id="SF08_M_Timer" sourceRef="GW08_TungguBayar" targetRef="IE08_TimerHabis" />
+    <bpmn:sequenceFlow id="SF08_M5" sourceRef="IE08_KonfirmasiBayarDiterima" targetRef="SP08_Pemenuhan" />
+    <bpmn:sequenceFlow id="SF08_M_Cancel" sourceRef="IE08_TimerHabis" targetRef="EE08_BatasWaktuHabis" />
+    <bpmn:sequenceFlow id="SF08_M6" sourceRef="SP08_Pemenuhan" targetRef="TA08_SerahkanKurir" />
+    <bpmn:sequenceFlow id="SF08_M7" sourceRef="TA08_SerahkanKurir" targetRef="TA08_KirimKonfirmasi" />
+    <bpmn:sequenceFlow id="SF08_Error" sourceRef="BE08_KurirTolak" targetRef="TA08_BeritahuCustomer" />
+    <bpmn:sequenceFlow id="SF08_M_Gagal" sourceRef="TA08_BeritahuCustomer" targetRef="EE08_PengirimanGagalTerminate" />
+    <bpmn:sequenceFlow id="SF08_M8" sourceRef="TA08_KirimKonfirmasi" targetRef="EE08_MerchantSelesai" />
+
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="Dia_Case08">
+    <bpmndi:BPMNPlane id="Pla_Case08" bpmnElement="Collab_Case08">
+
+      <!-- Pool Customer -->
+      <bpmndi:BPMNShape id="Shp08_PartC" bpmnElement="Part08_Customer" isHorizontal="true">
+        <dc:Bounds x="60" y="60" width="1200" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp08_SE_CM" bpmnElement="SE08_CustomerMulai">
+        <dc:Bounds x="130" y="123" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="108" y="166" width="80" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp08_TA_BP" bpmnElement="TA08_BuatPesanan">
+        <dc:Bounds x="220" y="101" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp08_IE_IBD" bpmnElement="IE08_InstruksiBayarDiterima">
+        <dc:Bounds x="380" y="123" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="358" y="166" width="80" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp08_TA_LP" bpmnElement="TA08_LakukanPembayaran">
+        <dc:Bounds x="470" y="101" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp08_TA_KBB" bpmnElement="TA08_KirimBuktiBayar">
+        <dc:Bounds x="630" y="101" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp08_IE_KD" bpmnElement="IE08_KonfirmasiDiterima">
+        <dc:Bounds x="790" y="123" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="768" y="166" width="80" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp08_EE_CS" bpmnElement="EE08_CustomerSelesai">
+        <dc:Bounds x="890" y="123" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="870" y="166" width="76" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp08_IE_GD" bpmnElement="IE08_GagalDiterima">
+        <dc:Bounds x="1060" y="123" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1038" y="166" width="80" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp08_EE_CG" bpmnElement="EE08_CustomerGagal">
+        <dc:Bounds x="1160" y="123" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1140" y="166" width="76" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="EdgC08_1" bpmnElement="SF08_C1"><di:waypoint x="166" y="141" /><di:waypoint x="220" y="141" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="EdgC08_2" bpmnElement="SF08_C2"><di:waypoint x="320" y="141" /><di:waypoint x="380" y="141" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="EdgC08_3" bpmnElement="SF08_C3"><di:waypoint x="416" y="141" /><di:waypoint x="470" y="141" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="EdgC08_4" bpmnElement="SF08_C4"><di:waypoint x="570" y="141" /><di:waypoint x="630" y="141" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="EdgC08_5" bpmnElement="SF08_C5"><di:waypoint x="730" y="141" /><di:waypoint x="790" y="141" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="EdgC08_6" bpmnElement="SF08_C6"><di:waypoint x="826" y="141" /><di:waypoint x="890" y="141" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="EdgC08_Gagal" bpmnElement="SF08_C_Gagal"><di:waypoint x="1096" y="141" /><di:waypoint x="1160" y="141" /></bpmndi:BPMNEdge>
+
+      <!-- Pool Merchant -->
+      <bpmndi:BPMNShape id="Shp08_PartM" bpmnElement="Part08_Merchant" isHorizontal="true">
+        <dc:Bounds x="60" y="310" width="1200" height="530" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp08_LaneCS" bpmnElement="Lane08_CS" isHorizontal="true">
+        <dc:Bounds x="90" y="310" width="1170" height="270" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp08_LaneGd" bpmnElement="Lane08_Gudang" isHorizontal="true">
+        <dc:Bounds x="90" y="580" width="1170" height="260" />
+      </bpmndi:BPMNShape>
+
+      <!-- Tim CS -->
+      <bpmndi:BPMNShape id="Shp08_SE_PD" bpmnElement="SE08_PesananDiterima">
+        <dc:Bounds x="130" y="421" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="105" y="464" width="86" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp08_TA_CP" bpmnElement="TA08_CatatPesanan">
+        <dc:Bounds x="220" y="399" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp08_TA_VD" bpmnElement="TA08_VerifikasiData">
+        <dc:Bounds x="370" y="399" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp08_GW_DV" bpmnElement="GW08_DataValid" isMarkerVisible="true">
+        <dc:Bounds x="525" y="414" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="508" y="471" width="84" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp08_EE_PD" bpmnElement="EE08_PesananDitolak">
+        <dc:Bounds x="630" y="421" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="608" y="464" width="80" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp08_TA_KIB" bpmnElement="TA08_KirimInstruksiBayar">
+        <dc:Bounds x="620" y="399" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp08_GW_TB" bpmnElement="GW08_TungguBayar">
+        <dc:Bounds x="780" y="414" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="762" y="471" width="86" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp08_IE_KBD" bpmnElement="IE08_KonfirmasiBayarDiterima">
+        <dc:Bounds x="890" y="421" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="868" y="464" width="80" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp08_IE_TH" bpmnElement="IE08_TimerHabis">
+        <dc:Bounds x="780" y="510" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="758" y="553" width="80" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp08_EE_BWH" bpmnElement="EE08_BatasWaktuHabis">
+        <dc:Bounds x="890" y="510" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="868" y="553" width="80" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp08_TA_KK" bpmnElement="TA08_KirimKonfirmasi">
+        <dc:Bounds x="1080" y="399" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp08_EE_MS" bpmnElement="EE08_MerchantSelesai">
+        <dc:Bounds x="1240" y="421" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1220" y="464" width="76" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Error handling: Beritahu Customer + Terminate End -->
+      <bpmndi:BPMNShape id="Shp08_TA_BC" bpmnElement="TA08_BeritahuCustomer">
+        <dc:Bounds x="1000" y="310" width="100" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp08_EE_Term" bpmnElement="EE08_PengirimanGagalTerminate">
+        <dc:Bounds x="1160" y="321" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1138" y="364" width="80" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Tim Gudang -->
+      <bpmndi:BPMNShape id="Shp08_SP_Pem" bpmnElement="SP08_Pemenuhan" isExpanded="false">
+        <dc:Bounds x="880" y="610" width="200" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shp08_TA_SK" bpmnElement="TA08_SerahkanKurir">
+        <dc:Bounds x="1100" y="610" width="120" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Boundary Error Event on SerahkanKurir -->
+      <bpmndi:BPMNShape id="Shp08_BE_KT" bpmnElement="BE08_KurirTolak">
+        <dc:Bounds x="1182" y="592" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1160" y="560" width="80" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Edges Tim CS -->
+      <bpmndi:BPMNEdge id="Edg08_M1" bpmnElement="SF08_M1"><di:waypoint x="166" y="439" /><di:waypoint x="220" y="439" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg08_M2" bpmnElement="SF08_M2"><di:waypoint x="320" y="439" /><di:waypoint x="370" y="439" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg08_M3" bpmnElement="SF08_M3"><di:waypoint x="470" y="439" /><di:waypoint x="525" y="439" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg08_M_Ya" bpmnElement="SF08_M_Ya">
+        <di:waypoint x="575" y="439" /><di:waypoint x="620" y="439" />
+        <bpmndi:BPMNLabel><dc:Bounds x="588" y="421" width="14" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg08_M_Tidak" bpmnElement="SF08_M_Tidak">
+        <di:waypoint x="550" y="414" /><di:waypoint x="550" y="385" /><di:waypoint x="630" y="385" /><di:waypoint x="630" y="421" />
+        <bpmndi:BPMNLabel><dc:Bounds x="578" y="367" width="30" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg08_M4" bpmnElement="SF08_M4"><di:waypoint x="720" y="439" /><di:waypoint x="780" y="439" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg08_M_Bayar" bpmnElement="SF08_M_Bayar"><di:waypoint x="830" y="439" /><di:waypoint x="890" y="439" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg08_M_Timer" bpmnElement="SF08_M_Timer"><di:waypoint x="805" y="464" /><di:waypoint x="805" y="510" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg08_M5" bpmnElement="SF08_M5">
+        <di:waypoint x="926" y="439" /><di:waypoint x="980" y="439" /><di:waypoint x="980" y="650" /><di:waypoint x="880" y="650" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg08_M_Cancel" bpmnElement="SF08_M_Cancel"><di:waypoint x="816" y="528" /><di:waypoint x="890" y="528" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg08_M6" bpmnElement="SF08_M6">
+        <di:waypoint x="1080" y="650" /><di:waypoint x="1100" y="650" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg08_M7" bpmnElement="SF08_M7">
+        <di:waypoint x="1160" y="610" /><di:waypoint x="1160" y="540" /><di:waypoint x="1130" y="540" /><di:waypoint x="1130" y="479" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg08_M8" bpmnElement="SF08_M8"><di:waypoint x="1180" y="439" /><di:waypoint x="1240" y="439" /></bpmndi:BPMNEdge>
+
+      <!-- Error + Terminate edges -->
+      <bpmndi:BPMNEdge id="Edg08_Err" bpmnElement="SF08_Error">
+        <di:waypoint x="1200" y="592" /><di:waypoint x="1200" y="540" /><di:waypoint x="1050" y="540" /><di:waypoint x="1050" y="370" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg08_Gagal" bpmnElement="SF08_M_Gagal"><di:waypoint x="1100" y="340" /><di:waypoint x="1160" y="339" /></bpmndi:BPMNEdge>
+
+      <!-- Message Flows -->
+      <bpmndi:BPMNEdge id="Edg08_MF1" bpmnElement="MF08_PesananDikirim">
+        <di:waypoint x="270" y="181" /><di:waypoint x="148" y="421" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg08_MF2" bpmnElement="MF08_InstruksiBayar">
+        <di:waypoint x="670" y="399" /><di:waypoint x="398" y="259" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg08_MF3" bpmnElement="MF08_KonfirmasiBayar">
+        <di:waypoint x="680" y="141" /><di:waypoint x="908" y="421" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg08_MF4" bpmnElement="MF08_KonfirmasiPesanan">
+        <di:waypoint x="1130" y="399" /><di:waypoint x="808" y="259" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edg08_MF5" bpmnElement="MF08_PemberitahuanGagal">
+        <di:waypoint x="1050" y="310" /><di:waypoint x="1078" y="259" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>

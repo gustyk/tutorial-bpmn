@@ -515,7 +515,8 @@
       "slug": "multi-instance",
       "introducedIn": "case-07",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/multi-instance.mdx"
     },
     {
       "id": "A12",
@@ -529,7 +530,8 @@
       "slug": "compensation-marker",
       "introducedIn": "case-09",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/compensation-marker.mdx"
     },
     {
       "id": "A13",
@@ -543,7 +545,8 @@
       "slug": "embedded-subprocess",
       "introducedIn": "case-07",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/embedded-subprocess.mdx"
     },
     {
       "id": "A14",
@@ -557,7 +560,8 @@
       "slug": "event-subprocess",
       "introducedIn": "case-09",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/event-subprocess.mdx"
     },
     {
       "id": "A15",
@@ -585,7 +589,8 @@
       "slug": "call-activity",
       "introducedIn": "case-07",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/call-activity.mdx"
     },
     {
       "id": "A17",
@@ -833,7 +838,8 @@
       "slug": "signal-event",
       "introducedIn": "case-09",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/signal-event.mdx"
     },
     {
       "id": "E06",
@@ -847,7 +853,8 @@
       "slug": "error-event",
       "introducedIn": "case-08",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/error-event.mdx"
     },
     {
       "id": "E07",
@@ -861,7 +868,8 @@
       "slug": "escalation-event",
       "introducedIn": "cabang-s2",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/escalation-event.mdx"
     },
     {
       "id": "E08",
@@ -875,7 +883,8 @@
       "slug": "compensation-event",
       "introducedIn": "case-09",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/compensation-event.mdx"
     },
     {
       "id": "E09",
@@ -917,7 +926,8 @@
       "slug": "terminate-event",
       "introducedIn": "case-08",
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "notasi/terminate-event.mdx"
     },
     {
       "id": "E12",

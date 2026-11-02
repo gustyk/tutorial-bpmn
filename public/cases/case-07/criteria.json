@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "caseId": "case-07",
+  "criteria": [
+    {
+      "id": "C07-1",
+      "statement": "Ada minimal satu Embedded Subprocess (collapsed atau expanded) yang merangkum langkah-langkah pemenuhan pesanan.",
+      "rationale": "Modul 7 memperkenalkan Subprocess karena model Modul 6 sudah terlalu padat — bukan hanya untuk merapikan gambar, tapi karena sub-alur pemenuhan memiliki logika internal tersendiri.",
+      "readIfFailed": ["/notasi/embedded-subprocess"],
+      "check": {
+        "mode": "auto",
+        "rule": "element-exists",
+        "type": "bpmn:SubProcess",
+        "min": 1
+      }
+    },
+    {
+      "id": "C07-2",
+      "statement": "Ada minimal satu Multi-instance Task atau Multi-instance Subprocess (sequential atau parallel) untuk memproses setiap item pesanan.",
+      "rationale": "Requirement menyatakan 'setiap item diproses satu-satu' — ini adalah semantik sequential multi-instance, bukan task yang dieksekusi sekali untuk seluruh pesanan.",
+      "readIfFailed": ["/notasi/multi-instance"],
+      "check": {
+        "mode": "manual",
+        "question": "Apakah ada task atau subprocess dengan marker multi-instance (tiga garis vertikal) di model Anda? Marker sequential = tiga garis solid; marker parallel = tiga garis dengan jarak."
+      }
+    },
+    {
+      "id": "C07-3",
+      "statement": "Ada Call Activity yang merujuk proses atau subprocess yang dapat dipakai ulang (bukan Embedded Subprocess biasa).",
+      "rationale": "Call Activity diperkenalkan di Modul 7 untuk menyatakan bahwa ada prosedur yang dipakai oleh banyak proses (misalnya: verifikasi alamat dipakai juga oleh proses retur). Embedded Subprocess tidak bisa dipakai ulang lintas proses.",
+      "readIfFailed": ["/notasi/call-activity"],
+      "check": {
+        "mode": "auto",
+        "rule": "element-exists",
+        "type": "bpmn:CallActivity",
+        "min": 1
+      }
+    },
+    {
+      "id": "C07-4",
+      "statement": "Semua elemen dari Modul 5 dan 6 dipertahankan: Event-Based Gateway, Timer Event, dan dua Pool.",
+      "rationale": "Modul 7 adalah superset semua modul sebelumnya. Requirement batas waktu dan struktur Collaboration tidak hilang.",
+      "readIfFailed": ["/notasi/event-based-gateway"],
+      "check": {
+        "mode": "auto",
+        "rule": "element-exists",
+        "type": "bpmn:EventBasedGateway",
+        "min": 1
+      }
+    },
+    {
+      "id": "C07-5",
+      "statement": "Subprocess berisi logika internal yang bermakna (minimal Start Event dan satu Task), bukan kotak kosong.",
+      "rationale": "Reuse negatif kritis di Modul 7: 'Subprocess dipakai hanya untuk merapikan gambar tanpa makna.' Subprocess harus merangkum prosedur yang memiliki awal dan akhir yang jelas.",
+      "readIfFailed": ["/notasi/embedded-subprocess"],
+      "check": {
+        "mode": "manual",
+        "question": "Buka Subprocess Anda (klik tanda + atau expand). Apakah ada minimal satu Start Event dan satu Task di dalam? Atau apakah subprocess hanya menjadi wadah kosong untuk merapikan diagram?"
+      }
+    },
+    {
+      "id": "C07-6",
+      "statement": "Dua Pool (Customer dan Merchant) dipertahankan dengan minimal dua Message Flow.",
+      "rationale": "Modul 7 mewarisi struktur Collaboration dari semua modul sebelumnya.",
+      "readIfFailed": ["/notasi/collaboration", "/notasi/message-flow"],
+      "check": {
+        "mode": "auto",
+        "rule": "message-flow-between-participants",
+        "min": 2
+      }
+    }
+  ]
+}

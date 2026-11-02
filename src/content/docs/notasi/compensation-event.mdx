@@ -1,0 +1,166 @@
+---
+title: "E08 — Compensation Event"
+description: "Mentrigger pembalikan aktivitas yang sudah selesai. Intermediate Throw Compensation Event memicu semua Compensation Handler yang terdaftar secara otomatis dalam urutan terbalik."
+---
+
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | E08 |
+| **Nama BPMN** | Compensation Event |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 9 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §10.4.7 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+<BpmnViewer src="/bpmn/case-09-order.bpmn" title="E08 — Compensation Event: simbol ◀◀ (dua panah kiri) di dalam lingkaran" />
+
+Simbol: lingkaran dengan **◀◀** (dua panah ke kiri, seperti "rewind") di dalamnya.
+
+Dua varian utama:
+- **Compensation Boundary Event:** menempel di tepi aktivitas (Subprocess atau Task). Mendaftarkan Compensation Handler untuk aktivitas itu.
+- **Intermediate Throw Compensation Event:** lingkaran dengan ◀◀ filled. Mentrigger kompensasi.
+
+*Cara membuat di demo.bpmn.io:* Untuk Boundary: klik elemen → "Append Boundary Event" → "Compensation". Untuk Throw: klik ganda canvas → "Intermediate Throwing Event" → ubah ke "Compensation".
+
+---
+
+## 3. Apa artinya
+
+**Compensation Event** menyatakan dua hal yang berbeda tergantung konteks:
+
+- **Boundary:** *"Aktivitas ini dapat dibalikkan. Jika kompensasi ditrigger, jalankan handler yang terhubung ke event ini."*
+- **Throw:** *"Triggerkan kompensasi — jalankan semua handler yang terdaftar untuk aktivitas yang sudah selesai."*
+
+---
+
+## 4. Tujuan
+
+Memungkinkan pembalikan aktivitas yang sudah berhasil diselesaikan ketika situasi berubah (pembatalan, rollback). Menyatakan hubungan eksplisit antara aktivitas dan pembaliknya dalam model.
+
+---
+
+## 5. Semantik BPMN
+
+Ketika Intermediate Throw Compensation Event dieksekusi:
+1. Engine memeriksa scope — aktivitas mana yang sudah selesai dan memiliki Compensation Handler terdaftar.
+2. Handler dipanggil dalam **urutan terbalik** dari urutan eksekusi asli.
+3. Setelah semua handler selesai, token melanjutkan ke Sequence Flow setelah Throw Event.
+
+Compensation Boundary Event **tidak memiliki** incoming Sequence Flow. Ia dihubungkan ke Handler via **Association** (bukan Sequence Flow).
+
+---
+
+## 6. Kapan digunakan
+
+Gunakan Compensation Event ketika:
+- Aktivitas yang sudah berhasil dilakukan perlu "dibalikkan" (rollback).
+- Ada beberapa aktivitas yang perlu dibalikkan dalam urutan tertentu.
+- Pembalikan harus terkait eksplisit ke aktivitas aslinya dalam model.
+
+---
+
+## 7. Kapan jangan digunakan
+
+Jangan gunakan Compensation untuk menangani kegagalan teknis — gunakan Error Event. Jangan gunakan Compensation jika pembalikan hanya perlu satu task sederhana yang tidak terkait ke aktivitas sebelumnya.
+
+---
+
+## 8. Contoh penggunaan
+
+Dalam Modul 9:
+- Ketika customer membatalkan pesanan, Intermediate Throw Compensation Event dipanggil.
+- Engine menemukan: Subprocess "Pemenuhan" sudah selesai → handler "Batalkan pemenuhan" dipanggil.
+- Engine menemukan: Task "Serahkan ke kurir" sudah selesai → handler "Tarik paket dari kurir" dipanggil.
+- Urutan: pembalikan dilakukan dalam urutan terbalik dari eksekusi asli.
+
+---
+
+## 9. Diagram contoh
+
+<BpmnViewer src="/bpmn/case-09-order.bpmn" title="Compensation Boundary Events dan Intermediate Throw Compensation Event di jalur pembatalan" />
+
+---
+
+## 10. Cara membaca diagram
+
+1. Temukan lingkaran dengan ◀◀ menempel di tepi aktivitas → Compensation Boundary Event.
+2. Ikuti Association (panah putus-putus) ke Compensation Handler Task.
+3. Cari Intermediate Throw Compensation Event (◀◀ filled) di alur utama → ini adalah trigger.
+4. Ketika trigger dieksekusi, semua handler yang terdaftar akan dipanggil.
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Compensation disamakan task 'Refund' biasa."**
+
+Task "Refund" tidak terikat ke aktivitas yang dibalikkan. Jika prosedur kemas berubah, task refund tidak ikut berubah. Compensation Boundary Event menyatakan hubungan "ini adalah kebalikan dari X" secara eksplisit dalam model.
+
+---
+
+## 12. Anti-pattern
+
+**Anti-pattern: Sequence Flow dari Compensation Handler.**
+
+Gejala: Handler terhubung ke task berikutnya via Sequence Flow.
+
+Diagnosis: Handler tidak boleh memiliki Sequence Flow masuk atau keluar ke elemen lain. Handler dieksekusi oleh engine, bukan via Sequence Flow. Menambahkan Sequence Flow dari handler melanggar semantik BPMN.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Elemen | Bedanya |
+|--------|---------|
+| Compensation Event (E08) | Membalikkan aktivitas yang sudah selesai |
+| Error Event (E06) | Menangkap exception selama eksekusi |
+| Task "Refund" biasa | Satu tindakan tanpa keterkaitan eksplisit ke aktivitas yang dibalik |
+
+---
+
+## 14. Aturan pemilihan
+
+- Membalikkan aktivitas yang sudah berhasil → Compensation.
+- Menangkap exception saat aktivitas berlangsung → Error Boundary.
+- Satu tindakan pembalikan sederhana → Task biasa.
+
+---
+
+## 15. Pertanyaan diagnostik
+
+- Apakah ada aktivitas yang perlu "dibalikkan" jika pembatalan terjadi? → Compensation Boundary.
+- Apakah perlu trigger untuk memulai pembalikan? → Intermediate Throw Compensation.
+- Apakah pembalikan perlu terjadi dalam urutan terbalik? → Compensation (otomatis).
+
+---
+
+## 16. Argumentasi pemodelan
+
+Dalam Modul 9, Compensation dipilih karena ada dua aktivitas berbeda yang perlu dibalikkan (pemenuhan dan pengiriman kurir) ketika customer membatalkan. Task "Refund" biasa tidak bisa memodelkan ketergantungan antara "apa yang sudah dilakukan" dan "apa yang harus dibalikkan" secara eksplisit.
+
+---
+
+## 17. Validity check
+
+- Compensation Boundary harus terhubung ke Compensation Handler via Association, bukan Sequence Flow.
+- Handler harus memiliki atribut `isForCompensation="true"`.
+- Intermediate Throw Compensation mentrigger semua handler dalam scope saat ini.
+
+---
+
+## 18. Catatan Camunda
+
+Di Camunda, Compensation didukung natively. Handler dieksekusi secara synchronous setelah Throw Event. Pastikan handler tidak melempar exception karena itu bisa memutus alur kompensasi.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Compensation Event menyatakan pembalikan aktivitas yang sudah selesai — Boundary mendaftarkan handler, Throw mentrigger semua handler terdaftar secara otomatis dalam urutan terbalik.

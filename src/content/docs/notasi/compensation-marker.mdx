@@ -1,0 +1,159 @@
+---
+title: "A12 — Compensation Marker"
+description: "Menandai task sebagai Compensation Handler — dieksekusi sebagai pembalikan aktivitas yang sudah selesai ketika kompensasi ditrigger."
+---
+
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | A12 |
+| **Nama BPMN** | Compensation Marker (isForCompensation) |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 9 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §10.3 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+<BpmnViewer src="/bpmn/case-09-order.bpmn" title="A12 — Compensation Handler: task dengan marker ◀◀ terhubung via Association ke Compensation Boundary Event" />
+
+Simbol: kotak task biasa dengan **◀◀** (dua panah ke kiri) di dalamnya. Sama dengan simbol Compensation Event, tapi ada di dalam task.
+
+Task ini **tidak** berada dalam alur utama — ia terhubung ke Compensation Boundary Event via Association (panah putus-putus), bukan Sequence Flow.
+
+*Cara membuat di demo.bpmn.io:* Task → Properties → centang "Compensation". Hubungkan ke Compensation Boundary Event via "Connect to" → Association.
+
+---
+
+## 3. Apa artinya
+
+**Compensation Marker** menyatakan: *"Task ini adalah handler kompensasi — ia akan dieksekusi sebagai kebalikan logis dari aktivitas yang terdaftar padanya, ketika kompensasi ditrigger."*
+
+Task ini tidak dieksekusi via Sequence Flow — dieksekusi oleh engine sebagai respons terhadap Compensation Trigger.
+
+---
+
+## 4. Tujuan
+
+Mendefinisikan tindakan pembalikan yang secara eksplisit terikat ke aktivitas aslinya dalam model. Membuat hubungan "aktivitas X dibalik dengan cara Y" terdokumentasi dan dapat diverifikasi.
+
+---
+
+## 5. Semantik BPMN
+
+Compensation Handler tidak memiliki incoming atau outgoing Sequence Flow ke elemen di luar handler. Engine memanggil handler ketika Compensation Throw Event mentrigger kompensasi dan aktivitas yang terkait dengan handler ini sudah selesai.
+
+[PEDAGOGICAL SIMPLIFICATION] Bayangkan Compensation Handler sebagai "undo button" untuk aktivitas tertentu — hanya bisa dieksekusi oleh engine, bukan oleh alur normal.
+
+---
+
+## 6. Kapan digunakan
+
+Gunakan Compensation Marker ketika:
+- Ada task yang perlu "dibalikkan" jika proses dibatalkan.
+- Pembalikan memiliki logika tersendiri (lebih dari sekadar "hapus record").
+- Hubungan antara aktivitas asli dan pembaliknya perlu eksplisit dalam model.
+
+---
+
+## 7. Kapan jangan digunakan
+
+Jangan gunakan Compensation Marker untuk task yang dieksekusi dalam alur normal — handler tidak bisa dipanggil via Sequence Flow. Jangan gunakan jika pembalikan tidak diperlukan.
+
+---
+
+## 8. Contoh penggunaan
+
+Dalam Modul 9:
+- Task "Batalkan item pesanan dan kembalikan stok" adalah Compensation Handler untuk Subprocess "Pemenuhan Pesanan".
+- Task "Tarik paket dari kurir" adalah Compensation Handler untuk Task "Serahkan paket ke kurir".
+- Ketika Compensation Throw Event dieksekusi, engine memanggil kedua handler ini dalam urutan terbalik.
+
+---
+
+## 9. Diagram contoh
+
+<BpmnViewer src="/bpmn/case-09-order.bpmn" title="Dua Compensation Handler masing-masing terhubung ke Compensation Boundary Event via Association" />
+
+---
+
+## 10. Cara membaca diagram
+
+1. Temukan task dengan marker ◀◀ di dalamnya.
+2. Cari Association (panah putus-putus) yang menghubungkannya ke Compensation Boundary Event.
+3. Compensation Boundary menempel di aktivitas mana? → Itu aktivitas yang akan dibalikkan oleh handler ini.
+4. Handler tidak terhubung ke alur utama via Sequence Flow.
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Handler bisa dipanggil langsung dari Sequence Flow."**
+
+Tidak. Handler hanya bisa dieksekusi oleh engine sebagai respons terhadap Compensation Trigger. Menghubungkan handler ke Sequence Flow melanggar semantik — handler akan menjadi "task biasa" dan kehilangan semantik kompensasinya.
+
+---
+
+## 12. Anti-pattern
+
+**Anti-pattern: Compensation Handler terhubung ke task selanjutnya via Sequence Flow.**
+
+Gejala: Setelah handler "Batalkan pemenuhan", ada Sequence Flow ke task berikutnya.
+
+Diagnosis: Handler tidak boleh memiliki outgoing Sequence Flow ke elemen di luar handler. Engine mengelola eksekusi handler, bukan Sequence Flow biasa.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Elemen | Bedanya |
+|--------|---------|
+| Compensation Marker (A12) | Handler yang dieksekusi engine; tidak dalam alur normal |
+| Task (A01) | Dieksekusi via Sequence Flow dalam alur normal |
+| Compensation Boundary Event | Event yang mendaftarkan handler; berbeda dari handler itu sendiri |
+
+---
+
+## 14. Aturan pemilihan
+
+- Tindakan pembalikan yang terikat ke aktivitas spesifik → Compensation Marker + Boundary.
+- Tindakan dalam alur normal → Task biasa.
+
+---
+
+## 15. Pertanyaan diagnostik
+
+- Apakah task ini perlu dieksekusi sebagai respons terhadap pembatalan? → Compensation Marker.
+- Apakah ada Compensation Boundary Event yang bisa dihubungkan? → Hubungkan via Association.
+- Apakah task ini perlu berjalan dalam alur normal juga? → Pisahkan: buat dua task terpisah.
+
+---
+
+## 16. Argumentasi pemodelan
+
+Compensation Marker memungkinkan model mendokumentasikan "apa yang harus dibalikkan jika proses batal" secara eksplisit — bukan tersembunyi di kode implementasi. Ini penting untuk auditabilitas proses bisnis.
+
+---
+
+## 17. Validity check
+
+- Handler harus memiliki atribut `isForCompensation="true"` dalam XML.
+- Handler harus terhubung ke Compensation Boundary Event via Association.
+- Handler tidak boleh memiliki incoming Sequence Flow dari elemen lain.
+- Handler tidak boleh memiliki outgoing Sequence Flow ke elemen lain.
+
+---
+
+## 18. Catatan Camunda
+
+Di Camunda, Compensation Handler dikonfigurasi dengan centang "Compensation" di properties task. Association ke Boundary Event harus dibuat secara manual. Pastikan handler task dapat dieksekusi secara idempoten — engine bisa memanggil handler lebih dari sekali dalam edge case.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Compensation Marker menandai task sebagai "undo handler" untuk aktivitas tertentu — dieksekusi oleh engine ketika kompensasi ditrigger, bukan via Sequence Flow biasa.

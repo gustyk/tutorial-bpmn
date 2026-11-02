@@ -1,0 +1,158 @@
+---
+title: "E11 — Terminate End Event"
+description: "Menghentikan seluruh proses instance — semua token aktif dibatalkan. Berbeda dari None End Event yang hanya menghentikan token yang melewatinya."
+---
+
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | E11 |
+| **Nama BPMN** | Terminate End Event |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 8 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §10.4.2 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+<BpmnViewer src="/bpmn/case-08-order.bpmn" title="E11 — Terminate End Event: lingkaran tebal dengan lingkaran penuh (filled circle) di dalamnya" />
+
+Simbol: lingkaran tebal (End Event) dengan **lingkaran penuh (filled circle)** di dalamnya. Berbeda dari None End Event yang tidak memiliki isi, dan Error End yang memiliki petir.
+
+*Cara membuat di demo.bpmn.io:* Klik End Event → ubah tipe ke "Terminate End Event".
+
+---
+
+## 3. Apa artinya
+
+**Terminate End Event** menyatakan: *"Ketika token mencapai titik ini, hentikan SELURUH proses instance — semua token yang masih aktif di cabang mana pun dibatalkan segera."*
+
+Berbeda dari None End Event yang hanya menghentikan token yang melewatinya; token di cabang lain tetap aktif.
+
+---
+
+## 4. Tujuan
+
+Memastikan seluruh proses instance berhenti secara "keras" ketika kondisi fatal terjadi — tanpa menunggu cabang lain selesai dan tanpa membiarkan token "tersisa" aktif tanpa tujuan.
+
+---
+
+## 5. Semantik BPMN
+
+Token mencapai Terminate End Event → engine membatalkan semua token aktif dalam proses instance saat ini → proses instance berakhir.
+
+[PEDAGOGICAL SIMPLIFICATION] Bayangkan Terminate End seperti tombol "kill switch" — menekannya menghentikan semua yang berjalan sekaligus.
+
+---
+
+## 6. Kapan digunakan
+
+Gunakan Terminate End Event ketika:
+- Kondisi fatal terjadi dan tidak ada gunanya melanjutkan proses sama sekali.
+- Semua token aktif (dari jalur paralel atau Event Subprocess) harus dibersihkan.
+- Proses harus berakhir secara "keras" tanpa menunggu cabang lain.
+- Contoh: pengiriman gagal total dan seluruh proses instance harus dihentikan.
+
+---
+
+## 7. Kapan jangan digunakan
+
+Jangan gunakan Terminate End untuk mengakhiri satu cabang dari proses paralel — ia akan membunuh cabang lain juga. Untuk mengakhiri satu cabang, gunakan None End Event biasa.
+
+---
+
+## 8. Contoh penggunaan
+
+Dalam Modul 8:
+- Boundary Error menangkap penolakan kurir → Task "Kirim pemberitahuan gagal ke customer" → **Terminate End Event**.
+- Terminate End memastikan tidak ada token lain yang tersisa aktif setelah pengiriman gagal.
+- Menggunakan None End di sini akan membiarkan proses instance tetap "hidup" dari sudut pandang engine.
+
+---
+
+## 9. Diagram contoh
+
+<BpmnViewer src="/bpmn/case-08-order.bpmn" title="Terminate End Event di jalur error setelah pemberitahuan gagal dikirim" />
+
+---
+
+## 10. Cara membaca diagram
+
+1. Temukan lingkaran tebal (End Event) dengan lingkaran penuh di dalamnya.
+2. Ini adalah akhir dari **seluruh** proses instance, bukan hanya satu token.
+3. Jika ada di jalur error: proses berhenti total ketika kondisi ini tercapai.
+4. Pastikan ini memang skenario yang mengharuskan seluruh proses berhenti.
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Terminate End dipakai untuk mengakhiri satu cabang."**
+
+Terminate End bukan "End Event untuk jalur ini" — ia adalah "hentikan SEMUA yang berjalan." Jika ada jalur paralel yang masih aktif, Terminate End akan membunuh mereka juga. Untuk mengakhiri satu cabang, gunakan None End.
+
+---
+
+## 12. Anti-pattern
+
+**Anti-pattern: Terminate End di satu cabang dari proses paralel.**
+
+Gejala: Ada AND Split (Parallel Gateway), dua cabang berjalan paralel. Di satu cabang ada Terminate End.
+
+Diagnosis: Cabang lain yang masih berjalan akan dibunuh ketika Terminate End tercapai di satu cabang. Ini hampir selalu tidak disengaja — biasanya pemodelan bermaksud "selesaikan cabang ini saja."
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Elemen | Bedanya |
+|--------|---------|
+| Terminate End Event (E11) | Menghentikan seluruh proses instance |
+| None End Event (E01) | Hanya menghentikan token yang melewatinya |
+| Error End Event (E06) | Melempar error ke proses induk; tidak menghentikan seluruh instance |
+
+---
+
+## 14. Aturan pemilihan
+
+- Kondisi fatal, seluruh proses harus berhenti → Terminate End.
+- Mengakhiri satu jalur dari proses → None End.
+- Melempar error ke proses induk dari Subprocess → Error End.
+
+---
+
+## 15. Pertanyaan diagnostik
+
+- Apakah ada token lain yang masih aktif ketika ini terjadi? Apakah mereka harus dihentikan juga? → Jika ya, Terminate End.
+- Apakah ini mengakhiri satu cabang saja? → None End.
+- Apakah proses ini di dalam Subprocess yang perlu memberitahu induknya? → Error End.
+
+---
+
+## 16. Argumentasi pemodelan
+
+Dalam Modul 8, Terminate End dipilih karena ketika kurir menolak paket, tidak ada gunanya melanjutkan proses instance manapun. Menggunakan None End akan membiarkan proses instance tetap aktif dalam engine — yang bisa menyebabkan resource leak dan task yang tidak pernah selesai.
+
+---
+
+## 17. Validity check
+
+- Terminate End Event harus memiliki `terminateEventDefinition` dalam XML.
+- Terminate End **dalam Subprocess** hanya menghentikan Subprocess itu (bukan proses induk), kecuali dikonfigurasi dengan `terminateAll="true"`.
+- Berhati-hati menggunakan Terminate End dalam Event Subprocess — ia bisa menghentikan proses utama jika dalam scope yang sama.
+
+---
+
+## 18. Catatan Camunda
+
+Di Camunda, Terminate End menghentikan seluruh proses instance. Dalam embedded Subprocess, Terminate End menghentikan instance subprocess dan proses utama. Untuk menghentikan hanya subprocess, gunakan None End.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Terminate End Event menghentikan seluruh proses instance sekaligus — semua token aktif dibatalkan, digunakan hanya untuk kondisi fatal yang mengharuskan seluruh proses berhenti.

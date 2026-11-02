@@ -1,0 +1,156 @@
+---
+title: "A16 — Call Activity"
+description: "Subprocess yang memanggil proses yang didefinisikan terpisah. Dapat dipanggil ulang dari proses mana pun — ubah sekali, semua pemanggil ikut berubah."
+---
+
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | A16 |
+| **Nama BPMN** | Call Activity |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 7 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §10.3 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+<BpmnViewer src="/bpmn/case-07-order.bpmn" title="A16 — Call Activity: kotak dengan border lebih tebal dari task biasa" />
+
+Kotak dengan **border lebih tebal** dibanding task biasa. Tidak memiliki tanda `+` (tidak ada isi di dalam diagram saat ini). Atribut `calledElement` merujuk ke ID proses yang dipanggil.
+
+*Cara membuat di demo.bpmn.io:* Klik kanan pada task → "Change type" → "Call Activity".
+
+---
+
+## 3. Apa artinya
+
+**Call Activity** menyatakan: *"Di sini ada prosedur yang didefinisikan terpisah dan bisa dipanggil dari proses mana pun. Ketika dieksekusi, proses yang dirujuk dijalankan."*
+
+Proses yang dipanggil memiliki definisi tersendiri dan dapat diperbarui secara independen.
+
+---
+
+## 4. Tujuan
+
+Memungkinkan reuse prosedur di beberapa proses tanpa menduplikasi. Ketika prosedur berubah, semua pemanggil otomatis menggunakan versi terbaru.
+
+---
+
+## 5. Semantik BPMN
+
+Token masuk ke Call Activity → engine memanggil proses yang dirujuk (`calledElement`) → proses tersebut dieksekusi secara penuh → setelah selesai, token kembali ke Call Activity dan melanjutkan Sequence Flow utama.
+
+[PEDAGOGICAL SIMPLIFICATION] Call Activity seperti memanggil subrutin dalam pemrograman — proses utama "memanggil" proses lain, menunggu selesai, lalu melanjutkan.
+
+---
+
+## 6. Kapan digunakan
+
+Gunakan Call Activity ketika:
+- Prosedur yang sama dipakai di dua atau lebih proses berbeda.
+- Perubahan prosedur harus tercermin di semua pemanggil secara otomatis.
+- Prosedur memiliki owner tersendiri dan dikelola secara independen.
+- Prosedur perlu diuji dan diverifikasi secara terpisah.
+
+---
+
+## 7. Kapan jangan digunakan
+
+Jangan gunakan Call Activity jika prosedur hanya dipakai di satu proses — gunakan Embedded Subprocess. Jangan gunakan Call Activity jika prosedur sederhana (hanya beberapa task linear) — overhead reuse tidak sebanding dengan kompleksitasnya.
+
+---
+
+## 8. Contoh penggunaan
+
+Dalam Modul 7:
+- "Verifikasi Alamat Pengiriman" digunakan oleh proses pesanan *dan* proses retur. Dimodelkan sebagai Call Activity agar perubahan di definisi prosedur hanya perlu dilakukan sekali.
+
+---
+
+## 9. Diagram contoh
+
+<BpmnViewer src="/bpmn/case-07-order.bpmn" title="Call Activity 'Verifikasi Alamat Pengiriman' dengan border tebal" />
+
+---
+
+## 10. Cara membaca diagram
+
+1. Temukan kotak dengan border lebih tebal dari task biasa.
+2. Tidak ada tanda `+` di bagian bawah.
+3. Label menyebutkan nama prosedur yang dipanggil.
+4. Proses yang dipanggil (`calledElement`) ada di definisi terpisah.
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Call Activity punya isi di dalamnya seperti Subprocess."**
+
+Tidak. Call Activity tidak memiliki elemen di dalam diagram saat ini. Menggambar task atau event di dalam Call Activity melanggar semantik BPMN — elemen-elemen itu tidak bisa didefinisikan di dalam Call Activity dalam diagram ini.
+
+---
+
+## 12. Anti-pattern
+
+**Anti-pattern: Menyalin prosedur ke beberapa proses secara manual.**
+
+Gejala: Prosedur "Verifikasi Alamat" ada di proses pesanan *dan* di proses retur sebagai task-task terpisah yang identik.
+
+Diagnosis: Ketika prosedur berubah, harus diupdate di dua tempat. Risiko inkonsistensi tinggi. Call Activity memungkinkan single source of truth.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Elemen | Bedanya |
+|--------|---------|
+| Call Activity (A16) | Memanggil proses terpisah; bisa dipakai ulang |
+| Embedded Subprocess (A13) | Disisipkan di proses ini; tidak bisa dipakai ulang |
+| Task (A01) | Satu langkah atomik; tidak ada sub-proses |
+
+---
+
+## 14. Aturan pemilihan
+
+- Prosedur dipakai di satu proses saja → Embedded Subprocess.
+- Prosedur dipakai di beberapa proses → Call Activity.
+- Satu langkah sederhana → Task langsung.
+
+---
+
+## 15. Pertanyaan diagnostik
+
+- Apakah prosedur ini dipakai di lebih dari satu proses? → Call Activity.
+- Apakah prosedur ini perlu dipelihara secara independen oleh tim lain? → Call Activity.
+- Apakah prosedur ini hanya relevan dalam konteks proses ini? → Embedded Subprocess.
+
+---
+
+## 16. Argumentasi pemodelan
+
+Dalam Modul 7, Call Activity untuk verifikasi alamat dipilih karena prosedur yang sama digunakan oleh proses retur. Menggunakan Embedded Subprocess yang disalin ke dua proses akan menciptakan dua versi yang bisa divergen — risiko yang tidak perlu ketika Call Activity tersedia.
+
+---
+
+## 17. Validity check
+
+- Call Activity harus memiliki atribut `calledElement` yang merujuk ke ID proses yang valid.
+- Call Activity tidak boleh memiliki elemen di dalamnya (tidak seperti Subprocess).
+- Proses yang dipanggil harus dapat ditemukan oleh engine pada saat eksekusi.
+
+---
+
+## 18. Catatan Camunda
+
+Di Camunda, Call Activity mendukung passing variabel ke proses yang dipanggil (`in`) dan menerima variabel kembali (`out`). Ini memungkinkan komunikasi data antara proses pemanggil dan proses yang dipanggil.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Call Activity adalah mekanisme reuse proses — ia memanggil prosedur yang didefinisikan terpisah sehingga perubahan prosedur cukup dilakukan sekali dan berlaku untuk semua pemanggil.

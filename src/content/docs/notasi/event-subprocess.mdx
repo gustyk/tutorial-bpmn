@@ -1,0 +1,170 @@
+---
+title: "A14 — Event Subprocess"
+description: "Subprocess yang dipicu oleh event dari dalam proses utama. Non-interrupting berjalan paralel; interrupting menghentikan proses utama."
+---
+
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | A14 |
+| **Nama BPMN** | Event Sub-Process |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 9 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §10.3 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+<BpmnViewer src="/bpmn/case-09-order.bpmn" title="A14 — Event Subprocess non-interrupting: kotak dengan border putus-putus, Start Event berisi Signal" />
+
+Dua varian visual:
+
+- **Non-interrupting:** kotak dengan **border putus-putus**. Proses utama tetap berjalan.
+- **Interrupting:** kotak dengan **border solid tipis**. Proses utama dihentikan.
+
+Start Event di dalam Event Subprocess harus berupa event tertentu (bukan None) — bisa Message, Signal, Timer, Error, Escalation, dll.
+
+*Cara membuat di demo.bpmn.io:* Klik kanan di dalam proses → "Event Sub-Process". Ubah Start Event ke tipe yang sesuai. Centang/hapus centang "Interrupting" untuk mengubah perilaku.
+
+---
+
+## 3. Apa artinya
+
+**Event Subprocess** menyatakan: *"Ada layanan tambahan yang dapat dipicu oleh event kapan saja selama proses berlangsung — tanpa memerlukan titik tunggu di alur utama."*
+
+Berbeda dari Subprocess biasa, Event Subprocess tidak terhubung ke alur utama via Sequence Flow.
+
+---
+
+## 4. Tujuan
+
+Menambahkan perilaku yang dapat dipicu oleh event kapan saja dalam scope proses, tanpa mengubah struktur alur utama. Cocok untuk layanan lintas-cutting seperti logging, notifikasi status, atau penanganan event global.
+
+---
+
+## 5. Semantik BPMN
+
+Event Subprocess berada dalam scope proses utama. Ketika event yang sesuai terjadi:
+- **Non-interrupting:** Event Subprocess dieksekusi **paralel** dengan proses utama. Proses utama tidak terpengaruh.
+- **Interrupting:** Proses utama **dihentikan**. Event Subprocess mengambil alih.
+
+Setelah Event Subprocess selesai, token dalam Event Subprocess berakhir. Proses utama tidak menerima token dari Event Subprocess.
+
+[PEDAGOGICAL SIMPLIFICATION] Non-interrupting Event Subprocess seperti "daemon process" yang berjalan di background — aktif setiap kali dipanggil tanpa mengganggu proses utama.
+
+---
+
+## 6. Kapan digunakan
+
+**Non-interrupting** untuk layanan yang:
+- Dapat dipanggil kapan saja tanpa mengganggu proses utama.
+- Berjalan paralel (status query, logging, notifikasi).
+- Tidak mengubah state proses utama.
+
+**Interrupting** untuk event yang:
+- Mengharuskan proses utama berhenti dan beralih ke penanganan event tersebut.
+- Fundamental mengubah jalannya proses (misalnya: regulasi baru berlaku).
+
+---
+
+## 7. Kapan jangan digunakan
+
+Jangan gunakan Event Subprocess jika event hanya bisa terjadi di satu titik tertentu dalam alur — gunakan Intermediate Catch Event di titik tersebut. Jangan gunakan Non-interrupting jika event harus menghentikan proses utama.
+
+---
+
+## 8. Contoh penggunaan
+
+Dalam Modul 9:
+- Event Subprocess "Layanan Status Pesanan" (non-interrupting) dengan Signal Start Event.
+- Customer dapat mengirim signal "StatusPesananDiminta" kapan saja selama proses berlangsung.
+- Event Subprocess merespons dengan mengirim status → proses utama tidak terganggu.
+
+---
+
+## 9. Diagram contoh
+
+<BpmnViewer src="/bpmn/case-09-order.bpmn" title="Event Subprocess non-interrupting dengan Signal Start Event — berjalan paralel dengan proses utama" />
+
+---
+
+## 10. Cara membaca diagram
+
+1. Temukan kotak yang **tidak terhubung** ke alur utama via Sequence Flow.
+2. Border putus-putus = non-interrupting; border solid tipis = interrupting.
+3. Start Event di dalam kotak menentukan event apa yang memicu subprocess ini.
+4. Event Subprocess berada dalam scope proses yang sama — tidak terlihat dari luar.
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Event Subprocess interrupting bisa dipakai untuk layanan yang tidak mengganggu."**
+
+Interrupting menghentikan proses utama — menggunakannya untuk layanan status pesanan berarti proses utama berhenti setiap kali ada pertanyaan masuk. Gunakan non-interrupting untuk layanan yang harus berjalan paralel.
+
+---
+
+## 12. Anti-pattern
+
+**Anti-pattern: Intermediate Catch Event di tengah alur untuk layanan yang bisa dipanggil kapan saja.**
+
+Gejala: Ada Intermediate Message Catch Event di tengah alur utama untuk "permintaan status". Proses hanya bisa merespons di titik itu.
+
+Diagnosis: Proses menunggu permintaan status di satu titik tertentu — sebelum atau sesudah titik itu, permintaan tidak bisa diproses. Event Subprocess bisa dipicu kapan saja.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Elemen | Bedanya |
+|--------|---------|
+| Event Subprocess (A14) | Dipicu kapan saja; tidak dalam alur utama |
+| Intermediate Catch Event | Di dalam alur utama; hanya aktif saat token ada di situ |
+| Embedded Subprocess (A13) | Dalam alur utama; dipanggil via Sequence Flow |
+
+---
+
+## 14. Aturan pemilihan
+
+- Layanan yang bisa dipicu kapan saja paralel → Non-interrupting Event Subprocess.
+- Event yang mengharuskan proses berhenti dan beralih → Interrupting Event Subprocess.
+- Event yang hanya bisa terjadi di satu titik dalam alur → Intermediate Catch Event.
+
+---
+
+## 15. Pertanyaan diagnostik
+
+- Dapatkah event ini terjadi kapan saja selama proses berlangsung? → Event Subprocess.
+- Harus proses utama berhenti ketika event ini terjadi? → Interrupting. Tidak? → Non-interrupting.
+- Event hanya mungkin di satu titik tertentu? → Intermediate Catch Event.
+
+---
+
+## 16. Argumentasi pemodelan
+
+Dalam Modul 9, Event Subprocess non-interrupting dipilih karena permintaan status bisa datang kapan saja — sebelum pembayaran, setelah konfirmasi, selagi dikemas. Menggunakan Intermediate Catch Event di satu titik akan membatasi layanan hanya di titik itu, yang tidak sesuai requirement.
+
+---
+
+## 17. Validity check
+
+- Start Event dalam Event Subprocess tidak boleh berupa None Start.
+- Event Subprocess tidak boleh memiliki incoming atau outgoing Sequence Flow dari/ke proses utama.
+- Non-interrupting Start Event harus ditandai dengan `isInterrupting="false"`.
+
+---
+
+## 18. Catatan Camunda
+
+Di Camunda, Event Subprocess non-interrupting didukung. Signal Start Event memerlukan Signal definition yang terdefinisi di level Definitions. Perhatikan bahwa Signal bersifat broadcast — semua Event Subprocess yang mendengarkan signal yang sama akan dipicu.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Event Subprocess adalah subprocess yang dipicu oleh event kapan saja dalam scope proses — non-interrupting berjalan paralel tanpa mengganggu proses utama, interrupting menghentikan proses utama dan mengambil alih.

@@ -1,6 +1,199 @@
 ---
-title: "Modul 8 — Pengiriman internasional"
-description: "Kasus kedelapan: boundary event dan kompensasi."
+title: "Modul 8: Pengiriman Bisa Gagal"
+description: "Tangani exception teknis dengan Boundary Error Event. Pahami kapan Terminate End dibutuhkan dan kapan ia adalah pilihan salah."
 ---
 
-Halaman ini akan diisi saat modul terkait diterbitkan.
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+import CriteriaChecker from '../../../components/CriteriaChecker.astro';
+
+## 1. Apa yang berubah
+
+**Perubahan requirement dari Modul 7:**
+
+> "Kalau kurir menolak paket, prosesnya tidak boleh lanjut seolah terkirim. Hentikan semuanya dan beritahu customer."
+
+Di Modul 7, setelah pemenuhan selesai, proses selalu lanjut ke konfirmasi. Sekarang ada kemungkinan kegagalan teknis di luar kontrol — kurir menolak paket — yang harus ditangani secara eksplisit.
+
+**Delta notasi:**
+
+| Kode | Nama | Peran dalam modul ini |
+|------|------|----------------------|
+| E06 | Boundary Error Event + Error End Event | Menangkap exception yang dilempar task (kurir menolak) dan menyatakan akhir error |
+| E11 | Terminate End Event | Menghentikan **seluruh** proses instance, bukan hanya satu token |
+
+**Dari Modul 7 yang dipakai ulang:** E01, E02, E03, P01/P02, C01, F02, D01/F04, R01, G01, G04, G02, D04, A13, A16, A11, F01.
+
+---
+
+## 2. Kasus bisnis
+
+Kepala logistik membawa data ke rapat:
+
+> "Minggu lalu ada 3 pesanan yang paketnya ditolak kurir karena alamat tidak valid dan berat melebihi batas. Sistem kita tidak mencatat ini — prosesnya terus jalan seolah paket sudah terkirim. Customer menunggu, tidak ada kabar. Mereka akhirnya komplain ke CS setelah dua hari."
+
+Developer bertanya:
+
+> "Apakah penolakan kurir itu kondisi yang bisa kita prediksi sebelum kita menyerahkan paket? Atau ia adalah exception yang baru kita tahu setelah task 'Serahkan ke kurir' sudah dimulai?"
+
+Kepala logistik: *"Kita tidak bisa prediksi sebelumnya. Kurir mengukur paket di tempat. Kalau melebihi batas, mereka tolak di lokasi."*
+
+Developer: *"Kalau begitu kita butuh Boundary Error, bukan XOR sebelum task."*
+
+---
+
+## 3. Requirement
+
+1. Task "Serahkan paket ke kurir" bisa gagal dengan exception "Kurir Menolak Paket".
+2. Ketika exception terjadi, task harus **langsung dihentikan** (interrupting).
+3. Setelah exception: kirim **pemberitahuan pengiriman gagal** ke Customer.
+4. Setelah notifikasi terkirim: **hentikan seluruh proses** — tidak ada token lain yang harus aktif.
+5. Semua requirement Modul 7 tetap berlaku.
+
+---
+
+## 4. Panduan analisis
+
+**Mengapa Boundary Error, bukan XOR sebelum task?**
+
+Ada dua cara yang mungkin terpikirkan untuk menangani penolakan kurir:
+
+*Opsi 1:* Tambahkan XOR Gateway sebelum task "Serahkan ke kurir" dengan kondisi "paket aman untuk dikirim?"
+
+*Opsi 2:* Tambahkan Boundary Error Event pada task "Serahkan ke kurir" yang terpicu ketika kurir menolak.
+
+Perbedaannya ada pada **kapan kita tahu**:
+- XOR mengevaluasi kondisi yang sudah ada **sebelum** task dimulai.
+- Boundary Error menangkap exception yang terjadi **selama** eksekusi task.
+
+Penolakan kurir terjadi **selama** task berlangsung (kurir mengukur paket di lokasi). Pada saat token tiba di titik itu, kita belum tahu apakah kurir akan menolak atau tidak. Menggunakan XOR menyatakan bahwa kita tahu hasilnya sebelum mencoba — yang tidak sesuai kenyataan.
+
+**Reuse negatif #1 — Error dipakai untuk hasil bisnis normal:**
+
+> *"Error dipakai untuk hasil bisnis yang normal (barang kosong bukan error)."*
+
+Kondisi "barang habis" bisa diketahui sebelum task dimulai (cek stok di verifikasi), dan ia adalah **skenario bisnis yang direncanakan** — bukan exception tak terduga. Menggunakan Error Event di sana menyatakan bahwa "barang habis" adalah sesuatu yang tidak direncanakan sistem, padahal ini adalah skenario normal yang punya jalur penanganan tersendiri.
+
+Gunakan Error Event hanya untuk kondisi yang **tidak direncanakan di level desain bisnis** dan yang hanya bisa diketahui selama task berlangsung.
+
+**Reuse negatif #2 — Terminate End menutup satu cabang:**
+
+> *"Terminate End dipakai untuk menutup satu cabang."*
+
+Gejala: ada dua jalur paralel, dan di satu cabang ada Terminate End Event — pemodelan bermaksud "selesaikan cabang ini."
+
+Diagnosis: Terminate End **bukan** "End Event untuk jalur ini" — ia adalah "hentikan **semua** yang sedang berjalan dalam proses ini, termasuk cabang-cabang lain." Jika dipakai di satu cabang dari dua jalur paralel, ia akan membunuh cabang lain juga.
+
+Jika ingin mengakhiri satu cabang dari proses paralel, gunakan None End Event biasa. Gunakan Terminate End hanya ketika memang ingin menghentikan **seluruh** proses instance.
+
+**None End vs. Terminate End:**
+
+| | None End Event | Terminate End Event |
+|---|---|---|
+| Menghentikan | Token yang melewatinya | Seluruh process instance |
+| Token lain | Tetap aktif | Semua dibatalkan |
+| Kapan digunakan | Mengakhiri satu jalur dalam proses | Menghentikan proses secara keseluruhan karena kondisi fatal |
+
+---
+
+## 5. Tugas
+
+Mulai dari diagram Modul 7:
+
+1. Pada task "Serahkan paket ke kurir" di Tim Gudang, tambahkan **Boundary Error Event** (border tebal, bukan putus-putus = interrupting) berlabel "Kurir menolak paket".
+2. Dari Boundary Error: → **Task "Kirim pemberitahuan pengiriman gagal ke customer"** → Message Flow ke Pool Customer.
+3. Dari Task notifikasi: → **Terminate End Event** berlabel "Pengiriman gagal — proses dihentikan".
+4. Di Pool Customer: tambahkan **Intermediate Message Catch Event "Pemberitahuan gagal diterima"** → End Event "Pesanan tidak terkirim".
+5. Verifikasi: apakah border Boundary Error solid (interrupting) atau putus-putus (non-interrupting)?
+
+:::tip[File starter]
+Gunakan [`case-08-order.bpmn`](/bpmn/case-08-order.bpmn) sebagai referensi, atau kembangkan file Modul 7-mu sendiri.
+:::
+
+---
+
+## 6. Pemeriksa kriteria
+
+<CriteriaChecker
+  criteriaSrc="/cases/case-08/criteria.json"
+  title="Periksa model Kasus 8"
+/>
+
+---
+
+## 7. Kunci jawaban
+
+:::caution[Coba kerjakan dulu]
+Buka hanya setelah kamu selesai mengerjakan tugas dan memeriksa modelmu.
+:::
+
+<details>
+<summary>**Lihat kunci jawaban Modul 8**</summary>
+
+### Lapis A — Model referensi
+
+<BpmnViewer src="/bpmn/case-08-order.bpmn" title="Kasus 8 — Boundary Error Event dan Terminate End Event" />
+
+**Walkthrough token (skenario kurir menolak):**
+
+1. Token tiba di Task "Serahkan paket ke kurir".
+2. Selama eksekusi, kurir menolak → exception `KURIR_TOLAK` dilempar.
+3. **Boundary Error Event** menangkap exception → **menginterrupt** task (task dihentikan).
+4. Token mengalir ke jalur error: Task "Kirim pemberitahuan gagal ke customer".
+5. Message Flow dikirim ke Pool Customer → Customer menerima notifikasi.
+6. Token ke **Terminate End Event** → **seluruh proses instance dihentikan** — semua token lain (jika ada) dibatalkan.
+
+**Walkthrough token (skenario normal):**
+
+1. Task "Serahkan paket ke kurir" selesai tanpa exception.
+2. Token keluar dari outgoing flow normal → Task "Kirim konfirmasi pesanan ke customer".
+3. Message Flow ke Customer → End Event "Pesanan dikirim".
+
+### Lapis B — Kriteria wajib
+
+1. **Boundary Error Event** (interrupting, solid border) pada task pengiriman.
+2. **Terminate End Event** di jalur error (bukan None End).
+3. **Notifikasi ke customer** sebelum Terminate End.
+4. **Boundary Error menginterrupt** task pengiriman (bukan non-interrupting).
+5. **Event-Based Gateway + Timer** dari Modul 5 dipertahankan.
+
+### Lapis C — Variasi yang juga diterima
+
+**Variasi 1: Error End Event di dalam Subprocess**
+
+Jika Task "Serahkan ke kurir" ada di dalam Subprocess, bisa menggunakan Error End Event di dalam Subprocess untuk melempar error, dan Boundary Error Event di boundary Subprocess untuk menangkapnya di proses utama. Ini valid dan merupakan pattern umum di Camunda.
+
+**Variasi 2: Terminate End tanpa notifikasi**
+
+Jika requirement tidak menyebut notifikasi ke customer (hanya "hentikan proses"), Terminate End langsung setelah Boundary Error diterima. Model referensi menambahkan notifikasi sesuai requirement Modul 8.
+
+### Lapis D — Kesalahan umum
+
+**Kesalahan 1: XOR Gateway sebelum task pengiriman dengan kondisi "kurir menerima/menolak"**
+
+*Gejala:* Ada XOR Gateway dengan "kurir menerima?" sebelum task pengiriman.
+
+*Diagnosis semantik:* Pada saat token tiba di gateway itu, task pengiriman belum dimulai — kurir belum melihat paket. Evaluasi "kurir menerima?" tidak mungkin dilakukan sebelum task berlangsung. Ini adalah contoh kondisi yang hanya bisa diketahui **selama** eksekusi task, bukan sebelumnya.
+
+*Perbaikan:* Hapus XOR. Tambahkan Boundary Error Event pada task pengiriman.
+
+**Kesalahan 2: Boundary Error non-interrupting (border putus-putus)**
+
+*Gejala:* Boundary Error Event dengan border putus-putus — task pengiriman masih berjalan sementara token juga mengalir ke jalur error.
+
+*Diagnosis semantik:* Task "Serahkan ke kurir" tidak bisa selesai jika kurir menolak. Membiarkan task berjalan setelah penolakan tidak mencerminkan kenyataan — ada dua token aktif: satu di task (yang tidak bisa selesai) dan satu di jalur error. Ini akan menyebabkan deadlock.
+
+*Perbaikan:* Ubah ke Boundary Error interrupting (solid border). Task akan dihentikan dan token dialihkan ke jalur error.
+
+**Kesalahan 3: None End Event digunakan untuk kasus fatal**
+
+*Gejala:* Setelah notifikasi gagal, ada None End Event — proses terlihat selesai tapi token lain (jika ada) masih aktif.
+
+*Diagnosis semantik:* Jika ada token lain yang masih aktif (misalnya di Poll yang sedang menunggu), None End tidak akan membersihkan mereka. Proses instance masih "hidup" dari sudut pandang engine. Terminate End memastikan seluruh instance dibersihkan.
+
+*Perbaikan:* Ganti None End dengan Terminate End Event di jalur error fatal.
+
+</details>
+
+---
+
+**← [Modul 7](/jalur/07/) · [Modul 9: Pembatalan Setelah Pembayaran Ditarik](/jalur/09/) →**

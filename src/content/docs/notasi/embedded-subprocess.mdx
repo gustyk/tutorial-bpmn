@@ -1,0 +1,157 @@
+---
+title: "A13 — Embedded Subprocess"
+description: "Sub-proses yang disisipkan langsung dalam proses saat ini. Menyembunyikan detail internal kompleks agar diagram utama tetap terbaca."
+---
+
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | A13 |
+| **Nama BPMN** | Embedded Subprocess (Sub-Process) |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 7 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §10.3 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+<BpmnViewer src="/bpmn/case-07-order.bpmn" title="A13 — Embedded Subprocess: kotak dengan tanda + di tengah bawah (collapsed)" />
+
+Kotak dengan tanda **`+`** di bagian tengah bawah. Dalam kondisi *collapsed* (tersembunyi), isi proses tidak terlihat. Dalam kondisi *expanded*, isi proses terbuka di dalam kotak tersebut.
+
+*Cara membuat di demo.bpmn.io:* Klik kanan → "Sub-Process (collapsed)" atau klik kanan lalu "Expand" untuk membuka isinya.
+
+---
+
+## 3. Apa artinya
+
+**Embedded Subprocess** menyatakan: *"Di sini ada prosedur dengan logika internal tersendiri — detailnya tersembunyi di balik kotak ini agar diagram utama tetap terbaca."*
+
+Subprocess disisipkan langsung dalam proses saat ini dan tidak dapat dipanggil dari proses lain.
+
+---
+
+## 4. Tujuan
+
+Menyembunyikan detail internal sub-prosedur yang kompleks (percabangan, event, loop) agar alur utama tetap dapat dibaca. Bukan untuk menyembunyikan informasi tanpa alasan.
+
+---
+
+## 5. Semantik BPMN
+
+Token masuk ke Subprocess melalui Sequence Flow dan diteruskan ke **Start Event** di dalam Subprocess. Proses internal berjalan sampai mencapai **End Event**. Setelah End Event, token keluar dari Subprocess dan melanjutkan Sequence Flow utama.
+
+[PEDAGOGICAL SIMPLIFICATION] Bayangkan Subprocess sebagai "kotak hitam" yang menerima token di pintu masuk dan mengembalikannya di pintu keluar setelah prosedur internal selesai.
+
+---
+
+## 6. Kapan digunakan
+
+Gunakan Embedded Subprocess ketika:
+- Sub-prosedur memiliki logika internal: percabangan, event, atau loop.
+- Menampilkan seluruh detail di view utama melampaui batas keterbacaan.
+- Sub-prosedur adalah prosedur tersendiri dengan SOP dan nama yang jelas.
+- Sub-prosedur **tidak perlu dipanggil ulang** dari proses lain.
+
+---
+
+## 7. Kapan jangan digunakan
+
+Jangan gunakan Embedded Subprocess jika langkah-langkah di dalamnya hanya task linear sederhana tanpa percabangan atau logika internal. Overhead konseptual tanpa nilai tambah semantik. Jangan gunakan jika prosedur yang sama dipakai di beberapa proses — gunakan Call Activity.
+
+---
+
+## 8. Contoh penggunaan
+
+Dalam Modul 7:
+- "Pemenuhan Pesanan" di Lane Tim Gudang dimodelkan sebagai Embedded Subprocess karena memiliki logika internal: Multi-instance Task memproses setiap item satu per satu, diikuti Task "Terbitkan Invoice".
+- Dari view utama, diagram tetap bersih. Detail hanya terlihat ketika Subprocess dibuka.
+
+---
+
+## 9. Diagram contoh
+
+<BpmnViewer src="/bpmn/case-07-order.bpmn" title="Collapsed Subprocess 'Pemenuhan Pesanan' dengan marker multi-instance sequential" />
+
+---
+
+## 10. Cara membaca diagram
+
+1. Temukan kotak dengan tanda `+` di bagian bawah.
+2. Label kotak menyebutkan nama prosedur internal.
+3. Jika ada marker multi-instance (≡ atau ⋮), Subprocess dieksekusi berulang kali.
+4. Klik tanda `+` (di editor) untuk membuka dan melihat isi proses internal.
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Subprocess dipakai untuk merapikan gambar."**
+
+Merapikan gambar adalah *efek samping*, bukan tujuan. Subprocess harus digunakan karena sub-prosedur memiliki makna tersendiri — bukan karena diagram terlihat lebih rapi. Subprocess yang isinya hanya task linear adalah penyembunyian informasi tanpa nilai tambah.
+
+---
+
+## 12. Anti-pattern
+
+**Anti-pattern: Subprocess berisi task linear tanpa logika internal.**
+
+Gejala: Subprocess dibuka → Start Event → Task A → Task B → Task C → End Event. Tidak ada percabangan, event, atau loop.
+
+Diagnosis: Semua task ini bisa ditampilkan langsung di view utama tanpa kehilangan informasi. Subprocess hanya menambah lapisan abstraksi yang tidak diperlukan.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Elemen | Bedanya |
+|--------|---------|
+| Embedded Subprocess (A13) | Disisipkan di proses ini; tidak bisa dipakai ulang |
+| Call Activity (A16) | Memanggil proses terpisah; bisa dipakai ulang |
+| Task (A01) | Satu langkah atomik; tidak punya proses internal |
+
+---
+
+## 14. Aturan pemilihan
+
+- Prosedur internal kompleks, hanya dipakai di proses ini → Embedded Subprocess.
+- Prosedur yang sama dipakai di beberapa proses → Call Activity.
+- Langkah sederhana dan linear → Task langsung, tanpa Subprocess.
+
+---
+
+## 15. Pertanyaan diagnostik
+
+- Apakah sub-prosedur ini punya percabangan atau event internal? → Pertimbangkan Subprocess.
+- Apakah sub-prosedur ini dipanggil dari proses lain? → Call Activity, bukan Subprocess.
+- Apakah diagram utama masih terbaca jika detail ini ditampilkan? → Jika ya, tidak perlu Subprocess.
+
+---
+
+## 16. Argumentasi pemodelan
+
+Subprocess (Modul 7) diperkenalkan *karena* model Modul 6 sudah padat — hubungan sebab itu harus dinyatakan tersurat. Bukan karena ada notasi baru yang ingin diperkenalkan, tapi karena kepadatan diagram sudah mencapai batas keterbacaan dan ada prosedur dengan SOP-nya sendiri.
+
+---
+
+## 17. Validity check
+
+- Subprocess harus memiliki minimal satu Start Event dan satu End Event di dalamnya.
+- Sequence Flow tidak boleh keluar masuk Subprocess secara langsung (hanya melalui Start/End Event).
+- Elemen di dalam Subprocess hanya terlihat dalam scope Subprocess — tidak bisa direferensikan dari luar.
+
+---
+
+## 18. Catatan Camunda
+
+Di Camunda, Embedded Subprocess dieksekusi dalam satu proses instance yang sama. Variable dari proses utama accessible di dalam Subprocess. Jika Subprocess gagal, boundary event pada Subprocess dapat menangkap kondisi gagal tersebut.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Embedded Subprocess adalah kotak yang menyembunyikan prosedur internal kompleks agar alur utama tetap terbaca — digunakan ketika sub-prosedur memiliki logika tersendiri, bukan sekadar untuk merapikan tampilan.

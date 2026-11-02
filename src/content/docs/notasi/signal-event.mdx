@@ -1,0 +1,166 @@
+---
+title: "E05 — Signal Event"
+description: "Broadcast ke semua proses yang mendengarkan sinyal itu. Berbeda dari Message yang hanya untuk satu penerima spesifik yang diidentifikasi."
+---
+
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | E05 |
+| **Nama BPMN** | Signal Event |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 9 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §10.4.6 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+<BpmnViewer src="/bpmn/case-09-order.bpmn" title="E05 — Signal Start Event di dalam Event Subprocess: lingkaran dengan segitiga solid" />
+
+Simbol: lingkaran dengan **segitiga solid (filled triangle)** di dalamnya. Berbeda dari:
+- Message Event: amplop (envelope).
+- Error Event: petir (lightning bolt).
+- Escalation Event: segitiga *outline* (tidak filled).
+
+Varian: Start Event (satu lingkaran), Intermediate Catch/Throw (dua lingkaran konsentris), Boundary, End Event.
+
+*Cara membuat di demo.bpmn.io:* Klik event → ubah tipe ke "Signal".
+
+---
+
+## 3. Apa artinya
+
+**Signal Event** menyatakan: *"Sinyal ini dikirimkan ke semua proses yang mendengarkan sinyal ini — pengirim tidak perlu tahu siapa penerimanya."*
+
+Berbeda dari Message yang memiliki kontrak point-to-point, Signal adalah broadcast tanpa kontrak.
+
+---
+
+## 4. Tujuan
+
+Memungkinkan koordinasi lintas proses tanpa coupling eksplisit antara pengirim dan penerima. Cocok untuk event sistem yang perlu diketahui oleh banyak proses sekaligus.
+
+---
+
+## 5. Semantik BPMN
+
+Signal Throw Event dieksekusi → sinyal "broadcast" ke seluruh scope. Semua Signal Catch Event atau Signal Start Event yang mendengarkan sinyal ini akan dipicu.
+
+Satu Signal bisa memicu beberapa penerima secara bersamaan — tidak seperti Message yang hanya untuk satu penerima.
+
+[PEDAGOGICAL SIMPLIFICATION] Signal seperti pengumuman di speaker kantor — semua orang mendengar, dan siapa yang relevan akan merespons. Message seperti email langsung ke satu orang tertentu.
+
+---
+
+## 6. Kapan digunakan
+
+Gunakan Signal Event ketika:
+- Satu event perlu diketahui oleh beberapa proses atau peserta.
+- Pengirim tidak perlu tahu siapa yang akan merespons.
+- Tidak ada kontrak komunikasi point-to-point yang perlu dieksplisitkan.
+- Event bersifat "sistem" (bukan komunikasi bisnis antara dua entitas).
+
+---
+
+## 7. Kapan jangan digunakan
+
+Jangan gunakan Signal untuk komunikasi antara dua Pool yang sudah diidentifikasi — gunakan Message Flow. Signal mengimplikasikan broadcast, yang menyembunyikan kontrak komunikasi yang seharusnya eksplisit antara Customer dan Merchant.
+
+---
+
+## 8. Contoh penggunaan
+
+Dalam Modul 9:
+- Customer meminta status pesanan → broadcast Signal "StatusPesananDiminta".
+- Event Subprocess "Layanan Status Pesanan" di Merchant mendengarkan signal ini.
+- Merchant merespons dengan mengirim status. Customer menerima status via Message.
+- Signal digunakan untuk memicu layanan internal — bukan untuk komunikasi bisnis formal.
+
+---
+
+## 9. Diagram contoh
+
+<BpmnViewer src="/bpmn/case-09-order.bpmn" title="Signal Start Event di Event Subprocess — dipicu oleh broadcast signal dari customer" />
+
+---
+
+## 10. Cara membaca diagram
+
+1. Temukan lingkaran dengan segitiga solid di dalamnya.
+2. Cek label signal (`signalRef`) untuk memahami sinyal apa yang didengarkan.
+3. Cari Signal Throw Event di proses lain yang "mengirim" sinyal ini.
+4. Semua penerima dengan signal yang sama akan dipicu bersamaan.
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Signal bisa dipakai untuk komunikasi antara dua Pool."**
+
+Message Flow antara dua Pool mengekspresikan kontrak komunikasi bisnis yang eksplisit. Signal broadcast menyembunyikan kontrak tersebut — jika besok ada Pool ketiga yang juga mendengarkan signal yang sama, perilaku berubah tanpa ada perubahan model yang terlihat.
+
+---
+
+## 12. Anti-pattern
+
+**Anti-pattern: Signal dipakai untuk komunikasi Customer ↔ Merchant yang seharusnya Message.**
+
+Gejala: Komunikasi bisnis formal antara Customer dan Merchant menggunakan Signal event di dalam proses, bukan Message Flow antar Pool.
+
+Diagnosis: Message Flow secara eksplisit menyatakan "Pool A mengirim ke Pool B" — ini adalah kontrak bisnis yang terdokumentasi. Signal tidak menyatakan kontrak ini — siapa yang mengirim, siapa yang menerima, tidak eksplisit.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Elemen | Bedanya |
+|--------|---------|
+| Signal Event (E05) | Broadcast; semua penerima dengan signal sama dipicu |
+| Message Event (E02) | Point-to-point; satu penerima spesifik |
+| Message Flow (F02) | Komunikasi antar Pool; kontrak bisnis eksplisit |
+
+---
+
+## 14. Aturan pemilihan
+
+- Satu event untuk banyak penerima, tanpa kontrak → Signal.
+- Komunikasi bisnis antara dua entitas yang diidentifikasi → Message/Message Flow.
+- Komunikasi dalam satu proses antar task → Sequence Flow (bukan event).
+
+---
+
+## 15. Pertanyaan diagnostik
+
+- Apakah ada lebih dari satu penerima untuk event ini? → Signal bisa tepat.
+- Apakah pengirim perlu tahu siapa penerimanya? → Jika ya, gunakan Message.
+- Apakah ini komunikasi bisnis formal antara dua Pool? → Message Flow.
+
+---
+
+## 16. Argumentasi pemodelan
+
+Dalam Modul 9, Signal dipilih untuk permintaan status karena customer "broadcast" ke sistem — tidak ada kontrak spesifik antara customer dan layanan mana yang merespons. Respons status kembali ke customer via Message (karena itu adalah komunikasi point-to-point dari Merchant ke Customer yang spesifik).
+
+---
+
+## 17. Validity check
+
+- Signal definition harus didefinisikan di level `bpmn:definitions` (bukan di dalam proses).
+- `signalRef` pada Signal Event harus merujuk ke Signal definition yang valid.
+- Signal Throw di dalam satu proses bisa memicu Signal Catch di proses yang sama atau proses lain.
+
+---
+
+## 18. Catatan Camunda
+
+Di Camunda, Signal dapat dikirim via API (`RuntimeService.signalEventReceived()`). Signal bersifat broadcast — semua instance yang mendengarkan akan menerima. Gunakan dengan hati-hati dalam sistem dengan banyak proses instance aktif karena semua akan dipicu.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Signal Event adalah mekanisme broadcast — satu pengirim memicu semua penerima yang mendengarkan sinyal tersebut, tanpa kontrak point-to-point seperti Message.

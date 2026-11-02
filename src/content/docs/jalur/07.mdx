@@ -1,6 +1,203 @@
 ---
-title: "Modul 7 — Proses berlapis"
-description: "Kasus ketujuh: Subprocess dan Event Subprocess."
+title: "Modul 7: Model Mulai Terlalu Padat"
+description: "Atasi kepadatan diagram dengan Embedded Subprocess. Paham perbedaan Call Activity (bisa dipakai ulang) vs. Subprocess (sekali pakai). Gunakan Multi-instance untuk memproses banyak item."
 ---
 
-Halaman ini akan diisi saat modul terkait diterbitkan.
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+import CriteriaChecker from '../../../components/CriteriaChecker.astro';
+
+## 1. Apa yang berubah
+
+**Perubahan requirement dari Modul 6:**
+
+> "Bagian pemenuhan itu prosedur tersendiri — punya SOP-nya sendiri, dan setiap item dalam pesanan diproses satu-satu."
+
+Di Modul 6, proses pemenuhan (terbitkan invoice + siapkan paket + kirim ke kurir) terlihat langsung di diagram sebagai serangkaian task paralel. Sekarang ada dua perubahan:
+
+1. Pemenuhan pesanan memiliki prosedur internal yang lebih kompleks → perlu **Subprocess**.
+2. Pesanan bisa berisi banyak item, dan setiap item diproses sendiri-sendiri → perlu **Multi-instance**.
+
+**Delta notasi:**
+
+| Kode | Nama | Peran dalam modul ini |
+|------|------|----------------------|
+| A13 | Embedded Subprocess | Merangkum prosedur internal yang kompleks dalam satu kotak, tersembunyi dari view utama |
+| A16 | Call Activity | Subprocess yang dapat dipanggil ulang dari proses lain — berbeda dari Embedded Subprocess yang sekali pakai |
+| A11 | Multi-instance Marker | Menyatakan bahwa task atau subprocess dieksekusi berulang kali — satu kali per item |
+
+**Dari Modul 6 yang dipakai ulang:** E01, E02, E03, P01/P02, C01, F02, D01/F04, R01, G01, G04, G02, D04, F01.
+
+---
+
+## 2. Kasus bisnis
+
+Kepala operasional membuka papan diagram Modul 6 dan berkata:
+
+> "Diagram ini sudah tidak bisa dibaca lagi. Lane Tim Gudang penuh. Dan kita belum memasukkan logika pemrosesan per item — setiap pesanan bisa punya 5 item berbeda, dan setiap item perlu dicek stok, dikemas secara terpisah, dan diberi label sendiri. Kalau semua itu kita gambar langsung, diagramnya akan jadi tembok teks."
+
+Tim analis mencatat:
+
+> "Ada juga prosedur verifikasi alamat pengiriman yang kita pakai di sini dan di proses retur. Kalau kita gambar dua kali, dan suatu saat prosedurnya berubah, kita harus update dua tempat. Ada cara untuk memodelkan prosedur yang bisa dipanggil dari beberapa proses?"
+
+---
+
+## 3. Requirement
+
+1. Langkah-langkah pemenuhan (siapkan item, kemas, terbitkan invoice) dikelompokkan sebagai **prosedur tersendiri** dengan SOP internalnya.
+2. Pemenuhan memproses **setiap item** dalam pesanan secara **berurutan** — satu selesai, baru berikutnya mulai.
+3. Sebelum pemenuhan dimulai, alamat pengiriman diverifikasi melalui **prosedur yang sama** yang digunakan oleh proses retur — bukan prosedur yang disalin ulang.
+4. Diagram utama harus tetap **terbaca** — detail pemenuhan tersembunyi di balik satu kotak.
+5. Semua requirement Modul 5 dan 6 tetap berlaku.
+
+---
+
+## 4. Panduan analisis
+
+**Mengapa Subprocess diperkenalkan di sini, bukan lebih awal?**
+
+Ini adalah pertanyaan kunci SPEC yang harus dijawab tersurat:
+
+> *Subprocess (Kasus 7) diperkenalkan **karena** model Kasus 6 sudah padat — hubungan sebab itu harus dinyatakan tersurat.* — SPEC §5.4 butir 2
+
+Bukan karena BPMN mengharuskan Subprocess di titik ini. Bukan karena ada notasi baru yang ingin diperkenalkan. Tapi karena **diagram Modul 6 sudah mencapai batas keterbacaan**: satu Pool melewati ±15 elemen alur, dan ada prosedur dengan logika internal yang cukup kompleks untuk memiliki SOP-nya sendiri. Itu alasannya.
+
+**Kapan Subprocess, kapan biarkan terlihat?**
+
+Biarkan task terlihat selama:
+- Langkah-langkah itu linear dan sederhana.
+- Membaca setiap langkah menambah pemahaman, bukan kebisingan.
+
+Gunakan Subprocess ketika:
+- Sub-prosedur memiliki logika internal (percabangan, event, loop).
+- Menampilkan seluruhnya di view utama melampaui batas keterbacaan.
+- Sub-prosedur adalah prosedur tersendiri dengan nama, pemilik, dan SOP-nya.
+
+**Reuse negatif #1 — Subprocess hanya untuk merapikan gambar:**
+
+> *"Subprocess dipakai hanya untuk merapikan gambar tanpa makna."*
+
+Gejala: kita punya 10 task berurutan tanpa logika internal sama sekali — semua berjalan linear. Kita "taruh" 5 di antaranya dalam sebuah Subprocess hanya agar diagram terlihat lebih pendek. Subprocess tidak memiliki percabangan, event, atau struktur internal bermakna.
+
+Diagnosis: Subprocess yang hanya berisi task linear tanpa logika internal adalah penyembunyian informasi tanpa nilai tambah. Pembaca yang membuka subprocess akan menemukan... hanya serangkaian task yang bisa saja ditampilkan langsung. Lebih buruk lagi, Subprocess di sini menciptakan overhead konseptual tanpa alasan.
+
+**Reuse negatif #2 — Multi-instance dipakai padahal urutan tunggal:**
+
+> *"Multi-instance dipakai padahal urutannya tunggal."*
+
+Gejala: pesanan selalu hanya berisi satu item, tapi task diberi marker multi-instance.
+
+Diagnosis: Multi-instance menyatakan "proses ini akan dieksekusi N kali, satu per elemen dalam koleksi." Jika N selalu 1 (satu item per pesanan), tidak ada yang diulang — multi-instance adalah noise yang menyesatkan. Gunakan multi-instance hanya ketika koleksi input benar-benar bisa berisi lebih dari satu elemen.
+
+**Embedded Subprocess vs. Call Activity:**
+
+| | Embedded Subprocess | Call Activity |
+|---|---|---|
+| Definisi | Disisipkan langsung dalam proses saat ini | Memanggil proses yang didefinisikan terpisah |
+| Bisa dipakai ulang? | Tidak — hanya ada dalam proses ini | Ya — bisa dipanggil dari proses mana pun |
+| Perubahan prosedur | Harus diubah di setiap proses yang menyalinnya | Ubah sekali, semua pemanggil ikut berubah |
+| Contoh | "Pemenuhan Pesanan" dalam proses ini | "Verifikasi Alamat" yang dipakai proses pesanan dan proses retur |
+
+---
+
+## 5. Tugas
+
+Mulai dari diagram Modul 6:
+
+1. Identifikasi bagian yang paling padat di Lane Tim Gudang. Kelompokkan langkah-langkah pemenuhan (siapkan + kemas + invoice) ke dalam **Embedded Subprocess "Pemenuhan Pesanan"** (collapsed).
+2. Di dalam Subprocess: tambahkan **Multi-instance Task "Proses satu item pesanan"** dengan marker sequential (≡ bukan ≡≡).
+3. Sebelum Subprocess: tambahkan **Call Activity "Verifikasi Alamat Pengiriman"** — representasikan bahwa ia memanggil proses terpisah dengan menambahkan marker thick border atau tanda panah ganda.
+4. Verifikasi diagram utama: apakah tim baru yang membaca bisa memahami alur utama tanpa membuka Subprocess?
+5. Pastikan Timer Event dan Event-Based Gateway dari Modul 5/6 masih ada.
+
+:::tip[File starter]
+Gunakan [`case-07-order.bpmn`](/bpmn/case-07-order.bpmn) sebagai referensi, atau kembangkan file Modul 6-mu sendiri.
+:::
+
+---
+
+## 6. Pemeriksa kriteria
+
+<CriteriaChecker
+  criteriaSrc="/cases/case-07/criteria.json"
+  title="Periksa model Kasus 7"
+/>
+
+---
+
+## 7. Kunci jawaban
+
+:::caution[Coba kerjakan dulu]
+Buka hanya setelah kamu selesai mengerjakan tugas dan memeriksa modelmu.
+:::
+
+<details>
+<summary>**Lihat kunci jawaban Modul 7**</summary>
+
+### Lapis A — Model referensi
+
+<BpmnViewer src="/bpmn/case-07-order.bpmn" title="Kasus 7 — Subprocess, Call Activity, Multi-instance" />
+
+**Struktur utama:**
+
+- **Pool Merchant, Lane Tim CS:** alur utama dari penerimaan pesanan sampai konfirmasi — tetap terbaca karena detail pemenuhan tersembunyi.
+- **Call Activity "Verifikasi Alamat Pengiriman":** kotak dengan border tebal (atau penanda khusus) yang memanggil proses terpisah. Dapat dipakai ulang oleh proses retur tanpa menduplikasi prosedur.
+- **Pool Merchant, Lane Tim Gudang:** Collapsed Subprocess "Pemenuhan Pesanan" dengan marker multi-instance sequential.
+
+**Walkthrough token (setelah pembayaran masuk):**
+
+1. Token ke **Call Activity "Verifikasi Alamat"** → proses eksternal dijalankan → token kembali.
+2. Token ke **Collapsed Subprocess "Pemenuhan Pesanan"** → subprocess dibuka.
+3. Di dalam Subprocess: Token ke **Multi-instance Task "Proses satu item"** — task dieksekusi N kali (satu per item dalam koleksi `itemList`), berurutan.
+4. Setelah semua item selesai: **Task "Terbitkan Invoice"** — satu invoice untuk seluruh pesanan.
+5. End Event subprocess → token kembali ke proses utama.
+6. **Service Task "Kirim konfirmasi"** → End Event "Pesanan dikirim".
+
+### Lapis B — Kriteria wajib
+
+1. **Minimal satu Subprocess** dengan logika internal bermakna (Start Event + Task + End Event).
+2. **Multi-instance marker** pada task yang memproses item.
+3. **Call Activity** untuk prosedur yang dapat dipakai ulang.
+4. **Event-Based Gateway + Timer** dari Modul 5/6 dipertahankan.
+5. **Dua Pool** dengan minimal dua Message Flow.
+
+### Lapis C — Variasi yang juga diterima
+
+**Variasi 1: Multi-instance pada Subprocess, bukan pada Task**
+
+Kamu bisa menandai Subprocess "Pemenuhan Pesanan" sendiri sebagai multi-instance (bukan task di dalamnya). Ini berarti seluruh prosedur pemenuhan dijalankan sekali per item — termasuk pencetakan invoice per item. Keduanya valid; tergantung requirement apakah invoice dicetak per item atau per pesanan.
+
+**Variasi 2: Parallel multi-instance**
+
+Jika SOP memungkinkan item diproses secara bersamaan (misalnya: item A dikemas saat item B dicek stok), parallel multi-instance bisa digunakan. Model referensi menggunakan sequential karena requirement menyebut "satu-satu."
+
+### Lapis D — Kesalahan umum
+
+**Kesalahan 1: Subprocess hanya berisi task linear tanpa logika internal**
+
+*Gejala:* Subprocess dibuka → isinya hanya Start Event → Task A → Task B → Task C → End Event, tanpa percabangan atau event apa pun.
+
+*Diagnosis semantik:* Subprocess seperti ini tidak menambahkan informasi dibanding menampilkan ketiga task langsung di view utama. Ia hanya "menyembunyikan" — bukan "menyederhanakan." Menyembunyikan informasi tanpa alasan semantik adalah kebisingan struktural.
+
+*Perbaikan:* Tunjukkan di view utama jika prosedurnya linear dan singkat. Gunakan Subprocess hanya jika ada logika internal (percabangan, event, multi-instance) yang tidak perlu terlihat di view utama.
+
+**Kesalahan 2: Multi-instance dipakai padahal pesanan selalu satu item**
+
+*Gejala:* Multi-instance marker ada, tapi dalam kasus bisnis ini pesanan selalu berisi tepat satu item.
+
+*Diagnosis semantik:* Multi-instance dengan koleksi berisi satu elemen secara teknis sama dengan task biasa. Tapi ia menambahkan kompleksitas konseptual dan membutuhkan konfigurasi koleksi input di engine — beban implementasi tanpa manfaat. Gunakan task biasa.
+
+*Perbaikan:* Hapus multi-instance marker. Jika requirement berubah di masa depan (pesanan bisa punya banyak item), tambahkan saat itu.
+
+**Kesalahan 3: Call Activity diisi seperti Embedded Subprocess**
+
+*Gejala:* Call Activity memiliki elemen di dalamnya (task, event) langsung di diagram — seperti Embedded Subprocess yang di-expand.
+
+*Diagnosis semantik:* Call Activity memanggil proses yang **didefinisikan terpisah** — ia tidak memiliki "isi" di dalam diagram saat ini. Menggambar elemen di dalam Call Activity melanggar semantik BPMN: elemen-elemen itu tidak bisa didefinisikan di dalam Call Activity.
+
+*Perbaikan:* Call Activity hanya berisi nama dan referensi ke proses yang dipanggil (`calledElement`). Isi prosedurnya ada di proses lain, bukan di sini.
+
+</details>
+
+---
+
+**← [Modul 6](/jalur/06/) · [Modul 8: Pengiriman Bisa Gagal](/jalur/08/) →**

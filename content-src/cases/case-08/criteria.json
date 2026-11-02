@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "caseId": "case-08",
+  "criteria": [
+    {
+      "id": "C08-1",
+      "statement": "Ada Boundary Error Event yang menempel pada task pengiriman ke kurir — bukan XOR Gateway untuk mengecek apakah pengiriman berhasil.",
+      "rationale": "Penolakan kurir adalah kondisi luar biasa (exception) yang terjadi selama eksekusi task — bukan keputusan bisnis yang dapat dievaluasi sebelum task dimulai. Boundary Error menangkap exception yang dilempar task, bukan kondisi yang diprediksi.",
+      "readIfFailed": ["/notasi/error-event"],
+      "check": {
+        "mode": "auto",
+        "rule": "boundary-attached-to",
+        "eventType": "bpmn:ErrorEventDefinition",
+        "attachedTo": "bpmn:Task"
+      }
+    },
+    {
+      "id": "C08-2",
+      "statement": "Ketika pengiriman gagal, proses berakhir dengan Terminate End Event — bukan None End Event.",
+      "rationale": "Terminate End Event menghentikan seluruh proses instance (semua token aktif). None End Event hanya menghentikan token yang melewatinya. Jika ada token lain yang masih aktif, None End tidak akan membersihkan mereka.",
+      "readIfFailed": ["/notasi/terminate-event"],
+      "check": {
+        "mode": "auto",
+        "rule": "element-exists",
+        "type": "bpmn:TerminateEventDefinition",
+        "min": 1
+      }
+    },
+    {
+      "id": "C08-3",
+      "statement": "Jalur error (setelah Boundary Error) mengarah ke notifikasi ke customer sebelum Terminate End — proses tidak langsung berhenti tanpa memberi tahu customer.",
+      "rationale": "Requirement menyatakan bahwa customer harus diberitahu ketika pengiriman gagal. Terminate End tanpa notifikasi lebih dulu meninggalkan customer tanpa informasi.",
+      "readIfFailed": ["/notasi/error-event"],
+      "check": {
+        "mode": "manual",
+        "question": "Ikuti jalur setelah Boundary Error Event. Apakah ada minimal satu task (misalnya 'Beritahu customer' atau 'Kirim notifikasi gagal') sebelum End Event? Atau apakah Error langsung terhubung ke End Event?"
+      }
+    },
+    {
+      "id": "C08-4",
+      "statement": "Semua elemen dari Modul 5–7 dipertahankan: Event-Based Gateway, Timer, Subprocess, dua Pool.",
+      "rationale": "Modul 8 adalah superset semua modul sebelumnya.",
+      "readIfFailed": ["/notasi/event-based-gateway"],
+      "check": {
+        "mode": "auto",
+        "rule": "element-exists",
+        "type": "bpmn:EventBasedGateway",
+        "min": 1
+      }
+    },
+    {
+      "id": "C08-5",
+      "statement": "Boundary Error bersifat interrupting (cancelActivity=true) — ketika kurir menolak, task pengiriman harus dihentikan, bukan dilanjutkan.",
+      "rationale": "Non-interrupting boundary event membiarkan task terus berjalan. Tapi jika kurir menolak paket, tidak ada gunanya melanjutkan task pengiriman — ia harus dihentikan segera.",
+      "readIfFailed": ["/notasi/error-event"],
+      "check": {
+        "mode": "manual",
+        "question": "Di model Anda, apakah Boundary Error Event pada task pengiriman memiliki border solid (bukan putus-putus)? Border solid = interrupting. Atau apakah bordernya putus-putus (non-interrupting)?"
+      }
+    },
+    {
+      "id": "C08-6",
+      "statement": "Dua Pool dipertahankan dengan minimal dua Message Flow — customer menerima notifikasi ketika pengiriman gagal.",
+      "rationale": "Modul 8 menambahkan skenario notifikasi gagal ke customer.",
+      "readIfFailed": ["/notasi/message-flow"],
+      "check": {
+        "mode": "auto",
+        "rule": "message-flow-between-participants",
+        "min": 2
+      }
+    }
+  ]
+}

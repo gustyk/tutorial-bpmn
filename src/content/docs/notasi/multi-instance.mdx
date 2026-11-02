@@ -1,0 +1,167 @@
+---
+title: "A11 — Multi-instance Marker"
+description: "Menandai bahwa task atau subprocess dieksekusi berulang kali — satu kali per elemen dalam koleksi. Sequential (satu per satu) atau parallel (sekaligus)."
+---
+
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | A11 |
+| **Nama BPMN** | Multi-instance Loop Characteristics |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Modul 7 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §10.3.2 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+<BpmnViewer src="/bpmn/case-07-order.bpmn" title="A11 — Multi-instance Sequential: marker ≡ (tiga garis vertikal) di bagian bawah task" />
+
+Dua varian visual:
+
+- **Sequential (≡):** tiga garis vertikal tegak. Satu eksekusi selesai dulu, baru berikutnya mulai.
+- **Parallel (⋮):** tiga titik vertikal. Semua eksekusi berjalan bersamaan.
+
+Marker muncul di bagian tengah bawah task atau Subprocess.
+
+*Cara membuat di demo.bpmn.io:* Klik task → ikon "Loop" di panel kanan → pilih "Multi-instance sequential" atau "Multi-instance parallel".
+
+---
+
+## 3. Apa artinya
+
+**Multi-instance Marker** menyatakan: *"Task atau Subprocess ini dieksekusi N kali — satu kali untuk setiap elemen dalam koleksi input."*
+
+Contoh: pesanan berisi 3 item → task "Proses satu item" dieksekusi 3 kali.
+
+---
+
+## 4. Tujuan
+
+Memodelkan iterasi atas koleksi tanpa harus menggambar loop eksplisit atau menyalin task berkali-kali. Menggantikan konstruksi "for each item in list" dalam pemodelan proses bisnis.
+
+---
+
+## 5. Semantik BPMN
+
+Token masuk ke Multi-instance Task. Engine membaca koleksi input (misalnya `itemList`). Untuk setiap elemen dalam koleksi, satu instance task dibuat:
+- **Sequential:** instance pertama selesai → instance kedua dimulai → dst.
+- **Parallel:** semua instance dimulai bersamaan.
+
+Setelah semua instance selesai, token melanjutkan ke outgoing Sequence Flow.
+
+[PEDAGOGICAL SIMPLIFICATION] Bayangkan Multi-instance Sequential sebagai "antrian" — setiap item menunggu gilirannya.
+
+---
+
+## 6. Kapan digunakan
+
+Gunakan Multi-instance ketika:
+- Ada koleksi item yang diproses dengan prosedur yang sama.
+- Jumlah item tidak diketahui saat merancang proses (tergantung data).
+- Koleksi bisa berisi lebih dari satu elemen.
+
+Sequential untuk item yang harus diproses satu per satu. Parallel untuk item yang bisa diproses bersamaan.
+
+---
+
+## 7. Kapan jangan digunakan
+
+Jangan gunakan Multi-instance jika koleksi selalu berisi tepat satu elemen — gunakan task biasa. Jangan gunakan jika tidak ada koleksi yang diiterasi.
+
+---
+
+## 8. Contoh penggunaan
+
+Dalam Modul 7:
+- "Pemenuhan Pesanan" di dalam Subprocess memiliki Multi-instance Task "Proses satu item pesanan" (sequential).
+- Pesanan bisa berisi 1 atau lebih item — setiap item diproses satu per satu.
+
+---
+
+## 9. Diagram contoh
+
+<BpmnViewer src="/bpmn/case-07-order.bpmn" title="Multi-instance Sequential pada task di dalam Subprocess Pemenuhan Pesanan" />
+
+---
+
+## 10. Cara membaca diagram
+
+1. Temukan task atau Subprocess dengan marker ≡ atau ⋮ di bagian bawah.
+2. ≡ = sequential (satu per satu), ⋮ = parallel (sekaligus).
+3. Cari label koleksi input untuk memahami apa yang diiterasi.
+4. Setelah semua iterasi selesai, token melanjutkan.
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Multi-instance dipakai padahal pesanan selalu satu item."**
+
+Jika koleksi selalu berisi satu elemen, Multi-instance tidak menambahkan nilai — ia hanya menambahkan overhead konfigurasi di engine dan kompleksitas konseptual tanpa manfaat.
+
+---
+
+## 12. Anti-pattern
+
+**Anti-pattern: Multi-instance dengan koleksi yang selalu berisi satu elemen.**
+
+Gejala: requirement menyatakan "setiap pesanan memiliki satu produk" tapi task diberi marker multi-instance.
+
+Diagnosis: Engine mengeksekusi satu instance dari task yang bisa dieksekusi sebagai task biasa. Konfigurasi koleksi input menjadi beban tanpa manfaat.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Elemen | Bedanya |
+|--------|---------|
+| Multi-instance (A11) | Iterasi atas koleksi; jumlah tergantung data |
+| Loop Marker | Perulangan berdasarkan kondisi boolean; bukan koleksi |
+| Subprocess (A13) | Prosedur internal; bukan iterasi |
+
+---
+
+## 14. Aturan pemilihan
+
+- Iterasi atas koleksi dengan jumlah tidak tentu → Multi-instance.
+- Perulangan sampai kondisi terpenuhi → Loop.
+- Proses dilakukan tepat satu kali → Task atau Subprocess tanpa marker.
+
+---
+
+## 15. Pertanyaan diagnostik
+
+- Apakah ada koleksi item yang perlu diproses dengan prosedur yang sama? → Multi-instance.
+- Apakah jumlah item bisa lebih dari satu? → Jika tidak selalu, gunakan task biasa.
+- Apakah urutan penting? → Sequential. Tidak penting? → Parallel.
+
+---
+
+## 16. Argumentasi pemodelan
+
+Dalam Modul 7, Multi-instance Sequential dipilih karena requirement menyatakan "setiap item diproses satu-satu." Parallel bisa digunakan jika item bisa diproses bersamaan (misalnya berbeda gudang), tapi requirement eksplisit menyebut urutan sequential.
+
+---
+
+## 17. Validity check
+
+- Multi-instance harus memiliki konfigurasi koleksi input (`loopDataInputRef` atau ekspresi) dalam XML.
+- `completionCondition` opsional — jika diisi, iterasi berhenti saat kondisi terpenuhi (bahkan sebelum semua item selesai).
+- Parallel multi-instance dapat memiliki masalah konkurensi jika task mengakses resource bersama.
+
+---
+
+## 18. Catatan Camunda
+
+Di Camunda, Multi-instance dikonfigurasi dengan `camunda:collection` (ekspresi koleksi) dan `camunda:elementVariable` (nama variabel per iterasi). Sequential multi-instance menciptakan satu job per iterasi; parallel menciptakan semua job sekaligus.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Multi-instance Marker menyatakan bahwa task dieksekusi satu kali per elemen dalam koleksi — sequential (satu per satu) atau parallel (bersamaan).

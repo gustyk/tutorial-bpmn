@@ -1,0 +1,167 @@
+---
+title: "E07 — Escalation Event"
+description: "Mengeskalasi kondisi ke level manajemen yang lebih tinggi. Berbeda dari Error yang menangani kegagalan teknis, Escalation menangani kondisi bisnis yang direncanakan."
+---
+
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+
+## 1. Identitas
+
+| | |
+|-|-|
+| **Kode** | E07 |
+| **Nama BPMN** | Escalation Event |
+| **Tier** | A (wajib dikuasai) |
+| **Diperkenalkan** | Cabang S2 |
+| **Spesifikasi** | OMG BPMN 2.0.2 §10.4.5 TODO-VERIFY |
+
+---
+
+## 2. Gambar notasi
+
+<BpmnViewer src="/bpmn/case-09-order.bpmn" title="Referensi diagram Modul 9 — Escalation Event diperkenalkan di Cabang S2" />
+
+Simbol: lingkaran dengan **segitiga outline (kosong/tidak filled)** di dalamnya. Berbeda dari Signal yang menggunakan segitiga solid (filled).
+
+Varian:
+- **Escalation Boundary Event non-interrupting:** border putus-putus. Subprocess terus berjalan.
+- **Escalation Boundary Event interrupting:** border solid. Subprocess dihentikan.
+- **Escalation End Event:** melempar eskalasi saat subprocess berakhir.
+
+*Cara membuat di demo.bpmn.io:* Klik event → ubah tipe ke "Escalation".
+
+---
+
+## 3. Apa artinya
+
+**Escalation Event** menyatakan: *"Kondisi ini memerlukan perhatian dari level manajemen yang lebih tinggi — subprocess memberi tahu proses induk tanpa harus berhenti."*
+
+Berbeda dari Error yang menangani kegagalan teknis yang tidak terduga, Escalation menangani kondisi **bisnis yang direncanakan** yang memerlukan eskalasi.
+
+---
+
+## 4. Tujuan
+
+Memungkinkan subprocess memberi tahu proses induk tentang kondisi yang memerlukan perhatian tanpa harus menghentikan proses. Cocok untuk skenario seperti eskalasi SLA, penanganan keluhan ke supervisor, atau kondisi yang memerlukan keputusan dari level yang lebih tinggi.
+
+---
+
+## 5. Semantik BPMN
+
+**Non-interrupting Boundary:** Subprocess yang memiliki Boundary Escalation Event dapat mengeskalasi ke proses induk sambil terus berjalan. Proses induk menangkap eskalasi dan mengeksekusi jalur penanganan — paralel dengan subprocess.
+
+**Interrupting Boundary:** Subprocess dihentikan setelah eskalasi dikirim. Proses induk mengambil alih.
+
+[PEDAGOGICAL SIMPLIFICATION] Escalation seperti menekan tombol "Panggil Supervisor" di kantor — kamu terus bekerja (non-interrupting) sambil supervisor datang untuk membantu.
+
+---
+
+## 6. Kapan digunakan
+
+Gunakan Escalation Event ketika:
+- Kondisi memerlukan eskalasi ke level manajemen yang lebih tinggi.
+- Subprocess perlu memberi tahu proses induk sambil tetap berjalan (non-interrupting).
+- SLA terancam dan supervisor perlu dilibatkan tanpa menghentikan penanganan.
+- Kondisi bisnis yang direncanakan — bukan exception teknis.
+
+---
+
+## 7. Kapan jangan digunakan
+
+Jangan gunakan Escalation untuk kegagalan teknis yang tidak terduga — gunakan Error. Jangan gunakan Escalation jika proses memang harus berhenti — gunakan Error atau Terminate End.
+
+---
+
+## 8. Contoh penggunaan
+
+Dalam Cabang S2 (Pengaduan Pelanggan dengan SLA):
+- Proses penanganan pengaduan berjalan dalam Subprocess.
+- Jika SLA terancam (Timer mendekati batas), Escalation dikirim ke proses induk.
+- Proses induk mengeskalasi ke supervisor.
+- Subprocess tetap berjalan — penanganan tidak terhenti.
+
+---
+
+## 9. Diagram contoh
+
+<BpmnViewer src="/bpmn/case-09-order.bpmn" title="Referensi Modul 9 — lihat Cabang S2 untuk penggunaan Escalation Event penuh" />
+
+---
+
+## 10. Cara membaca diagram
+
+1. Temukan lingkaran dengan segitiga outline (kosong) di dalamnya.
+2. Cek apakah ini Boundary (menempel di Subprocess) atau End Event (di dalam Subprocess).
+3. Border putus-putus = non-interrupting (Subprocess terus berjalan).
+4. Ikuti Sequence Flow dari Boundary Escalation ke jalur penanganan eskalasi di proses induk.
+
+---
+
+## 11. Kesalahpahaman umum
+
+**"Escalation dipakai untuk kegagalan teknis."**
+
+Escalation adalah untuk kondisi bisnis yang direncanakan yang memerlukan eskalasi — bukan untuk exception teknis. Kegagalan kurir (tidak terduga, exception teknis) → Error. SLA terancam (direncanakan, memerlukan supervisi) → Escalation.
+
+---
+
+## 12. Anti-pattern
+
+**Anti-pattern: Menggunakan Error untuk kondisi yang seharusnya dieskalasi.**
+
+Gejala: "SLA hampir habis" dimodelkan sebagai Error Event yang menghentikan subprocess.
+
+Diagnosis: SLA hampir habis adalah kondisi bisnis yang direncanakan — kita tahu SLA bisa terancam, dan prosedurnya adalah eskalasi ke supervisor. Error mengimplikasikan kegagalan teknis yang tidak terduga. Subprocess yang dihentikan karena "SLA hampir habis" tidak bisa melanjutkan penanganan — yang mungkin bukan perilaku yang diinginkan.
+
+---
+
+## 13. Notasi yang sering tertukar
+
+| Elemen | Bedanya |
+|--------|---------|
+| Escalation Event (E07) | Kondisi bisnis yang direncanakan; subprocess bisa tetap berjalan |
+| Error Event (E06) | Exception teknis tak terduga; subprocess selalu dihentikan |
+| Signal Event (E05) | Broadcast; tidak ada hirarki pemanggil-dipanggil |
+
+---
+
+## 14. Aturan pemilihan
+
+- Kondisi bisnis yang memerlukan eskalasi ke level lebih tinggi → Escalation.
+- Exception teknis yang tidak terduga → Error.
+- Broadcast ke semua proses tanpa hirarki → Signal.
+- Kondisi fatal yang harus menghentikan segalanya → Terminate End.
+
+---
+
+## 15. Pertanyaan diagnostik
+
+- Apakah kondisi ini adalah exception teknis atau skenario bisnis yang direncanakan? → Exception → Error; Direncanakan → Escalation.
+- Apakah subprocess harus terus berjalan setelah eskalasi? → Non-interrupting Escalation.
+- Apakah perlu memberi tahu proses induk tentang kondisi ini? → Escalation (atau Error jika exception).
+
+---
+
+## 16. Argumentasi pemodelan
+
+Dalam Cabang S2, Escalation dipilih karena "SLA terancam" adalah kondisi yang direncanakan dalam prosedur operasional — ada SOP yang menyatakan "jika SLA hampir habis, eskalasi ke supervisor sambil tetap menangani pengaduan." Error tidak sesuai karena mengimplikasikan kegagalan tidak terduga, dan selalu menghentikan subprocess.
+
+---
+
+## 17. Validity check
+
+- Escalation definition harus didefinisikan di level `bpmn:definitions`.
+- Non-interrupting Boundary Escalation harus ditandai dengan `cancelActivity="false"`.
+- Escalation Boundary Event bisa ada pada Subprocess, bukan pada task (berbeda dari Error yang bisa pada keduanya).
+
+---
+
+## 18. Catatan Camunda
+
+Di Camunda, Escalation Boundary Event didukung pada Subprocess. Non-interrupting membutuhkan `cancelActivity="false"`. Escalation bisa ditangkap oleh proses induk yang langsung membungkus Subprocess yang melempar eskalasi.
+
+---
+
+## 19. Ringkasan satu kalimat
+
+Escalation Event mengeskalasi kondisi bisnis yang direncanakan ke level manajemen yang lebih tinggi — non-interrupting memungkinkan subprocess tetap berjalan sambil proses induk menangani eskalasi.

@@ -1,6 +1,214 @@
 ---
-title: "Modul 9 — Layanan langganan"
-description: "Kasus kesembilan: timer, eskalasi, dan event kompleks."
+title: "Modul 9: Pembatalan Setelah Pembayaran Ditarik"
+description: "Tangani pembatalan dengan Compensation — mekanisme BPMN untuk membalikkan aktivitas yang sudah selesai. Gunakan Event Subprocess non-interrupting untuk layanan yang berjalan paralel."
 ---
 
-Halaman ini akan diisi saat modul terkait diterbitkan.
+import BpmnViewer from '../../../components/BpmnViewer.astro';
+import CriteriaChecker from '../../../components/CriteriaChecker.astro';
+
+## 1. Apa yang berubah
+
+**Perubahan requirement dari Modul 8:**
+
+> "Customer bisa membatalkan pesanan setelah konfirmasi selama barang belum sampai. Dana harus dikembalikan dan semua yang sudah dilakukan harus dibatalkan. Dan customer bisa tanya status pesanan kapan saja — tidak perlu menunggu kita beritahu."
+
+Di Modul 8, proses berhenti karena exception teknis (kurir menolak). Sekarang ada dua skenario baru:
+1. **Pembatalan oleh customer** — setelah aktivitas selesai dilakukan, harus ada mekanisme untuk "membalikkan" aktivitas itu.
+2. **Permintaan status kapan saja** — layanan yang berjalan paralel dengan proses utama tanpa mengganggu proses utama.
+
+**Delta notasi:**
+
+| Kode | Nama | Peran dalam modul ini |
+|------|------|----------------------|
+| E08 | Compensation Event (Boundary + Throw) | Menandai aktivitas yang bisa dibalikkan, dan mentrigger pembalikan ketika pembatalan terjadi |
+| A12 | Compensation Marker | Tandai Compensation Handler — task yang dieksekusi sebagai pembalikan aktivitas yang sudah selesai |
+| A14 | Event Subprocess | Subprocess yang dipicu oleh event dari dalam proses — bisa non-interrupting (berjalan paralel) |
+| E05 | Signal Event | Broadcast ke semua penerima — berbeda dari Message yang hanya untuk satu penerima spesifik |
+
+**Dari Modul 8 yang dipakai ulang:** E01, E02, E03, P01/P02, C01, F02, D01/F04, R01, G01, G04, G02, D04, A13, A16, A11, E06, E11, F01.
+
+---
+
+## 2. Kasus bisnis
+
+Manajer produk membawa dua laporan ke rapat:
+
+**Laporan 1 — Pembatalan:**
+> "Tiga kali bulan ini, customer membatalkan pesanan setelah kita sudah selesai mengemas barang. Stok sudah berkurang, paket sudah dibuat, tapi pesanan dibatalkan. Kita harus balikkan semuanya: kembalikan stok, batal paket, proses refund. Sekarang kita lakukan ini manual dan sering terlewat."
+
+Analis bertanya:
+> "Apakah kita bisa memodelkan 'pembalikan' ini di BPMN secara eksplisit — bukan hanya tambahkan task 'Proses Refund' di jalur pembatalan?"
+
+Manajer: *"Ya, kita perlu sistem yang tahu 'apa yang sudah dilakukan' dan otomatis membalikkannya."*
+
+**Laporan 2 — Status pesanan:**
+> "CS sering mendapat pertanyaan 'Pesanan saya sudah sampai mana?' kapan saja — sebelum bayar, setelah bayar, selagi dikemas. Kita tidak bisa minta customer tunggu di satu titik untuk mendapat jawaban."
+
+---
+
+## 3. Requirement
+
+1. Ketika customer membatalkan pesanan, semua aktivitas yang sudah selesai **dibalikkan secara otomatis** dalam urutan terbalik.
+2. Pembalikan dinyatakan secara eksplisit sebagai **Compensation** — bukan task "Refund" biasa yang hanya melakukan satu tindakan.
+3. Setiap aktivitas yang bisa dibalikkan memiliki **Compensation Handler** yang terdefinisi.
+4. Customer dapat meminta status pesanan **kapan saja** selama proses berlangsung — tanpa mengganggu alur utama.
+5. Permintaan status ditangani oleh layanan yang berjalan **paralel** dengan proses utama.
+6. Semua requirement Modul 8 tetap berlaku.
+
+---
+
+## 4. Panduan analisis
+
+**Mengapa Compensation, bukan task "Refund" biasa?**
+
+Ada dua pendekatan yang terpikirkan:
+
+*Pendekatan 1:* Tambahkan XOR Gateway setelah konfirmasi dengan dua jalur: "lanjut" dan "batal." Di jalur batal, tambahkan serangkaian task: "Batalkan kemasan," "Kembalikan stok," "Proses refund."
+
+*Pendekatan 2:* Gunakan Compensation Boundary Event pada setiap aktivitas yang bisa dibalikkan. Ketika Compensation Event ditrigger, semua Compensation Handler dipanggil otomatis.
+
+**Perbedaan kunci:**
+
+| | Task biasa di jalur batal | Compensation |
+|---|---|---|
+| Apa yang dibalik | Hanya yang tercantum di jalur batal | Semua aktivitas yang sudah selesai dan terdaftar |
+| Urutan pembalikan | Bebas (harus dirancang manual) | Terbalik dari urutan eksekusi (otomatis) |
+| Keterkaitan handler dengan aktivitas | Tidak terikat | Handler terikat ke aktivitas via Compensation Boundary |
+| Scalability | Jalur batal makin panjang setiap kali ada aktivitas baru | Handler ditambah di sisi aktivitas, jalur utama tidak berubah |
+
+Contoh: jika proses pemenuhan selesai tapi paket belum diserahkan kurir, maka hanya handler pemenuhan yang perlu dipanggil. Jika paket sudah diserahkan kurir, handler pemenuhan *dan* handler kurir dipanggil. Compensation menangani ini otomatis — task biasa tidak bisa.
+
+**Reuse negatif #1 — Compensation disamakan task "Refund" biasa:**
+
+> *"Compensation disamakan task 'Refund' biasa yang ditambahkan di jalur pembatalan."*
+
+Gejala: Saat customer membatalkan, ada satu task "Proses Refund" yang menjalankan semua pembalikan. Compensation Event tidak digunakan.
+
+Diagnosis: Task "Proses Refund" adalah black box — tidak ada keterkaitan eksplisit antara "kemasan yang sudah dibuat" dan "batal kemasan." Engine tidak tahu bahwa task refund itu adalah kebalikan dari task kemas. Jika prosedur pengemasan berubah, task refund tidak otomatis ikut berubah. Compensation Boundary Event secara eksplisit menyatakan "ketika X dibalik, jalankan Y" — hubungan ini terdokumentasi dalam model.
+
+**Reuse negatif #2 — Event Subprocess interrupting padahal proses utama harus jalan:**
+
+> *"Event Subprocess interrupting dipakai padahal proses utama harus tetap berjalan."*
+
+Gejala: Event Subprocess untuk "status pesanan" memiliki border tebal solid (interrupting). Ketika customer bertanya status, proses utama dihentikan sementara.
+
+Diagnosis: Non-interrupting Event Subprocess berjalan paralel — proses utama tidak terpengaruh. Interrupting menghentikan proses utama, yang berarti mengemas paket berhenti setiap kali ada pertanyaan status masuk. Ini jelas tidak sesuai requirement.
+
+**Signal vs. Message:**
+
+| | Signal | Message |
+|---|---|---|
+| Penerima | Semua proses yang mendengarkan sinyal itu | Satu penerima spesifik |
+| Identitas pengirim | Tidak perlu diketahui | Pengirim harus diidentifikasi |
+| Contoh | "Sistem masuk mode maintenance" | "Customer A mengirim bukti bayar ke Merchant B" |
+
+Permintaan status oleh customer menggunakan Signal karena:
+- Satu sinyal bisa diterima oleh beberapa layanan sekaligus.
+- Customer tidak perlu tahu siapa yang akan merespons — ia hanya "mengirim sinyal."
+
+---
+
+## 5. Tugas
+
+Mulai dari diagram Modul 8:
+
+1. Pada Subprocess "Pemenuhan Pesanan" di Tim Gudang, tambahkan **Compensation Boundary Event** (simbol ◀◀). Buat **Compensation Handler Task "Batalkan pemenuhan dan kembalikan stok"** dan hubungkan dengan Association (bukan Sequence Flow).
+2. Pada task "Serahkan ke kurir," tambahkan **Compensation Boundary Event** dan **Compensation Handler Task "Tarik paket dari kurir"** dengan Association.
+3. Di Tim CS: setelah customer mengirim permintaan pembatalan (pesan masuk), tambahkan **Intermediate Throw Compensation Event** ("Batalkan semua yang sudah dilakukan") → Task "Kirim konfirmasi pembatalan" → End Event.
+4. Di dalam Pool Merchant, tambahkan **Event Subprocess non-interrupting** (border putus-putus) dengan **Signal Start Event "Customer meminta status"** → Task "Kirim status pesanan ke customer" → End Event.
+5. Di Pool Customer: tambahkan **Intermediate Message Catch Event** yang menerima respon status → End Event.
+
+:::tip[File starter]
+Gunakan [`case-09-order.bpmn`](/bpmn/case-09-order.bpmn) sebagai referensi, atau kembangkan file Modul 8-mu sendiri.
+:::
+
+---
+
+## 6. Pemeriksa kriteria
+
+<CriteriaChecker
+  criteriaSrc="/cases/case-09/criteria.json"
+  title="Periksa model Kasus 9"
+/>
+
+---
+
+## 7. Kunci jawaban
+
+:::caution[Coba kerjakan dulu]
+Buka hanya setelah kamu selesai mengerjakan tugas dan memeriksa modelmu.
+:::
+
+<details>
+<summary>**Lihat kunci jawaban Modul 9**</summary>
+
+### Lapis A — Model referensi
+
+<BpmnViewer src="/bpmn/case-09-order.bpmn" title="Kasus 9 — Compensation, Event Subprocess, Signal" />
+
+**Walkthrough token (skenario pembatalan):**
+
+1. Setelah konfirmasi pesanan terkirim ke customer, proses di Tim CS menunggu (atau bisa lanjut ke skenario lain).
+2. Customer mengirim permintaan pembatalan → **Intermediate Message Catch Event** di Tim CS menerima.
+3. Token ke **Intermediate Throw Compensation Event "Batalkan semua yang sudah dilakukan"**.
+4. Engine memeriksa aktivitas yang sudah selesai dan punya Compensation Handler:
+   - Subprocess "Pemenuhan Pesanan" sudah selesai → Handler "Batalkan pemenuhan dan kembalikan stok" dipanggil.
+   - Task "Serahkan ke kurir" sudah selesai → Handler "Tarik paket dari kurir" dipanggil.
+5. Setelah semua handler selesai: Token ke Task "Kirim konfirmasi pembatalan" → Message Flow ke Customer → End Event.
+
+**Walkthrough token (skenario status kapan saja):**
+
+1. Customer broadcast Signal "StatusPesananDiminta."
+2. **Event Subprocess non-interrupting** di Merchant menangkap Signal → berjalan **paralel** dengan proses utama.
+3. Task "Kirim status pesanan ke customer" dieksekusi → Message Flow ke Customer.
+4. Event Subprocess selesai → proses utama tidak terganggu.
+
+### Lapis B — Kriteria wajib
+
+1. **Compensation Boundary Event** pada Subprocess Pemenuhan (setidaknya satu).
+2. **Compensation Handler** (task dengan marker ◀◀) terhubung via Association ke Boundary Event.
+3. **Intermediate Throw Compensation Event** di jalur pembatalan.
+4. **Event Subprocess non-interrupting** (border putus-putus) dengan Signal Start.
+5. **Minimal tiga Message Flow** termasuk konfirmasi pembatalan ke customer.
+
+### Lapis C — Variasi yang juga diterima
+
+**Variasi 1: Compensation di level task, bukan Subprocess**
+
+Kamu bisa memasang Compensation Boundary Event langsung pada task-task individual (cek stok, kemas, invoice) ketimbang pada Subprocess secara keseluruhan. Ini memberikan kontrol lebih granular — setiap task punya handler sendiri — tapi model menjadi lebih padat. Keduanya valid; pilih sesuai tingkat detail yang dibutuhkan.
+
+**Variasi 2: Message Start di Event Subprocess**
+
+Jika customer mengirim permintaan status ke satu layanan tertentu (bukan broadcast), bisa menggunakan Message Start Event di Event Subprocess, dengan Message Flow dari Pool Customer ke Event Subprocess. Semantiknya berbeda dari Signal (point-to-point vs. broadcast) tapi hasilnya fungsional sama dalam model ini.
+
+### Lapis D — Kesalahan umum
+
+**Kesalahan 1: Task "Refund" di jalur pembatalan tanpa Compensation**
+
+*Gejala:* Ketika customer membatalkan, ada satu task "Proses Refund" yang menangani semua pembalikan tanpa menggunakan Compensation Event.
+
+*Diagnosis semantik:* Task "Refund" tidak terhubung secara eksplisit ke aktivitas yang dibalikkan. Jika prosedur kemas berubah, task refund tidak ikut berubah secara otomatis. Compensation Boundary Event menyatakan "handler ini adalah kebalikan dari aktivitas X" — hubungan ini terdokumentasi dalam model dan dieksekusi oleh engine.
+
+*Perbaikan:* Tambahkan Compensation Boundary Event pada aktivitas yang perlu dibalik. Buat Compensation Handler yang menjadi kebalikan logis dari aktivitas itu. Gunakan Intermediate Throw Compensation Event sebagai trigger.
+
+**Kesalahan 2: Event Subprocess dengan border solid (interrupting)**
+
+*Gejala:* Event Subprocess untuk status pesanan memiliki border tebal — proses utama akan dihentikan ketika permintaan status masuk.
+
+*Diagnosis semantik:* Ini berarti mengemas paket berhenti setiap kali ada pertanyaan status masuk dari customer mana pun. Proses utama menjadi sangat rentan terhadap interupsi. Non-interrupting memungkinkan Event Subprocess berjalan paralel tanpa dampak ke proses utama.
+
+*Perbaikan:* Ubah border Event Subprocess menjadi putus-putus (non-interrupting).
+
+**Kesalahan 3: Sequence Flow dari Compensation Handler ke task berikutnya**
+
+*Gejala:* Compensation Handler terhubung ke task berikutnya via Sequence Flow.
+
+*Diagnosis semantik:* Compensation Handler **tidak boleh** memiliki Sequence Flow masuk atau keluar (kecuali ke task dalam handler yang sama). Handler hanya dihubungkan ke Compensation Boundary Event via **Association** (panah putus-putus). Engine yang menentukan kapan dan bagaimana handler dieksekusi — bukan Sequence Flow.
+
+*Perbaikan:* Hapus Sequence Flow dari/ke Compensation Handler. Gunakan hanya Association untuk menghubungkan Compensation Boundary Event ke Handler.
+
+</details>
+
+---
+
+**← [Modul 8](/jalur/08/) · [Cabang S2: Pengaduan dan SLA](/jalur/s2/) →**

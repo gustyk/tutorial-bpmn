@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "caseId": "case-09",
+  "criteria": [
+    {
+      "id": "C09-1",
+      "statement": "Ada Intermediate Throw Compensation Event yang mentrigger kompensasi — bukan task biasa berlabel 'Refund' yang ditambahkan di jalur pembatalan.",
+      "rationale": "Compensation Event mentrigger semua Compensation Handler yang terdaftar untuk aktivitas yang sudah selesai — secara otomatis dan dalam urutan terbalik. Task 'Refund' biasa hanya mengeksekusi satu tindakan tanpa semantik BPMN Compensation.",
+      "readIfFailed": ["/notasi/compensation-event"],
+      "check": {
+        "mode": "auto",
+        "rule": "element-exists",
+        "type": "bpmn:CompensateEventDefinition",
+        "min": 1
+      }
+    },
+    {
+      "id": "C09-2",
+      "statement": "Ada Compensation Boundary Event yang menempel pada aktivitas yang perlu dibalikkan (misalnya Subprocess Pemenuhan atau task Serahkan ke Kurir).",
+      "rationale": "Compensation Boundary Event mendaftarkan Compensation Handler untuk aktivitas tersebut. Tanpa Boundary Event, tidak ada handler yang akan dipanggil ketika kompensasi ditrigger.",
+      "readIfFailed": ["/notasi/compensation-event"],
+      "check": {
+        "mode": "auto",
+        "rule": "boundary-attached-to",
+        "eventType": "bpmn:CompensateEventDefinition",
+        "attachedTo": "bpmn:SubProcess"
+      }
+    },
+    {
+      "id": "C09-3",
+      "statement": "Ada Event Subprocess non-interrupting — proses utama tetap berjalan ketika customer meminta status pesanan.",
+      "rationale": "Non-interrupting berarti Event Subprocess berjalan paralel dengan proses utama. Jika interrupting, proses utama akan dihentikan hanya karena customer bertanya — yang tidak sesuai requirement.",
+      "readIfFailed": ["/notasi/event-subprocess"],
+      "check": {
+        "mode": "auto",
+        "rule": "element-exists",
+        "type": "bpmn:SubProcess",
+        "min": 2
+      }
+    },
+    {
+      "id": "C09-4",
+      "statement": "Event Subprocess bersifat non-interrupting (border putus-putus) — proses utama tidak terganggu.",
+      "rationale": "Interrupting Event Subprocess menghentikan proses utama. Non-interrupting membiarkan proses utama berjalan sambil Event Subprocess melayani permintaan status.",
+      "readIfFailed": ["/notasi/event-subprocess"],
+      "check": {
+        "mode": "manual",
+        "question": "Apakah Event Subprocess 'Layanan Status Pesanan' memiliki border putus-putus (non-interrupting) — bukan border tebal solid? Border putus-putus = proses utama tetap berjalan. Border tebal = proses utama dihentikan."
+      }
+    },
+    {
+      "id": "C09-5",
+      "statement": "Customer dapat meminta status kapan saja selama proses berlangsung — bukan hanya di titik tertentu.",
+      "rationale": "Event Subprocess non-interrupting bisa dipicu kapan saja selama proses utama aktif, bukan hanya di titik tertentu dalam alur. Ini berbeda dari Intermediate Catch Event yang menunggu di satu titik.",
+      "readIfFailed": ["/notasi/event-subprocess"],
+      "check": {
+        "mode": "manual",
+        "question": "Apakah permintaan status dimodelkan sebagai Event Subprocess (bisa kapan saja) atau sebagai Intermediate Catch Event di tengah alur utama (hanya di satu titik)?"
+      }
+    },
+    {
+      "id": "C09-6",
+      "statement": "Dua Pool dipertahankan dengan minimal tiga Message Flow termasuk jalur konfirmasi pembatalan ke customer.",
+      "rationale": "Modul 9 menambahkan dua alur pesan baru: permintaan pembatalan dari customer dan konfirmasi pembatalan+refund ke customer.",
+      "readIfFailed": ["/notasi/message-flow"],
+      "check": {
+        "mode": "auto",
+        "rule": "message-flow-between-participants",
+        "min": 3
+      }
+    }
+  ]
+}
