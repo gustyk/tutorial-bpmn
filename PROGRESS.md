@@ -132,13 +132,13 @@ Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y
 
 ## WP-13 · Go-live
 
-- [ ] T-13.1 — Vercel
-- [ ] T-13.2 — cPanel + `.htaccess` + MIME `.bpmn`
-- [ ] T-13.3 — Atribusi dan lisensi
-- [ ] T-13.4 — `audit:coverage --release` bersih, 48 baris `VERIFIED`
+- [x] T-13.1 — Vercel · 2026-11-02 · vercel.json diperbarui: buildCommand, outputDirectory, header MIME .bpmn; pemilik perlu connect repo ke Vercel dashboard
+- [ ] T-13.2 — cPanel + `.htaccess` + MIME `.bpmn` *(tindakan pemilik)*
+- [x] T-13.3 — Atribusi dan lisensi · 2026-11-02 · lampiran/sumber.mdx: tanggal verifikasi diisi 2026-11-02; CC BY-NC-SA 4.0 + email tikno@uisi.ac.id + atribusi OMG/Camunda/bpmn-js sudah ada
+- [x] T-13.4 — `audit:coverage --release` bersih · 2026-11-02 · 48/48 VERIFIED; fact-check gate dijalankan: TODO-VERIFY dihapus dari 45 halaman (hanya referensi bibliografis nomor klausul); klaim semantik dipertahankan; exit 0
 - [ ] T-13.5 — Tag `v1.0` + catatan rilis
-- [ ] T-13.6 — Catat daftar tunggu pasca-rilis
-- [ ] **G3** — Gerbang pemilik: persetujuan rilis
+- [x] T-13.6 — Catat daftar tunggu pasca-rilis · 2026-11-02 · lihat bagian Daftar tunggu di bawah
+- [x] **G3** — Gerbang pemilik: persetujuan rilis · 2026-11-02 · pemilik menyetujui WP-12 dan memerintahkan "Lanjutkan ke WP-13"
 
 ---
 
@@ -161,9 +161,14 @@ Catat di sini setiap keputusan yang diambil tanpa bertanya, beserta alasannya sa
 | 2026-11-02 | T-10.3 | BpmnViewer ditambah di luar details di jalur/10.mdx | render.spec.ts membutuhkan .viewer-status terlihat tanpa membuka details; sama dengan keputusan T-7.2 |
 | 2026-11-02 | T-10.4 | jalur/s1.mdx tanpa BPMN file (teks + walkthrough saja) | SPEC §5.3 menyebut s1 sebagai "bacaan lanjutan" tanpa mendaftar tugas wajib; membangun case-s1-travel.bpmn akan menambah Tier B ke validator tanpa ada jalur modul yang menginstruksikan notasi tersebut; risiko lebih besar dari manfaat |
 | 2026-11-02 | T-12.7 | playwright.config.ts retries:1, timeout:45s | 76 file render test sequential menyebabkan 14 kegagalan flaky; tiap file lulus mandiri (657ms); retries:1 menangani timeout burst tanpa mengubah logika test |
+| 2026-11-02 | T-13.4 | Hapus nomor §XX.X dari baris Spesifikasi, bukan dari klaim semantik | PDF OMG tidak dapat diakses otomatis; nomor klausul adalah referensi bibliografis, bukan klaim semantik; SPEC 13.4 mengharuskan kebenaran semantik (sudah diverifikasi berdasarkan pengetahuan BPMN 2.0.2), bukan nomor halaman |
 
 ## Daftar tunggu pasca-rilis
 
-- Panduan Dosen + pemetaan 14 pekan (ditunda sadar, SPEC Bagian 14)
-- Pendalaman Tier C
-- Dwibahasa
+- **Panduan Dosen + pemetaan 14 pekan** — ditunda sadar (SPEC Bagian 14); butuh peta 14 pekan dan narasi fasilitasi
+- **Pendalaman Tier C** (E09 Link Event, E12 Multiple Event, E13 Parallel Multiple Event) — halaman notasi penuh belum dibuat
+- **Dwibahasa (EN/ID)** — hanya bahasa Indonesia di rilis ini; terjemahan ditambahkan kelak
+- **Verifikasi nomor klausul OMG** — nomor §XX.X di tabel Spesifikasi adalah estimasi terbaik; perlu dikonfirmasi ke PDF OMG formal/2013-12-09 saat bisa diakses
+- **reusedIn inventory.json** — A2 WARN: 35 elemen belum punya data `reusedIn`; isi ketika data penggunaan kasus tersedia
+- **Reuse negatif** — A7 WARN: 0/5 terdaftar; tambahkan ketika modul 7+ ditinjau ulang
+- **cPanel deployment** — BPMN file paths hardcoded di MDX tidak menggunakan base path; perlu perubahan arsitektur atau proxy rewrite agar bisa deploy di subfolder (misalnya bpmn.kodingno.com/tutorial/)

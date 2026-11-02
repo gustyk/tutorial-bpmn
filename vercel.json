@@ -1,1 +1,11 @@
-{"buildCommand":"npm run build","outputDirectory":"dist","framework":"astro"}
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "astro",
+  "headers": [
+    {
+      "source": "/bpmn/(.*\\.bpmn)",
+      "headers": [{ "key": "Content-Type", "value": "application/xml" }]
+    }
+  ]
+}

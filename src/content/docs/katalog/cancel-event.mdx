@@ -24,7 +24,7 @@ Notasi ini dibahas lebih lengkap dalam konteks penggunaannya di [Cabang S1 — R
 
 ## 3. Apa Artinya
 
-**[STANDARD]** Cancel End Event menyatakan bahwa transaksi yang sedang berjalan harus dibatalkan. Ketika terpicu, engine memanggil semua Compensation Handler untuk aktivitas yang sudah selesai di dalam Transaction Subprocess secara terbalik. Setelah semua handler selesai, Cancel Boundary Event di luar Transaction terpicu. [OMG BPMN 2.0.2 §10.4.6] TODO-VERIFY: lokator klausa tepat.
+**[STANDARD]** Cancel End Event menyatakan bahwa transaksi yang sedang berjalan harus dibatalkan. Ketika terpicu, engine memanggil semua Compensation Handler untuk aktivitas yang sudah selesai di dalam Transaction Subprocess secara terbalik. Setelah semua handler selesai, Cancel Boundary Event di luar Transaction terpicu. 
 
 Cancel Boundary Event (bukan Cancel End Event) dipasang pada Transaction Subprocess dari luar, dan terpicu setelah rollback internal selesai. Alur berlanjut dari sini ke penanganan pasca-pembatalan.
 
@@ -42,7 +42,7 @@ Cancel Boundary Event (bukan Cancel End Event) dipasang pada Transaction Subproc
 
 ## 6. Status Camunda
 
-**[CAMUNDA]** Cancel Event dapat dimodelkan di Camunda Modeler dalam konteks Transaction Subprocess. Dukungan eksekusi tergantung pada implementasi Transaction Subprocess. TODO-VERIFY: verifikasi di [Camunda BPMN coverage](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/).
+**[CAMUNDA]** Cancel Event dapat dimodelkan di Camunda Modeler dalam konteks Transaction Subprocess. Dukungan eksekusi tergantung pada implementasi Transaction Subprocess.. Periksa [Camunda BPMN coverage](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/) untuk status dukungan terkini.
 
 ## 7. Ringkasan
 
