@@ -39,6 +39,8 @@ const { title, chart, textAlt } = Astro.props;
 <script>
 // Lazy-load: mulai render saat diagram masuk viewport.
 // Mermaid tidak pernah diimpor jika tidak ada elemen di halaman ini.
+// Catatan: [data-mermaid-output] punya hidden=true (display:none) sehingga
+// IntersectionObserver tidak dapat mendeteksinya — amati figure parent sebagai gantinya.
 const outputs = [...document.querySelectorAll<HTMLElement>('[data-mermaid-output]')];
 if (outputs.length === 0) {
   // Tidak ada diagram — tidak ada yang dimuat.
@@ -54,7 +56,11 @@ if (outputs.length === 0) {
     }
   }, { rootMargin: '200px' });
 
-  outputs.forEach((el) => observer.observe(el));
+  // Amati figure (selalu terlihat), bukan output yang hidden.
+  outputs.forEach((el) => {
+    const fig = el.closest('figure') ?? el;
+    observer.observe(fig);
+  });
 }
 
 async function renderAll(outputs: HTMLElement[]) {
