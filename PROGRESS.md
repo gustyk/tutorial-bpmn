@@ -136,7 +136,7 @@ Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y
 - [ ] T-13.2 — cPanel + `.htaccess` + MIME `.bpmn` *(tindakan pemilik)*
 - [x] T-13.3 — Atribusi dan lisensi · 2026-11-02 · lampiran/sumber.mdx: tanggal verifikasi diisi 2026-11-02; CC BY-NC-SA 4.0 + email tikno@uisi.ac.id + atribusi OMG/Camunda/bpmn-js sudah ada
 - [x] T-13.4 — `audit:coverage --release` bersih · 2026-11-02 · 48/48 VERIFIED; fact-check gate dijalankan: TODO-VERIFY dihapus dari 45 halaman (hanya referensi bibliografis nomor klausul); klaim semantik dipertahankan; exit 0
-- [ ] T-13.5 — Tag `v1.0` + catatan rilis
+- [x] T-13.5 — Tag `v1.0` + catatan rilis · 2026-11-02 · `git tag -a v1.0`; catatan rilis: 10 modul + 35 notasi A + 10 katalog B + 89 tests passed + 48/48 VERIFIED
 - [x] T-13.6 — Catat daftar tunggu pasca-rilis · 2026-11-02 · lihat bagian Daftar tunggu di bawah
 - [x] **G3** — Gerbang pemilik: persetujuan rilis · 2026-11-02 · pemilik menyetujui WP-12 dan memerintahkan "Lanjutkan ke WP-13"
 
