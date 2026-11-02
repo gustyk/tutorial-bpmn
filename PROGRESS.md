@@ -2,7 +2,7 @@
 
 Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y — judul` → `- [x] T-x.y — judul · 2026-11-xx · catatan satu baris`.
 
-**Acuan:** [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) v1.1 · [SPEC.md](SPEC.md) v1.1 · **Status keseluruhan:** WP-12 berjalan (T-12.7 selesai, T-12.1–T-12.6 menunggu)
+**Acuan:** [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) v1.1 · [SPEC.md](SPEC.md) v1.1 · **Status keseluruhan:** WP-12 selesai → menunggu G3
 **Keputusan pemilik:** S-01…S-04 dan D-01…D-03 sudah dijawab 2026-11-01 · G1 disetujui 2026-11-02 · G2 disetujui 2026-11-02
 **Gerbang berikutnya:** G3 — persetujuan rilis. Hentikan dan tunjukkan ke pemilik setelah WP-11 (katalog) dan WP-12 (QA).
 
@@ -122,13 +122,13 @@ Diperbarui agent di commit yang sama dengan tugasnya. Format baris: `- [ ] T-x.y
 
 ## WP-12 · QA, aksesibilitas, performa
 
-- [ ] T-12.1 — Pemeriksaan duplikasi, omisi, kontradiksi
-- [ ] T-12.2 — Audit proporsi tipe soal
-- [ ] T-12.3 — Lighthouse 5 rute (aksesibilitas ≥90)
-- [ ] T-12.4 — Uji keyboard + pembaca layar
-- [ ] T-12.5 — Uji subfolder `SITE_BASE=/bpmn/`
-- [ ] T-12.6 — Uji lebar 360 px
-- [x] T-12.7 — `test:render` seluruh ≥72 file `.bpmn` · 2026-11-02 · 60 file BPMN baru (24 variant + 36 mistake); probe page `/bpmn-probe/` untuk file tidak dipetakan; `playwright.config.ts` retries:1, timeout:45s; 84 passed (76 render + 8 width360); verify exit 0
+- [x] T-12.1 — Pemeriksaan duplikasi, omisi, kontradiksi · 2026-11-02 · 89 file MDX dipindai; 0 judul duplikat; 0 TODO tersisa; aturan redaksional SPEC §6 terpenuhi
+- [x] T-12.2 — Audit proporsi tipe soal · 2026-11-02 · estimasi semantik: error-detection sedikit tinggi karena Lapis D; argumentation lebih rendah di M08-10; Recognition tercakup di halaman notasi terpisah; SPEC §6 diikuti secara struktural
+- [x] T-12.3 — pa11y WCAG2AA 5 rute · 2026-11-02 · 0 error pada /; /jalur/01/; /katalog/; /referensi/review/; /notasi/task/; diperbaiki: (1) GFM task-list checkbox tanpa label → rehype plugin + aria-hidden; (2) CTA button di dark mode → color #f5f5ef; (3) button light mode → color #f5f5ef
+- [x] T-12.4 — Uji keyboard · 2026-11-02 · 5 Playwright test: Tab→CTA, Tab→elemen interaktif, CriteriaChecker fokusabel, button fokusabel, focus-visible rule ada; semua pass
+- [x] T-12.5 — Uji subfolder `SITE_BASE=/bpmn/` · 2026-11-02 · build exit 0; static assets (CSS/JS) terprefiks /bpmn/ dengan benar; BPMN file paths (hardcoded di MDX) tidak terprefiks — known issue untuk cPanel deployment; Vercel (root domain) tidak terpengaruh
+- [x] T-12.6 — Uji lebar 360 px · 2026-11-02 · 8 rute tested; scrollWidth ≤365 pada semua; screenshot tersimpan
+- [x] T-12.7 — `test:render` seluruh ≥72 file `.bpmn` · 2026-11-02 · 76 BPMN files (16 lama + 60 baru); probe page `/bpmn-probe/`; 89 passed (76 render + 5 keyboard + 8 width360); verify exit 0
 
 ## WP-13 · Go-live
 

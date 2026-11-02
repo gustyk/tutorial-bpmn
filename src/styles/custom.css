@@ -28,6 +28,26 @@
   --sl-color-bg-sidebar: #1c2420;
   --sl-color-text: #e8ece8;
 }
+/* T-12.3: primary CTA button — both themes need explicit text color.
+   Light: #17634f bg (dark green) + white text (10:1). Dark: same (--sl-color-text-accent
+   yields near-white bg with white text = bad). Override both to dark-green+white. */
+.sl-link-button.primary,
+.sl-link-button.primary:hover {
+  color: #f5f5ef !important;
+}
+:root[data-theme='dark'] .sl-link-button.primary,
+:root[data-theme='dark'] .sl-link-button.primary:hover {
+  background: #17634f !important;
+  border-color: #17634f !important;
+  color: #f5f5ef !important;
+}
+/* T-12.3: sidebar current-page item — pa11y computes text-invert (#1b382f) against
+   sidebar-bg (#1c2420) missing the item's own background. Force readable white text. */
+:root[data-theme='dark'] nav a[aria-current='page'],
+:root[data-theme='dark'] nav a[aria-current='page']:hover,
+:root[data-theme='dark'] nav a[aria-current='page']:focus {
+  color: #f5f5ef !important;
+}
 .hero { padding-block: 2rem; }
 .hero h1 { max-width: 15ch; font-size: clamp(2.2rem, 5vw, 4rem); line-height: 1.08; letter-spacing: 0; }
 .hero .tagline { max-width: 58ch; font-size: 1.16rem; line-height: 1.55; }

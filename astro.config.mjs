@@ -1,6 +1,20 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import sitemap from '@astrojs/sitemap';
+import { visit } from 'unist-util-visit';
+
+// Make GFM task-list checkboxes invisible to screen readers (decorative, text conveys info)
+function rehypeTaskListA11y() {
+  return (tree) => {
+    visit(tree, 'element', (node) => {
+      if (node.tagName === 'input' && node.properties?.type === 'checkbox' &&
+          'disabled' in (node.properties ?? {})) {
+        node.properties['aria-hidden'] = 'true';
+        node.properties.tabindex = '-1';
+      }
+    });
+  };
+}
 
 const base = process.env.SITE_BASE ?? '/';
 
@@ -24,6 +38,9 @@ export default defineConfig({
     '/advanced/': '/referensi/anti-pattern',
     // T-7.0: practice/narrative kontennya sudah dipindahkan ke jalur/01-03
     '/practice/narrative': '/jalur/01',
+  },
+  markdown: {
+    rehypePlugins: [rehypeTaskListA11y],
   },
   integrations: [sitemap(), starlight({
     title: 'Tutorial BPMN by Pak Tik',
