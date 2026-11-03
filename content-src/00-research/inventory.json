@@ -261,7 +261,16 @@
       "tier": "A",
       "slug": "pool-participant",
       "introducedIn": "case-03",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-04",
+        "case-05",
+        "case-06",
+        "case-07",
+        "case-08",
+        "case-09",
+        "case-10",
+        "case-s2"
+      ],
       "sources": [],
       "docPath": "notasi/pool-participant.mdx"
     },
@@ -276,7 +285,15 @@
       "tier": "A",
       "slug": "lane",
       "introducedIn": "case-04",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-05",
+        "case-06",
+        "case-07",
+        "case-08",
+        "case-09",
+        "case-10",
+        "case-s2"
+      ],
       "sources": [],
       "docPath": "notasi/lane.mdx"
     },
@@ -291,7 +308,16 @@
       "tier": "A",
       "slug": "collaboration",
       "introducedIn": "case-03",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-04",
+        "case-05",
+        "case-06",
+        "case-07",
+        "case-08",
+        "case-09",
+        "case-10",
+        "case-s2"
+      ],
       "sources": [],
       "docPath": "notasi/collaboration.mdx"
     },
@@ -306,9 +332,23 @@
       "tier": "A",
       "slug": "sequence-flow",
       "introducedIn": "case-01",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-02",
+        "case-03",
+        "case-04",
+        "case-05",
+        "case-06",
+        "case-07",
+        "case-08",
+        "case-09",
+        "case-10",
+        "case-s2"
+      ],
       "sources": [],
-      "docPath": "notasi/sequence-flow.mdx"
+      "docPath": "notasi/sequence-flow.mdx",
+      "negativeReuse": [
+        "case-03"
+      ]
     },
     {
       "id": "F02",
@@ -321,7 +361,16 @@
       "tier": "A",
       "slug": "message-flow",
       "introducedIn": "case-03",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-04",
+        "case-05",
+        "case-06",
+        "case-07",
+        "case-08",
+        "case-09",
+        "case-10",
+        "case-s2"
+      ],
       "sources": [],
       "docPath": "notasi/message-flow.mdx"
     },
@@ -336,7 +385,13 @@
       "tier": "A",
       "slug": "association",
       "introducedIn": "case-04",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-05",
+        "case-06",
+        "case-07",
+        "case-09",
+        "case-10"
+      ],
       "sources": [],
       "docPath": "notasi/association.mdx"
     },
@@ -351,7 +406,11 @@
       "tier": "A",
       "slug": "data-association",
       "introducedIn": "case-04",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-05",
+        "case-06",
+        "case-10"
+      ],
       "sources": [],
       "docPath": "notasi/data-association.mdx"
     },
@@ -366,9 +425,19 @@
       "tier": "A",
       "slug": "task",
       "introducedIn": "case-01",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-02",
+        "case-03",
+        "case-07",
+        "case-08",
+        "case-09",
+        "case-10"
+      ],
       "sources": [],
-      "docPath": "notasi/task.mdx"
+      "docPath": "notasi/task.mdx",
+      "negativeReuse": [
+        "case-02"
+      ]
     },
     {
       "id": "A02",
@@ -381,9 +450,19 @@
       "tier": "A",
       "slug": "none-task",
       "introducedIn": "case-01",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-02",
+        "case-03",
+        "case-07",
+        "case-08",
+        "case-09",
+        "case-10"
+      ],
       "sources": [],
-      "docPath": "notasi/none-task.mdx"
+      "docPath": "notasi/none-task.mdx",
+      "negativeReuse": [
+        "case-02"
+      ]
     },
     {
       "id": "A03",
@@ -396,7 +475,12 @@
       "tier": "A",
       "slug": "manual-task",
       "introducedIn": "case-02",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-04",
+        "case-05",
+        "case-06",
+        "case-10"
+      ],
       "sources": [],
       "docPath": "notasi/manual-task.mdx"
     },
@@ -411,7 +495,17 @@
       "tier": "A",
       "slug": "user-task",
       "introducedIn": "case-02",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-03",
+        "case-04",
+        "case-05",
+        "case-06",
+        "case-07",
+        "case-08",
+        "case-09",
+        "case-10",
+        "case-s2"
+      ],
       "sources": [],
       "docPath": "notasi/user-task.mdx"
     },
@@ -426,7 +520,16 @@
       "tier": "A",
       "slug": "service-task",
       "introducedIn": "case-02",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-04",
+        "case-05",
+        "case-06",
+        "case-07",
+        "case-08",
+        "case-09",
+        "case-10",
+        "case-s2"
+      ],
       "sources": [],
       "docPath": "notasi/service-task.mdx"
     },
@@ -456,7 +559,9 @@
       "tier": "A",
       "slug": "business-rule-task",
       "introducedIn": "case-02",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-10"
+      ],
       "sources": [],
       "docPath": "notasi/business-rule-task.mdx"
     },
@@ -471,7 +576,16 @@
       "tier": "A",
       "slug": "send-task",
       "introducedIn": "case-03",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-04",
+        "case-05",
+        "case-06",
+        "case-07",
+        "case-08",
+        "case-09",
+        "case-10",
+        "case-s2"
+      ],
       "sources": [],
       "docPath": "notasi/send-task.mdx"
     },
@@ -486,7 +600,9 @@
       "tier": "A",
       "slug": "receive-task",
       "introducedIn": "case-03",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-10"
+      ],
       "sources": [],
       "docPath": "notasi/receive-task.mdx"
     },
@@ -516,7 +632,11 @@
       "tier": "A",
       "slug": "multi-instance",
       "introducedIn": "case-07",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-08",
+        "case-09",
+        "case-10"
+      ],
       "sources": [],
       "docPath": "notasi/multi-instance.mdx"
     },
@@ -531,7 +651,9 @@
       "tier": "A",
       "slug": "compensation-marker",
       "introducedIn": "case-09",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-10"
+      ],
       "sources": [],
       "docPath": "notasi/compensation-marker.mdx"
     },
@@ -546,7 +668,12 @@
       "tier": "A",
       "slug": "embedded-subprocess",
       "introducedIn": "case-07",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-08",
+        "case-09",
+        "case-10",
+        "case-s2"
+      ],
       "sources": [],
       "docPath": "notasi/embedded-subprocess.mdx"
     },
@@ -561,7 +688,9 @@
       "tier": "A",
       "slug": "event-subprocess",
       "introducedIn": "case-09",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-10"
+      ],
       "sources": [],
       "docPath": "notasi/event-subprocess.mdx"
     },
@@ -591,7 +720,9 @@
       "tier": "A",
       "slug": "call-activity",
       "introducedIn": "case-07",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-10"
+      ],
       "sources": [],
       "docPath": "notasi/call-activity.mdx"
     },
@@ -621,9 +752,24 @@
       "tier": "A",
       "slug": "exclusive-gateway",
       "introducedIn": "case-02",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-03",
+        "case-04",
+        "case-05",
+        "case-06",
+        "case-07",
+        "case-08",
+        "case-09",
+        "case-10",
+        "case-s2"
+      ],
       "sources": [],
-      "docPath": "notasi/exclusive-gateway.mdx"
+      "docPath": "notasi/exclusive-gateway.mdx",
+      "negativeReuse": [
+        "case-05",
+        "case-06",
+        "case-08"
+      ]
     },
     {
       "id": "G02",
@@ -636,7 +782,9 @@
       "tier": "A",
       "slug": "parallel-gateway",
       "introducedIn": "case-06",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-10"
+      ],
       "sources": [],
       "docPath": "notasi/parallel-gateway.mdx"
     },
@@ -651,7 +799,9 @@
       "tier": "A",
       "slug": "inclusive-gateway",
       "introducedIn": "case-06",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-10"
+      ],
       "sources": [],
       "docPath": "notasi/inclusive-gateway.mdx"
     },
@@ -666,7 +816,13 @@
       "tier": "A",
       "slug": "event-based-gateway",
       "introducedIn": "case-05",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-06",
+        "case-07",
+        "case-08",
+        "case-09",
+        "case-10"
+      ],
       "sources": [],
       "docPath": "notasi/event-based-gateway.mdx"
     },
@@ -696,9 +852,15 @@
       "tier": "A",
       "slug": "data-object",
       "introducedIn": "case-04",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-05",
+        "case-10"
+      ],
       "sources": [],
-      "docPath": "notasi/data-object.mdx"
+      "docPath": "notasi/data-object.mdx",
+      "negativeReuse": [
+        "case-06"
+      ]
     },
     {
       "id": "D02",
@@ -741,7 +903,9 @@
       "tier": "A",
       "slug": "data-store",
       "introducedIn": "case-06",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-10"
+      ],
       "sources": [],
       "docPath": "notasi/data-store.mdx"
     },
@@ -756,7 +920,12 @@
       "tier": "A",
       "slug": "text-annotation",
       "introducedIn": "case-04",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-05",
+        "case-06",
+        "case-07",
+        "case-10"
+      ],
       "sources": [],
       "docPath": "notasi/text-annotation.mdx"
     },
@@ -786,9 +955,23 @@
       "tier": "A",
       "slug": "none-event",
       "introducedIn": "case-01",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-02",
+        "case-03",
+        "case-04",
+        "case-05",
+        "case-06",
+        "case-07",
+        "case-08",
+        "case-09",
+        "case-10",
+        "case-s2"
+      ],
       "sources": [],
-      "docPath": "notasi/none-event.mdx"
+      "docPath": "notasi/none-event.mdx",
+      "negativeReuse": [
+        "case-08"
+      ]
     },
     {
       "id": "E02",
@@ -801,7 +984,16 @@
       "tier": "A",
       "slug": "message-event",
       "introducedIn": "case-03",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-04",
+        "case-05",
+        "case-06",
+        "case-07",
+        "case-08",
+        "case-09",
+        "case-10",
+        "case-s2"
+      ],
       "sources": [],
       "docPath": "notasi/message-event.mdx"
     },
@@ -816,9 +1008,19 @@
       "tier": "A",
       "slug": "timer-event",
       "introducedIn": "case-05",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-06",
+        "case-07",
+        "case-08",
+        "case-09",
+        "case-10",
+        "case-s2"
+      ],
       "sources": [],
-      "docPath": "notasi/timer-event.mdx"
+      "docPath": "notasi/timer-event.mdx",
+      "negativeReuse": [
+        "case-s2"
+      ]
     },
     {
       "id": "E04",
@@ -846,7 +1048,9 @@
       "tier": "A",
       "slug": "signal-event",
       "introducedIn": "case-09",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-10"
+      ],
       "sources": [],
       "docPath": "notasi/signal-event.mdx"
     },
@@ -861,7 +1065,9 @@
       "tier": "A",
       "slug": "error-event",
       "introducedIn": "case-08",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-10"
+      ],
       "sources": [],
       "docPath": "notasi/error-event.mdx"
     },
@@ -936,7 +1142,9 @@
       "tier": "A",
       "slug": "terminate-event",
       "introducedIn": "case-08",
-      "reusedIn": [],
+      "reusedIn": [
+        "case-10"
+      ],
       "sources": [],
       "docPath": "notasi/terminate-event.mdx"
     },
