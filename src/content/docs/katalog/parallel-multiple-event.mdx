@@ -1,0 +1,66 @@
+---
+title: "Parallel Multiple Event (E13)"
+description: "Event catching dengan beberapa trigger yang hanya terpicu setelah semua trigger terpenuhi — semantik AND, hanya untuk posisi catching."
+---
+
+import BpmnNotationGallery from '../../../components/BpmnNotationGallery.astro';
+import Callout from '../../../components/Callout.astro';
+
+## 1. Identitas
+
+**ID:** E13 · **Slug:** `parallel-multiple-event` · **Tier:** C · **Kategori:** Event
+
+Parallel Multiple Event adalah event *catching* yang dikonfigurasi dengan lebih dari satu trigger dan hanya terpicu setelah **semua** trigger terpenuhi — semantik AND. Berbeda dari [Multiple Event (E12)](/katalog/multiple-event) yang menggunakan semantik OR (salah satu trigger cukup).
+
+<Callout type="pedagogical">
+**[PEDAGOGICAL SIMPLIFICATION]** "Semua trigger harus terpenuhi" terdengar seperti AND Gateway, tapi konteksnya berbeda: AND Gateway menyinkronkan token dari beberapa cabang alur, sedangkan Parallel Multiple Event menunggu beberapa *sinyal eksternal* yang masuk ke satu titik. Keduanya AND, tapi AND atas hal yang berbeda.
+</Callout>
+
+## 2. Gambar Notasi
+
+<BpmnNotationGallery
+  title="Parallel Multiple Event — posisi catching saja"
+  items={[
+    { kind: 'event', trigger: 'parallel-multiple', position: 'start', label: 'Parallel Multiple Start', description: 'Semua trigger harus terjadi sebelum process dimulai — AND semantik.' },
+    { kind: 'event', trigger: 'parallel-multiple', position: 'intermediate-catch', label: 'Parallel Multiple Intermediate Catch', description: 'Proses menunggu sampai semua trigger yang dikonfigurasi terpenuhi.' },
+    { kind: 'event', trigger: 'parallel-multiple', position: 'boundary', interrupting: true, label: 'Parallel Multiple Boundary (Interrupting)', description: 'Memotong activity ketika semua trigger terpenuhi.' },
+    { kind: 'event', trigger: 'parallel-multiple', position: 'boundary', interrupting: false, label: 'Parallel Multiple Boundary (Non-Interrupting)', description: 'Membuat cabang paralel ketika semua trigger terpenuhi, tanpa menghentikan activity.' },
+  ]}
+/>
+
+## 3. Apa Artinya
+
+**[STANDARD]** Parallel Multiple Event menggunakan simbol pentagon dengan tanda plus (+) di tengah. Ia hanya valid pada posisi *catching* — tidak ada Parallel Multiple Throw atau Parallel Multiple End, karena "melempar semua trigger sekaligus" sudah menjadi semantik [Multiple Event (E12)](/katalog/multiple-event).
+
+Posisi valid menurut standar OMG BPMN 2.0.2 §10.4.x: Start, Intermediate Catch, Boundary Interrupting, Boundary Non-Interrupting, Event Subprocess Interrupting, Event Subprocess Non-Interrupting.
+
+**Posisi tidak valid:** Intermediate Throw (gunakan Multiple Throw), End (tidak ada konsepnya).
+
+Ketika digunakan sebagai Boundary Event, event ini menunggu sampai *semua* trigger yang dikonfigurasi terpenuhi sebelum memotong (interrupting) atau membuat cabang baru (non-interrupting) dari activity yang dilampirinya.
+
+## 4. Kapan Digunakan
+
+**Situasi yang tepat:** ketika sebuah proses memang harus menunggu beberapa sinyal atau kondisi eksternal yang berbeda jenis dan harus terjadi *semua* sebelum dilanjutkan — misalnya konfirmasi dari tiga sistem berbeda (pembayaran AND inventaris AND pengiriman) sebelum pesanan diproses.
+
+**Mengapa jarang digunakan (Tier C):** semantik "tunggu semua sinyal berbeda jenis sekaligus" sangat jarang muncul di proses bisnis nyata. Ada dua alternatif yang hampir selalu lebih tepat:
+
+- **AND Gateway (G02) + event terpisah** — jika setiap sinyal perlu ditangani atau dilogging secara terpisah, gunakan satu event per sinyal dengan Parallel Gateway untuk sinkronisasi. Diagram menjadi eksplisit: setiap sinyal terlihat, setiap penanganannya terlihat.
+- **Event Subprocess** — jika hanya perlu bereaksi terhadap event tambahan tanpa menghentikan proses utama.
+
+Parallel Multiple Event menyembunyikan kompleksitas di dalam konfigurasi elemen. Dalam hampir semua kasus, memecahnya menjadi beberapa event dan gateway eksplisit menghasilkan diagram yang lebih mudah dipahami dan diverifikasi.
+
+## 5. Sering Tertukar Dengan
+
+**[Multiple Event (E12)](/katalog/multiple-event)** — Keduanya adalah "event dengan banyak trigger" dan visualnya mirip (pentagon), tapi semantiknya berlawanan untuk catching: E12 terpicu oleh **salah satu** trigger (OR); E13 terpicu hanya setelah **semua** trigger terpenuhi (AND). Bedakan dari simbol: E12 tanpa tanda tambahan, E13 ada tanda plus (+).
+
+**[Parallel Gateway / AND Gateway (G02)](/notasi/parallel-gateway)** — AND Gateway menyinkronkan token dari beberapa *cabang alur internal* yang sudah berjalan. Parallel Multiple Event menunggu beberapa *sinyal eksternal* yang masuk dari luar proses. Keduanya AND, tapi atas objek yang berbeda: token internal vs. sinyal eksternal.
+
+**[Event-Based Gateway (G04)](/notasi/event-based-gateway)** — Event-Based Gateway menunggu *salah satu* dari beberapa event (OR). Parallel Multiple Event menunggu *semua* event (AND). Jika butuh OR, gunakan Event-Based Gateway; jika butuh AND atas sinyal eksternal, pertimbangkan Parallel Multiple Event — tapi pertimbangkan dulu apakah AND Gateway + event terpisah tidak lebih jelas.
+
+## 6. Status Camunda
+
+**[CAMUNDA]** Dukungan Parallel Multiple Event di Camunda 8 sangat terbatas — sebagian besar posisi tidak dapat dieksekusi. Camunda merekomendasikan pola alternatif menggunakan AND Gateway dan event terpisah. Periksa [Camunda BPMN coverage](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/) untuk status terkini.
+
+## 7. Ringkasan
+
+Parallel Multiple Event menunggu semua trigger terpenuhi (AND) sebelum melanjutkan — hanya valid pada posisi catching. Tier C karena kasus penggunaan nyatanya sangat sempit dan hampir selalu ada alternatif yang lebih eksplisit: AND Gateway dengan event terpisah yang membuat setiap sinyal dan penanganannya terlihat di diagram.

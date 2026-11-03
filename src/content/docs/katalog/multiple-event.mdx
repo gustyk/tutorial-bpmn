@@ -1,0 +1,60 @@
+---
+title: "Multiple Event (E12)"
+description: "Event dengan lebih dari satu trigger — catching terpicu oleh salah satu trigger (OR); throwing mengirim semua trigger sekaligus."
+---
+
+import BpmnNotationGallery from '../../../components/BpmnNotationGallery.astro';
+import Callout from '../../../components/Callout.astro';
+
+## 1. Identitas
+
+**ID:** E12 · **Slug:** `multiple-event` · **Tier:** C · **Kategori:** Event
+
+Multiple Event adalah event yang dikonfigurasi dengan lebih dari satu trigger. Untuk posisi *catching* (menangkap), ia terpicu ketika **salah satu** trigger pertama kali terjadi — semantik OR. Untuk posisi *throwing* (melempar), ia mengirimkan **semua** trigger yang dikonfigurasi secara bersamaan.
+
+## 2. Gambar Notasi
+
+<BpmnNotationGallery
+  title="Multiple Event — berbagai posisi"
+  items={[
+    { kind: 'event', trigger: 'multiple', position: 'start', label: 'Multiple Start Event', description: 'Salah satu dari beberapa trigger memulai process — semantik OR.' },
+    { kind: 'event', trigger: 'multiple', position: 'intermediate-catch', label: 'Multiple Intermediate Catch', description: 'Menunggu trigger pertama yang terjadi dari daftar yang dikonfigurasi.' },
+    { kind: 'event', trigger: 'multiple', position: 'intermediate-throw', label: 'Multiple Intermediate Throw', description: 'Melempar semua trigger yang dikonfigurasi sekaligus.' },
+    { kind: 'event', trigger: 'multiple', position: 'end', label: 'Multiple End Event', description: 'Melempar semua trigger saat proses berakhir.' },
+  ]}
+/>
+
+## 3. Apa Artinya
+
+**[STANDARD]** Multiple Event menggunakan simbol pentagon (bintang bersudut lima, filled untuk throwing, unfilled untuk catching) untuk menandai bahwa event ini memiliki lebih dari satu trigger yang dikonfigurasi.
+
+**Semantik catching (Start, Intermediate Catch, Boundary):** token dilanjutkan ketika *salah satu* trigger terpenuhi terlebih dahulu. Trigger lain yang belum terjadi diabaikan. Ini berbeda dari [Parallel Multiple Event (E13)](/katalog/parallel-multiple-event) yang menunggu *semua* trigger.
+
+**Semantik throwing (Intermediate Throw, End):** token melempar *semua* trigger yang dikonfigurasi secara bersamaan, bukan hanya satu.
+
+Posisi valid menurut standar OMG BPMN 2.0.2 §10.4.x: Start, Intermediate Catch, Intermediate Throw, Boundary Interrupting, Boundary Non-Interrupting, Event Subprocess Interrupting, Event Subprocess Non-Interrupting, End.
+
+## 4. Kapan Digunakan
+
+**Situasi yang tepat:** ketika sebuah event memang memiliki beberapa trigger yang berbeda jenis dan penanganannya identik — misalnya proses yang dapat dimulai oleh Timer *atau* pesan dari sistem eksternal *atau* sinyal manual.
+
+**Mengapa jarang digunakan (Tier C):** dalam praktik, menggunakan Multiple Event hampir selalu mempersulit diagram dan pemahaman. Alternatif yang lebih jelas tersedia:
+
+- **Gantikan dengan beberapa Start Event terpisah** — masing-masing trigger punya Start Event sendiri, lalu bergabung di satu titik masuk proses. Pembaca langsung melihat kondisi masing-masing trigger.
+- **Gantikan dengan Event-Based Gateway (G04)** — untuk catching Intermediate Event, Event-Based Gateway secara eksplisit menunjukkan "menunggu salah satu dari event berikut" dengan jalur yang terpisah dan terlabel.
+
+Multiple Event menyembunyikan logika trigger di dalam konfigurasi elemen, bukan di diagram. Ini melanggar prinsip keterbacaan BPMN: apa yang penting bagi proses harus terlihat di diagram.
+
+## 5. Sering Tertukar Dengan
+
+**[Parallel Multiple Event (E13)](/katalog/parallel-multiple-event)** — Mirip secara visual (keduanya pentagon), tapi semantik catching-nya berlawanan. Multiple Event (E12) menunggu salah satu trigger (OR); Parallel Multiple Event (E13) menunggu semua trigger (AND). Perhatikan simbol: E12 menggunakan pentagon filled/unfilled standar; E13 menggunakan pentagon dengan tanda plus.
+
+**[Event-Based Gateway (G04)](/notasi/event-based-gateway)** — Event-Based Gateway juga "menunggu salah satu event", tapi dengan cara yang jauh lebih eksplisit: setiap cabang ditandai dengan event-nya masing-masing, dan setiap cabang dapat mengarah ke penanganan yang berbeda. Gunakan Event-Based Gateway hampir selalu; gunakan Multiple Event hanya jika penanganannya benar-benar identik untuk semua trigger.
+
+## 6. Status Camunda
+
+**[CAMUNDA]** Dukungan Multiple Event di Camunda 8 terbatas. Sebagian besar posisi Multiple Event tidak dapat dieksekusi langsung — Camunda merekomendasikan pola alternatif (beberapa event terpisah atau Event-Based Gateway). Periksa [Camunda BPMN coverage](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/) untuk status terkini per posisi.
+
+## 7. Ringkasan
+
+Multiple Event menggabungkan beberapa trigger dalam satu elemen — OR untuk catching, semua-sekaligus untuk throwing. Tier C karena hampir selalu ada alternatif yang lebih mudah dibaca: beberapa Start Event terpisah atau Event-Based Gateway yang membuat setiap trigger terlihat secara eksplisit.

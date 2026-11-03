@@ -907,7 +907,8 @@
       "slug": "link-event",
       "introducedIn": null,
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "src/content/docs/katalog/link-event.mdx"
     },
     {
       "id": "E10",
@@ -951,7 +952,8 @@
       "slug": "multiple-event",
       "introducedIn": null,
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "src/content/docs/katalog/multiple-event.mdx"
     },
     {
       "id": "E13",
@@ -965,7 +967,8 @@
       "slug": "parallel-multiple-event",
       "introducedIn": null,
       "reusedIn": [],
-      "sources": []
+      "sources": [],
+      "docPath": "src/content/docs/katalog/parallel-multiple-event.mdx"
     }
   ],
   "limitations": [

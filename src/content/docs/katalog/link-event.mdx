@@ -1,0 +1,60 @@
+---
+title: "Link Event (E09)"
+description: "Pasangan Intermediate Event yang berfungsi sebagai konektor 'goto' dalam satu halaman diagram — tidak menambahkan semantik eksekusi baru."
+---
+
+import BpmnNotationGallery from '../../../components/BpmnNotationGallery.astro';
+import Callout from '../../../components/Callout.astro';
+
+## 1. Identitas
+
+**ID:** E09 · **Slug:** `link-event` · **Tier:** C · **Kategori:** Event
+
+Link Event adalah pasangan Intermediate Event — satu Throw dan satu Catch — yang digunakan semata-mata sebagai konektor visual dalam satu halaman diagram. Ia menggantikan Sequence Flow yang panjang atau bersilangan, tanpa mengubah semantik eksekusi proses.
+
+<Callout type="pedagogical">
+**[PEDAGOGICAL SIMPLIFICATION]** Link Event dikategorikan Tier C bukan karena ia salah, melainkan karena ia tidak menambahkan konsep baru: ia hanya "memotong" Sequence Flow visual menjadi sepasang penanda. Mahasiswa yang memahami Sequence Flow sudah memahami Link Event secara substansi.
+</Callout>
+
+## 2. Gambar Notasi
+
+<BpmnNotationGallery
+  title="Link Event — pasangan Throw dan Catch"
+  items={[
+    { kind: 'event', trigger: 'link', position: 'intermediate-throw', label: 'Link Intermediate Throw', description: 'Panah berisi (filled) — titik asal lompatan. Nama link harus cocok dengan Catch-nya.' },
+    { kind: 'event', trigger: 'link', position: 'intermediate-catch', label: 'Link Intermediate Catch', description: 'Panah kosong (unfilled) — titik tujuan lompatan. Ditempatkan di bagian lain diagram yang sama.' },
+  ]}
+/>
+
+## 3. Apa Artinya
+
+**[STANDARD]** Link Event terdiri dari dua elemen berpasangan dalam satu Process (bukan antar-Pool): Link Intermediate Throw Event sebagai titik keluar dan Link Intermediate Catch Event sebagai titik masuk. Nama link harus identik pada keduanya.
+
+Ketika token mencapai Link Throw, ia keluar dari Throw dan masuk ke Catch dengan nama yang sama — persis seperti Sequence Flow langsung. Dari perspektif mesin eksekusi, tidak ada perbedaan antara Link Event dan Sequence Flow biasa yang menghubungkan dua titik yang sama.
+
+Aturan penting:
+- Satu Link Throw dapat memiliki lebih dari satu Link Catch dengan nama yang sama (divergensi), tapi satu Link Catch hanya boleh punya satu Throw.
+- Link Event hanya valid sebagai Intermediate Event — tidak boleh sebagai Start, End, atau Boundary.
+- Link Event tidak dapat melintasi batas Pool atau Lane.
+
+## 4. Kapan Digunakan
+
+**Situasi yang tepat:** diagram besar satu halaman di mana Sequence Flow yang panjang atau bersilangan membuat diagram sulit dibaca. Link Event memindahkan "ujung kawat" ke tempat yang lebih dekat secara visual dengan elemen tujuan.
+
+**Mengapa jarang digunakan (Tier C):** Link Event tidak menambahkan semantik eksekusi apa pun — ia hanya membantu keterbacaan visual. Solusi yang lebih baik hampir selalu tersedia: memecah diagram menjadi beberapa halaman (Collapsed Subprocess atau Call Activity), menata ulang layout, atau menggunakan Lane untuk memisahkan jalur. Jika diagram begitu padat sehingga membutuhkan Link Event, itu biasanya sinyal bahwa diagram perlu dipecah.
+
+**Kapan benar-benar tepat:** ketika diagram memang harus disajikan dalam satu halaman (misalnya untuk dokumentasi cetak) dan penataan ulang layout tidak mungkin dilakukan tanpa mengorbankan kejelasan konten.
+
+## 5. Sering Tertukar Dengan
+
+**[Message Event (E02)](/notasi/message-event)** — Keduanya menggunakan sepasang event, tapi semantiknya berbeda fundamental. Message Event merepresentasikan komunikasi nyata antara dua Participant (dua Pool berbeda) melalui Message Flow. Link Event hanya konektor visual dalam satu Process — tidak ada komunikasi, tidak ada pesan, tidak ada interaksi antarpihak. Gunakan Message Event ketika ada pertukaran informasi antar-pelaku; gunakan Link Event hanya untuk tata letak.
+
+**[Call Activity (A16)](/notasi/call-activity)** — Call Activity memanggil proses terpisah yang dapat digunakan ulang. Link Event tidak memanggil apa pun — ia hanya mendekatkan dua titik dalam diagram yang sama.
+
+## 6. Status Camunda
+
+**[CAMUNDA]** Link Event dapat dimodelkan di Camunda Modeler, tapi dukungan eksekusinya terbatas. Pada Camunda 8, Link Event biasanya digunakan hanya untuk tata letak dan mungkin tidak dieksekusi seperti Sequence Flow biasa tergantung konfigurasi. Periksa [Camunda BPMN coverage](https://docs.camunda.io/docs/components/modeler/bpmn/bpmn-coverage/) untuk status terkini.
+
+## 7. Ringkasan
+
+Link Event adalah konektor visual "goto" antara dua titik dalam satu Process — ia tidak menambahkan semantik eksekusi baru dan hampir selalu bisa digantikan dengan desain diagram yang lebih baik. Tier C karena manfaatnya murni visual, bukan konseptual.

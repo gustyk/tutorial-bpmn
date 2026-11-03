@@ -42,11 +42,11 @@ Notasi Tier B adalah elemen BPMN yang sah menurut standar tapi jarang digunakan 
 
 Tier C adalah notasi yang ada di standar OMG BPMN 2.0.2 tetapi berada di luar cakupan tutorial ini karena sangat jarang digunakan di luar konteks teknis yang spesifik.
 
-| ID | Notasi | Arti singkat | Mengapa tidak dibahas |
+| ID | Notasi | Arti singkat | Halaman |
 |---|---|---|---|
-| E09 | Link Event | Pasangan Intermediate Event (Throw + Catch) yang berfungsi sebagai "goto" dalam satu halaman diagram — menghindari Sequence Flow yang panjang. | Hanya membantu keterbacaan diagram besar; tidak menambahkan semantik eksekusi baru; dapat digantikan dengan tata letak diagram yang baik. Sumber: [OMG BPMN 2.0.2 §10.4.x](https://www.omg.org/spec/BPMN/2.0.2/)
-| E12 | Multiple Event | Event yang memiliki lebih dari satu trigger — untuk catching, terpicu saat salah satu trigger terjadi; untuk throwing, semua trigger dikirim. | Kombinasi trigger yang kompleks jarang diperlukan dalam proses bisnis nyata; biasanya dapat difaktorisasi menjadi beberapa event terpisah yang lebih mudah dibaca. Sumber: [OMG BPMN 2.0.2 §10.4.x](https://www.omg.org/spec/BPMN/2.0.2/)
-| E13 | Parallel Multiple Event | Seperti Multiple Event tetapi untuk catching saja — terpicu hanya setelah *semua* trigger terpenuhi, bukan hanya salah satu. | Semantik "tunggu semua trigger sekaligus" sangat jarang diperlukan; Parallel Gateway sudah cukup untuk sinkronisasi beberapa event. Sumber: [OMG BPMN 2.0.2 §10.4.x](https://www.omg.org/spec/BPMN/2.0.2/)
+| E09 | Link Event | Pasangan Intermediate Event (Throw + Catch) sebagai konektor visual "goto" — tidak menambahkan semantik eksekusi baru. | [/katalog/link-event/](/katalog/link-event/) |
+| E12 | Multiple Event | Event dengan lebih dari satu trigger — catching terpicu oleh salah satu trigger (OR); throwing mengirim semua trigger. | [/katalog/multiple-event/](/katalog/multiple-event/) |
+| E13 | Parallel Multiple Event | Seperti Multiple Event tapi untuk catching saja — terpicu hanya setelah *semua* trigger terpenuhi (AND). | [/katalog/parallel-multiple-event/](/katalog/parallel-multiple-event/) |
 
 ---
 

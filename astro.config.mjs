@@ -109,6 +109,9 @@ export default defineConfig({
       { label: 'Katalog referensi', items: [
         { label: 'Indeks katalog', link: '/katalog/' },
         { label: 'Matriks event', link: '/katalog/matriks-event' },
+        { label: 'E09 — Link Event', link: '/katalog/link-event' },
+        { label: 'E12 — Multiple Event', link: '/katalog/multiple-event' },
+        { label: 'E13 — Parallel Multiple Event', link: '/katalog/parallel-multiple-event' },
       ]},
       { label: 'Alat', items: [
         { label: 'Menggambar — demo.bpmn.io', link: '/alat/menggambar' },
