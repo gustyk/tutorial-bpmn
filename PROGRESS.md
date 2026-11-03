@@ -168,7 +168,7 @@ Catat di sini setiap keputusan yang diambil tanpa bertanya, beserta alasannya sa
 - **Panduan Dosen + pemetaan 14 pekan** — ditunda sadar (SPEC Bagian 14); butuh peta 14 pekan dan narasi fasilitasi
 - **Pendalaman Tier C** (E09 Link Event, E12 Multiple Event, E13 Parallel Multiple Event) — halaman notasi penuh belum dibuat
 - **Dwibahasa (EN/ID)** — hanya bahasa Indonesia di rilis ini; terjemahan ditambahkan kelak
-- **Verifikasi nomor klausul OMG** — nomor §XX.X di tabel Spesifikasi adalah estimasi terbaik; perlu dikonfirmasi ke PDF OMG formal/2013-12-09 saat bisa diakses
+- **Verifikasi nomor klausul OMG** — ~~estimasi~~ SELESAI 2026-11-03: PDF OMG BPMN 2.0.2 diekstrak via Node.js zlib; §10.4 = Data/Items (bukan Events); Events ada di §10.5.2/10.5.3/10.5.4; tabel 10.84/10.86/10.88/10.89/10.90 dikonfirmasi; §13.4.2 = Exclusive Gateway; 104 sel event-matrix.json diperbarui; 1 TODO-VERIFY di jalur/02.mdx diperbaiki
 - **reusedIn inventory.json** — A2 WARN: 35 elemen belum punya data `reusedIn`; isi ketika data penggunaan kasus tersedia
 - **Reuse negatif** — A7 WARN: 0/5 terdaftar; tambahkan ketika modul 7+ ditinjau ulang
 - **cPanel deployment** — BPMN file paths hardcoded di MDX tidak menggunakan base path; perlu perubahan arsitektur atau proxy rewrite agar bisa deploy di subfolder (misalnya bpmn.kodingno.com/tutorial/)

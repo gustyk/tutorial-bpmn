@@ -155,7 +155,7 @@ Menggabungkan kedua jalur kembali ke satu End Event dengan XOR join. Sah secara 
 
 *Gejala:* Gateway memiliki dua outgoing flow yang tidak berlabel.
 
-*Diagnosis semantik:* BPMN membutuhkan kondisi atau penanda default pada setiap outgoing flow XOR agar mesin/pembaca tahu kapan memilih jalur mana (OMG BPMN 2.0.2 §13.3 TODO-VERIFY).
+*Diagnosis semantik:* BPMN membutuhkan kondisi atau penanda default pada setiap outgoing flow XOR agar mesin/pembaca tahu kapan memilih jalur mana (OMG BPMN 2.0.2 §13.4.2 — Exclusive Gateway).
 
 *Perbaikan:* Beri label "ya" dan "tidak", atau gunakan `conditionExpression`.
 
